@@ -225,11 +225,15 @@ svg.chart .bneg{fill:var(--birdie)}
 .flight-tally span{font-size:11px;color:var(--muted)}
 details summary{cursor:pointer}
 .chip[aria-pressed="true"] .muted{color:inherit;opacity:.85}
-.swing-card{display:flex;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px;overflow:hidden}
-.swing-pic{flex:0 0 42%;max-width:200px;border-radius:12px;overflow:hidden;background:var(--surface2)}
-.swing-pic img{width:100%;height:auto;max-height:none;aspect-ratio:280/498;object-fit:cover}
-.swing-txt{display:flex;flex-direction:column;gap:6px;min-width:0}
-.swing-txt h3{font-size:22px;line-height:1.15}
+.intro{position:fixed;inset:0;z-index:80;background:#0B130E}
+.intro-in{position:relative;height:100%;max-width:560px;margin:0 auto;overflow:hidden}
+.intro img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none}
+.intro-in::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.72) 100%)}
+.intro-txt{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:24px 20px calc(30px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:20px}
+.intro h2{color:#fff;font-size:44px;line-height:1.02;margin:0;text-shadow:0 2px 16px rgba(0,0,0,.45)}
+.intro .btn.big{background:#fff;border-color:#fff;color:#13231A}
+.intro-open,.intro-open body{overflow:hidden}
+@media (prefers-reduced-motion:no-preference){.intro-txt{animation:introUp .7s .25s both}@keyframes introUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}}
 .hero{position:relative;margin:-12px -16px 0;height:min(66vh,560px);min-height:400px;overflow:hidden;border-radius:0 0 22px 22px;background:#8CC8EC}
 .hero canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hero-txt{position:absolute;left:20px;right:20px;top:22px;color:#13231A;text-shadow:0 1px 8px rgba(255,255,255,.5)}
@@ -320,7 +324,7 @@ const BUILTIN = [
 ];
 
 /* ---------- Version ---------- */
-const APP_VERSION = '3.1', APP_DATE = '20.10.2026';
+const APP_VERSION = '3.2', APP_DATE = '20.10.2026';
 
 /* ---------- Zustand ---------- */
 function ls(k,v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null; } }
@@ -1410,10 +1414,6 @@ function viewHome(){
            :`<button class="btn primary big" data-a="tab" data-v="play">Runde starten</button>`}
       </div>
     </section>
-    <section class="swing-card">
-      <button class="pic-btn swing-pic" data-a="zoomPic" aria-label="Schwung gross anzeigen"><img src="swing.gif" alt="Golfschwung auf der Abschlagmatte" width="280" height="498" loading="lazy"></button>
-      <div class="swing-txt"><span class="eyebrow">Dein Schwung</span><h3>Ruhig ansprechen, locker durchschwingen.</h3><p class="small muted" style="margin:0">Tippe aufs Bild, um es gross zu sehen.</p></div>
-    </section>
     <div class="kpis num">
       <div class="kpi"><div class="v">${done.length}</div><div class="l">Runden gespielt</div></div>
       <div class="kpi"><div class="v">${hcp.value==null?'–':dec(hcp.value)}</div><div class="l">HCP-Schätzung</div><div class="sub">${hcp.value==null?'ab 3 Runden':''}</div></div>
@@ -1539,6 +1539,19 @@ function openZoom(img){
   z.innerHTML=`<button class="btn" aria-label="Schliessen">✕ Schliessen</button><img src="${img.src}" alt="${esc(img.alt)}">`;
   z.addEventListener('click', ()=>z.remove()); document.body.appendChild(z);
 }
+/* --- Begrüssung beim Öffnen: Schwung-Clip bildschirmfüllend, danach zur Startseite --- */
+function showIntro(){
+  try{ if(sessionStorage.getItem('golfsc-intro')==='1') return; }catch(e){}
+  const d=document.createElement('div'); d.className='intro'; d.id='intro';
+  d.innerHTML=`<div class="intro-in"><img src="swing.gif" alt="Golfschwung auf der Abschlagmatte" width="360" height="640">
+    <div class="intro-txt"><h2>Ready to try again?</h2><button class="btn primary big" data-a="introGo">Zur Startseite</button></div></div>`;
+  document.body.appendChild(d); document.documentElement.classList.add('intro-open');
+}
+function closeIntro(){
+  try{ sessionStorage.setItem('golfsc-intro','1'); }catch(e){}
+  const d=document.getElementById('intro'); if(d) d.remove(); document.documentElement.classList.remove('intro-open');
+  S.view=null; S.tab='home'; try{ sessionStorage.setItem('golfsc-tab','home'); }catch(e){} render(); window.scrollTo(0,0);
+}
 function setHole(i){ S.hole=i; const g=activeId(); if(g) ls('golfsc-hole-'+g, i); }
 function touchRound(r){ saveRound(r); render(); }
 
@@ -1592,6 +1605,7 @@ document.addEventListener('click', e=>{
     case 'up': h.up = v==='true'; if(h.up){ h.s=null; h.p=null; h.miss=null; } touchRound(r); break;
     case 'pdet': S.det[p]=!S.det[p]; render(); break;
     case 'zoomPic': openZoom(b.querySelector('img')); break;
+    case 'introGo': closeIntro(); break;
     case 'goHole': setHole(+v); render(); break;
     case 'prevHole': setHole(Math.max(0,S.hole-1)); S.det={}; render(); window.scrollTo(0,0); break;
     case 'nextHole': setHole(Math.min(g[0].holes.length-1,S.hole+1)); S.det={}; render(); window.scrollTo(0,0); break;
@@ -1661,6 +1675,7 @@ function saveCourse(){
   S.view={name:'course', id:f.id}; S.form=null; toast('Platz gespeichert'); render(); window.scrollTo(0,0);
 }
 
+showIntro();
 render();
 store.init();
 /* Offline: auf der Website legt ein Service Worker die App im Handy ab, damit sie auf dem Platz ohne Empfang startet */
