@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob: 'self'; font-src 'none'; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob: 'self'; font-src 'none'; connect-src 'self'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1D6842">
@@ -197,6 +197,34 @@ svg.chart .bneg{fill:var(--birdie)}
 .tee-edit-grid input{padding:8px 6px;min-height:40px}
 @media (prefers-reduced-motion:no-preference){.btn,.chip,.counter button{transition:transform .08s}.btn:active,.chip:active,.counter button:active{transform:scale(.97)}}
 .miss{display:grid;grid-template-columns:repeat(4,1fr)}
+.av{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;color:#fff;font-weight:700;font-size:15px;flex:0 0 auto;font-family:var(--body)}
+.av.lg{width:64px;height:64px;font-size:26px}
+.av.sm{width:22px;height:22px;font-size:11px}
+.hdr-who{border:0;background:none;padding:0;min-height:44px;min-width:44px;display:flex;align-items:center;justify-content:center}
+.sync-pill{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;display:inline-flex;gap:4px;align-items:center;min-height:32px;color:var(--muted);white-space:nowrap}
+.sync-pill.ok{color:var(--accent);border-color:var(--accent-soft)}
+.sync-pill.warn{color:var(--warn);border-color:var(--warn)}
+.who-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.who-btn{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:18px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:150px}
+.who-btn[aria-current="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.who-btn b{font-size:17px}
+.swatch{width:34px;height:34px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line)}
+.swatch[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
+.pblock{padding:14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.prow{display:flex;gap:10px;align-items:center}
+.prow .main{flex:1;min-width:0}
+.ptot{text-align:right}
+.ptot b{font-family:var(--display);font-size:26px;display:block;line-height:1}
+.ptot span{font-size:12px;color:var(--muted)}
+.counter.sm{grid-template-columns:56px 1fr 56px}
+.counter.sm button{height:52px}
+.counter.sm .val{font-size:46px}
+.flight-tally{display:flex;gap:8px;flex-wrap:wrap}
+.flight-tally>div{flex:1 1 0;min-width:70px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 8px;display:flex;align-items:center;gap:6px}
+.flight-tally b{font-family:var(--display);font-size:22px}
+.flight-tally span{font-size:11px;color:var(--muted)}
+details summary{cursor:pointer}
+.chip[aria-pressed="true"] .muted{color:inherit;opacity:.85}
 .hero{position:relative;margin:-12px -16px 0;height:min(66vh,560px);min-height:400px;overflow:hidden;border-radius:0 0 22px 22px;background:#8CC8EC}
 .hero canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hero-txt{position:absolute;left:20px;right:20px;top:22px;color:#13231A;text-shadow:0 1px 8px rgba(255,255,255,.5)}
@@ -287,14 +315,19 @@ const BUILTIN = [
 ];
 
 /* ---------- Version ---------- */
-const APP_VERSION = '2.7', APP_DATE = '20.10.2026';
+const APP_VERSION = '3.0', APP_DATE = '20.10.2026';
 
 /* ---------- Zustand ---------- */
+function ls(k,v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null; } }
+
 const S = {
   tab:(()=>{ try{ return sessionStorage.getItem('golfsc-tab')||'home'; }catch(e){ return 'home'; } })(), view:null, ready:false,
-  rounds:{}, dbCourses:{}, holeImgs:{}, assets:null, uploading:null, profile:{hi:null, gender:'m'},
-  edit:null,            // lokale Kopie der laufenden Runde
-  hole:0, start:null, form:null, confirm:null, statCourse:'all', statRange:'all', dirty:false
+  rounds:{}, dbCourses:{}, profiles:{}, holeImgs:{}, profile:{hi:null, gender:'m'},
+  me: ls('golfsc-me'),            // gewähltes Profil auf diesem Gerät
+  picked: (()=>{ try{ return sessionStorage.getItem('golfsc-who')==='1'; }catch(e){ return false; } })(),
+  group:null,                     // lokale Kopien der laufenden Runde, ein Eintrag pro Spieler im Flight
+  det:{},                         // im Flight: bei welchen Spielern die Details offen sind
+  hole:0, start:null, form:null, pform:null, confirm:null, statCourse:'all', statRange:'all', dirty:false
 };
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -305,7 +338,6 @@ const today = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.
 const pct = (a,b) => b ? Math.round(a/b*100)+' %' : '–';
 const dec = (v,n=1) => v==null||isNaN(v) ? '–' : v.toFixed(n);
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-function ls(k,v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null; } }
 
 /* ---------- Speicher: localStorage dieses Browsers + Sicherung in der Datei ----------
    Dauerhaft im Browser: Runden, eigene Plätze, eigene Lochbilder, Profil (HCP-Index, Herren/Damen).
@@ -333,38 +365,59 @@ function idbLegacy(){
     }catch(e){ fin(null); }
   });
 }
+const DATA0 = () => ({rounds:{},courses:{},profiles:{},holeimgs:{},profile:null,deleted:{},dirty:{},syncAt:null,savedAt:null,changedAt:null});
+const tOf = o => (o && (o.updatedAt||o._t)) || 0;
+const SYNC_COLS = ['rounds','courses','profiles'];
+const localOnly = (col,o) => col==='rounds' && o && (o.mem || o.guest);
 const store = {
-  data:{rounds:{},courses:{},holeimgs:{},profile:null,deleted:{},savedAt:null,changedAt:null}, pend:{}, t:null, err:null,
+  data:DATA0(), pend:{}, t:null, err:null,
   async init(){
     let saved=null, canStore=true;
     try{ const raw=localStorage.getItem(KEY); saved = raw ? JSON.parse(raw) : null; }catch(e){ canStore=false; }
     if(!saved){ const old = await idbLegacy(); if(old){ saved=old; this.data.changedAt=Date.now(); } }
     if(saved) this.data = {...this.data, ...saved};
+    ['rounds','courses','profiles','deleted','dirty','holeimgs'].forEach(k=>{ this.data[k] ||= {}; });
     const emb = readEmbedded(); if(emb) this.merge(emb);
+    this.migrate();
     if(!canStore) this.err='blocked';
     this.emit(); S.ready=true; render(); this.flush();
+    sync.init();
   },
+  /* ältere Daten anpassen: jede Runde bekommt eine Gruppe, noch nie Gesichertes wird zum Hochladen vorgemerkt */
+  migrate(){
+    const d=this.data;
+    Object.entries(d.rounds).forEach(([id,r])=>{ if(!r.groupId) r.groupId=id; });
+    if(!d.syncAt) SYNC_COLS.forEach(col=>Object.entries(d[col]||{}).forEach(([id,o])=>{ if(!localOnly(col,o)) d.dirty[col+'/'+id]=1; }));
+    if(!ls('golfsc-active')){ const a=Object.values(d.rounds).find(r=>r.status==='active'); if(a) ls('golfsc-active', a.groupId); }
+  },
+  /* Zusammenführen: pro Eintrag gewinnt der neuere Stand, Gelöschtes bleibt gelöscht (gleiche Regel wie auf dem Server) */
   merge(src){
     const d=this.data, del=d.deleted||(d.deleted={}); let n=0;
-    const newer=(a,b,k)=> !b || (a[k]||0) > (b[k]||0);
-    Object.entries(src.rounds||{}).forEach(([id,r])=>{ const kd=del['rounds/'+id]; if(kd && kd>=(r.updatedAt||0)) return; if(newer(r,d.rounds[id],'updatedAt')){ d.rounds[id]=r; n++; } });
-    Object.entries(src.courses||{}).forEach(([id,c])=>{ const kd=del['courses/'+id]; if(kd && kd>=(c._t||0)) return; if(newer(c,d.courses[id],'_t')){ d.courses[id]=c; n++; } });
+    Object.entries(src.deleted||{}).forEach(([k,t])=>{ if(typeof t==='number' && (!del[k] || t>del[k])) del[k]=t; });
+    SYNC_COLS.forEach(col=>{ const box=d[col] ||= {};
+      Object.entries(src[col]||{}).forEach(([id,o])=>{ if(!o || typeof o!=='object') return; const kd=del[col+'/'+id]; if(kd && kd>=tOf(o)) return;
+        if(!box[id] || tOf(o)>tOf(box[id])){ box[id]=o; n++; } });
+      Object.keys(box).forEach(id=>{ const kd=del[col+'/'+id]; if(kd && kd>=tOf(box[id])) delete box[id]; });
+    });
     Object.entries(src.holeimgs||{}).forEach(([cid,m])=>{ const box=d.holeimgs[cid] ||= {}; Object.entries(m||{}).forEach(([k,v])=>{ if(!box[k] && typeof v==='string' && v.startsWith('data:image/')){ box[k]=v; n++; } }); });
     if(!d.profile && src.profile) d.profile=src.profile;
     if(src.savedAt && (!d.savedAt || src.savedAt>d.savedAt)) d.savedAt=src.savedAt;
+    Object.values(d.rounds).forEach(r=>{ if(!r.groupId) r.groupId=r.id||uid(); });
     return n;
   },
   emit(){
     S.rounds={}; Object.entries(this.data.rounds||{}).forEach(([id,r])=>{ if(id!=='undefined') S.rounds[id]={...clone(r), id}; });
     S.dbCourses={}; Object.entries(this.data.courses||{}).forEach(([id,c])=>{ S.dbCourses[id]={...clone(c), id}; }); S.holeImgs=clone(this.data.holeimgs);
+    S.profiles={}; Object.entries(this.data.profiles||{}).forEach(([id,p])=>{ S.profiles[id]={...clone(p), id}; });
     if(this.data.profile) S.profile={...S.profile, ...this.data.profile};
   },
-  /* was dauerhaft gespeichert und in die Datei gesichert wird: ohne Gastrunden */
+  /* was dauerhaft im Browser bleibt: alles ausser Runden, die ausdrücklich nicht gespeichert werden sollen */
   durable(){
     const d={...this.data, rounds:{}};
     Object.entries(this.data.rounds||{}).forEach(([id,r])=>{ if(!r.mem) d.rounds[id]=r; });
     return d;
   },
+  markDirty(path){ (this.data.dirty ||= {})[path]=1; },
   flush(){
     clearTimeout(this.t);
     try{ localStorage.setItem(KEY, JSON.stringify(this.durable())); if(this.err==='full') this.err=null; }
@@ -380,26 +433,107 @@ const store = {
     if(col==='settings') d.profile=data;
     else { const box=d[col] ||= {}; if(data===null){ delete box[id]; (d.deleted ||= {})[path]=Date.now(); } else box[id]=data; }
     if(!(col==='rounds' && data && data.mem)) d.changedAt=Date.now();
-    this.emit(); this.persist(); softRender();
+    if(SYNC_COLS.includes(col) && !localOnly(col,data)) this.markDirty(path);
+    this.emit(); this.flush(); sync.soon(); softRender();
   },
   save(path, data, delay=500){
     const p = this.pend[path] ||= {t:null, data:null};
     p.data = data; clearTimeout(p.t);
-    return new Promise(res=>{ p.t=setTimeout(()=>{ this.write(path, p.data).then(res); }, delay); });
+    return new Promise(res=>{ p.t=setTimeout(()=>{ p.t=null; this.write(path, p.data).then(res); }, delay); });
   },
   flushPending(){
-    if(saveRound.pending){ clearTimeout(saveRound.t); const f=saveRound.pending; saveRound.pending=null; f(); }
+    const P=saveRound.pend||{}; saveRound.pend={}; Object.values(P).forEach(x=>{ clearTimeout(x.t); x.f(); });
     Object.entries(this.pend).forEach(([path,p])=>{ if(p.t){ clearTimeout(p.t); p.t=null; this.write(path,p.data); } });
     this.flush();
   },
   wipe(){
     try{ localStorage.removeItem(KEY); Object.keys(localStorage).filter(k=>k.startsWith('golfsc-')).forEach(k=>localStorage.removeItem(k)); }catch(e){}
-    this.data={rounds:{},courses:{},holeimgs:{},profile:null,deleted:{},savedAt:null,changedAt:null};
-    S.profile={hi:null, gender:'m'}; S.edit=null; S.start=null; this.emit();
+    try{ sessionStorage.clear(); }catch(e){}
+    this.data=DATA0(); sync.pw=null; sync.state = sync.on ? 'nopw' : 'file';
+    S.profile={hi:null, gender:'m'}; S.group=null; S.start=null; S.me=null; S.picked=false; this.emit();
   }
 };
 addEventListener('pagehide', ()=>store.flushPending());
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') store.flushPending(); });
+
+/* ---------- Online-Sicherung: Abgleich mit dem eigenen Netlify-Konto ----------
+   Nur unter https (die Website). Gesendet werden nur geänderte Einträge, zurück kommt der vollständige Stand.
+   Ohne Empfang bleibt alles vorgemerkt und wird beim nächsten Mal nachgeholt. */
+const sync = {
+  pw:null, state:'idle', msg:'', busy:false, again:false, t:null, iv:null, listening:false,
+  get on(){ return location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1'; },
+  init(){
+    if(!this.on){ this.state='file'; return; }
+    try{ this.pw = localStorage.getItem('golfsc-pw'); }catch(e){}
+    if(!this.pw){ this.state='nopw'; paintSync(); return; }
+    this.listen(); this.run();
+  },
+  listen(){
+    if(this.listening) return; this.listening=true;
+    addEventListener('online', ()=>this.run());
+    document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') this.run(); });
+    this.iv=setInterval(()=>{ if(document.visibilityState==='visible') this.run(); }, 60000);
+  },
+  soon(ms=1200){ if(!this.on || !this.pw) return; clearTimeout(this.t); this.t=setTimeout(()=>this.run(), ms); },
+  pending(){ return Object.keys(store.data.dirty||{}).length; },
+  async run(){
+    if(!this.on || !this.pw) return;
+    if(this.busy){ this.again=true; return; }
+    this.busy=true; const prev=this.state; this.state='busy'; paintSync();
+    const d=store.data, keys=Object.keys(d.dirty||{}), sent={};
+    const changes={rounds:{},courses:{},profiles:{},deleted:d.deleted||{}};
+    keys.forEach(k=>{ const [col,id]=k.split('/'); const o=(d[col]||{})[id]; if(o && !localOnly(col,o) && changes[col]) changes[col][id]=o; sent[k]=o?tOf(o):'gone'; });
+    try{
+      const ctl=new AbortController(); const to=setTimeout(()=>ctl.abort(), 20000);
+      const res=await fetch('/api/sync', {method:'POST', cache:'no-store', signal:ctl.signal,
+        headers:{'content-type':'application/json', 'authorization':'Bearer '+this.pw}, body:JSON.stringify({changes})});
+      clearTimeout(to);
+      if(res.status===401){ this.state='auth'; }
+      else if(res.status===503){ this.state='setup'; }
+      else if(res.status===404){ this.state='nofn'; }
+      else if(!res.ok){ this.state='error'; this.msg='Antwort '+res.status; }
+      else {
+        const j=await res.json();
+        store.merge(j.db||{});
+        keys.forEach(k=>{ const [col,id]=k.split('/'); const o=(d[col]||{})[id]; if((o?tOf(o):'gone')===sent[k]) delete d.dirty[k]; });
+        d.syncAt=Date.now(); this.state='ok'; this.msg='';
+        store.flush(); store.emit(); refreshGroup(); softRender();
+      }
+    }catch(e){ this.state='offline'; }
+    this.busy=false; paintSync();
+    if(this.state==='auth' && prev!=='auth') toast('Online-Sicherung: Passwort stimmt nicht.');
+    if(this.again){ this.again=false; this.soon(300); }
+  },
+  connect(pw, remember){
+    this.pw=pw; try{ if(remember) localStorage.setItem('golfsc-pw',pw); else localStorage.removeItem('golfsc-pw'); }catch(e){}
+    this.listen(); this.run();
+  },
+  forget(){ this.pw=null; try{ localStorage.removeItem('golfsc-pw'); }catch(e){} this.state='nopw'; render(); }
+};
+const CLOUD='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18h10a4 4 0 0 0 .6-7.96A6 6 0 0 0 6.1 9.2 4.5 4.5 0 0 0 7 18z"/></svg>';
+function syncInfo(){
+  const n=sync.pending(), s=sync.state;
+  if(s==='file') return {cls:'', short:'', long:'Die Online-Sicherung funktioniert nur auf der Website, nicht in der lokalen Datei.'};
+  if(s==='nopw') return {cls:'warn', short:'Aus', long:'Nicht verbunden. Gib das Passwort ein, damit deine Runden zusätzlich online gesichert werden.'};
+  if(s==='auth') return {cls:'warn', short:'Passwort', long:'Das Passwort stimmt nicht. Gib das Passwort ein, das in Netlify als GOLF_PASSWORD hinterlegt ist.'};
+  if(s==='setup') return {cls:'warn', short:'Einrichten', long:'Auf Netlify fehlt noch das Passwort (Umgebungsvariable GOLF_PASSWORD).'};
+  if(s==='nofn') return {cls:'warn', short:'Fehlt', long:'Die Sicherungsfunktion ist auf Netlify noch nicht vorhanden. Wurden alle Dateien hochgeladen?'};
+  if(s==='busy') return {cls:'', short:'…', long:'Wird gerade abgeglichen.'};
+  if(s==='offline') return {cls:'warn', short:n?`${n} offen`:'Offline', long:`Keine Verbindung. ${n?n+' Änderungen werden nachgeholt, sobald du wieder Empfang hast. Auf dem Handy sind sie bereits gespeichert.':'Alles ist auf dem Handy gespeichert.'}`};
+  if(s==='error') return {cls:'warn', short:'Fehler', long:'Der Abgleich hat nicht geklappt ('+esc(sync.msg)+'). Er wird automatisch wiederholt.'};
+  if(s==='ok') return n ? {cls:'', short:'…', long:`${n} Änderungen warten auf den nächsten Abgleich.`} : {cls:'ok', short:'✓', long:'Alles online gesichert.'};
+  return {cls:'', short:'', long:''};
+}
+function syncPill(){
+  if(!sync.on) return '';
+  const i=syncInfo();
+  return `<button class="sync-pill ${i.cls}" id="syncpill" data-a="openData" aria-label="Online-Sicherung: ${esc(i.long)}">${CLOUD}<span>${i.short}</span></button>`;
+}
+function paintSync(){
+  const el=document.getElementById('syncpill'); if(el) el.outerHTML=syncPill();
+  const c=document.getElementById('sync-status'); if(c){ const i=syncInfo(); c.textContent=i.long; }
+}
+
 
 function buildFile(){
   const data = {...store.durable(), savedAt:Date.now()};
@@ -437,8 +571,8 @@ function dataCard(){
   const kb=storageKB();
   const warn = store.err==='blocked' ? '<p class="small" style="color:var(--warn)"><b>Achtung:</b> Dieser Browser lässt kein Speichern zu (z. B. privates Fenster). Öffne die App in einem normalen Fenster.</p>'
     : store.err==='full' ? '<p class="small" style="color:var(--warn)"><b>Achtung:</b> Der Browserspeicher ist voll. Exportiere deine Daten und lösche alte Runden.</p>' : '';
-  return `<div class="card stack"><h3>Daten auf ein anderes Gerät bringen</h3>
-    <p class="small">Jede Eingabe wird automatisch in diesem Browser gespeichert. Nur wenn du deine Runden auf ein anderes Gerät oder in einen anderen Browser bringen willst, lädst du hier eine Datei mit allen Daten herunter und liest sie dort mit «Datei einlesen» ein.</p>
+  return `<div class="card stack"><h3>Export und Import</h3>
+    <p class="small" style="margin:0">Zusätzliche Kopie für dich: Lade eine Datei mit allen Runden, Profilen und Plätzen herunter. Mit «Datei einlesen» holst du Daten aus so einer Datei zurück, bestehende Runden bleiben erhalten.</p>
     ${warn}
     <div class="row"><button class="btn" data-a="export">Daten exportieren</button><label class="btn" for="imp-file">Datei einlesen</label><input id="imp-file" type="file" accept=".html,.htm,.json,text/html,application/json" hidden data-imp="1"></div>
   </div>`;
@@ -447,14 +581,100 @@ function privacyCard(){
   const cf = S.confirm==='wipe';
   return `<div class="card stack"><h3>Datenschutz</h3>
     <ul class="info-list small">
-      <li>Die Datei baut keine Verbindung ins Internet auf. Eine Content-Security-Policy im Kopf der Datei sperrt das.</li>
-      <li>Im Browser gespeichert (localStorage): Runden, eigene Plätze, HCP-Index.${storageKB()!=null?` Belegt: ${storageKB()} KB.`:''}</li>
-      <li>Nur im Arbeitsspeicher: Gastrunden, Formulareingaben, Filter. Beim Schliessen ist das weg.</li>
+      <li>Die App verbindet sich nur mit ihrer eigenen Adresse. Eine Content-Security-Policy sperrt alle anderen Seiten und Dienste.</li>
+      <li>Auf diesem Gerät (localStorage): Runden, Profile, eigene Plätze.${storageKB()!=null?` Belegt: ${storageKB()} KB.`:''}</li>
+      <li>Online-Sicherung: Runden, Profile und eigene Plätze liegen zusätzlich in deinem Netlify-Konto (Netlify Blobs). Zugriff nur mit eurem Passwort. Gäste werden nicht online gespeichert.</li>
+      <li>Nur im Arbeitsspeicher: Übungsrunden, Formulareingaben, Filter. Das Passwort nur, wenn «Auf diesem Gerät merken» aus ist.</li>
       <li>Die Lochbilder der Moossee-Plätze sind in der Datei eingebaut. Es wird nichts nachgeladen.</li>
     </ul>
-    <button class="btn danger" data-a="askWipe">Alle Daten in diesem Browser löschen</button>
-    ${cf?`<div class="confirm"><span style="flex:1">Alle Runden, eigenen Plätze und Bilder in diesem Browser löschen? Gesicherte Dateien bleiben unberührt.</span><button class="btn" data-a="cancelConfirm">Abbrechen</button><button class="btn danger solid" data-a="wipe">Löschen</button></div>`:''}
+    <button class="btn danger" data-a="askWipe">Alle Daten auf diesem Gerät löschen</button>
+    ${cf?`<div class="confirm"><span style="flex:1">Alle Runden, Profile und eigenen Plätze auf diesem Gerät löschen? Die Online-Sicherung bleibt unberührt, nach dem nächsten Verbinden ist alles wieder da.</span><button class="btn" data-a="cancelConfirm">Abbrechen</button><button class="btn danger solid" data-a="wipe">Löschen</button></div>`:''}
   </div>`;
+}
+
+/* ---------- Profile ---------- */
+const PCOLORS=['#1D6842','#2D5A88','#BF3F2B','#A66A14','#6B4FA0','#1F7A8C','#8C3B6B','#4D5B2A'];
+const profList = () => Object.values(S.profiles).sort((a,b)=>String(a.name).localeCompare(String(b.name),'de'));
+const meProf = () => S.profiles[S.me] || null;
+const needWho = () => !S.picked || !S.profiles[S.me];
+function avatar(p, cls=''){ const n=String((p&&p.name)||'?').trim(); return `<span class="av ${cls}" style="background:${esc((p&&p.color)||'#7A867E')}" aria-hidden="true">${esc((n[0]||'?').toUpperCase())}</span>`; }
+function avatarFor(r, cls=''){ return avatar(r.profileId && S.profiles[r.profileId] ? S.profiles[r.profileId] : {name:r.playerName||'Gast', color:'#7A867E'}, cls); }
+function pickProfile(id){
+  S.me=id; ls('golfsc-me', id); S.picked=true; try{ sessionStorage.setItem('golfsc-who','1'); }catch(e){}
+  S.pform=null; S.start=null; S.tab='home'; try{ sessionStorage.setItem('golfsc-tab','home'); }catch(e){}
+  render(); window.scrollTo(0,0);
+}
+function profForm(){
+  const f=S.pform, cf=S.confirm==='delp-'+f.id;
+  const orphans = !profList().length ? Object.values(S.rounds).filter(r=>!r.profileId && !r.mem && !r.guest).length : 0;
+  return `<div class="card stack">
+    <h3>${f.isNew?'Neues Profil':'Profil bearbeiten'}</h3>
+    <label class="f">Name<input class="in" id="pf-name" data-f="pform.name" value="${esc(f.name)}" placeholder="z. B. Manuel" autocomplete="off"></label>
+    <div class="grid2">
+      <label class="f">Handicap-Index<input class="in num" id="pf-hi" type="number" inputmode="decimal" step="0.1" min="-10" max="54" data-f="pform.hi" value="${esc(f.hi??'')}" placeholder="z. B. 18.4"></label>
+      <div class="f">Abschläge<div class="seg">${[['m','Herren'],['w','Damen']].map(([k,l])=>`<button data-a="pformGender" data-v="${k}" aria-pressed="${f.gender===k}">${l}</button>`).join('')}</div></div>
+    </div>
+    <div class="f">Farbe<div class="row">${PCOLORS.map(c=>`<button class="swatch" data-a="pformColor" data-v="${c}" aria-pressed="${f.color===c}" style="background:${c}" aria-label="Farbe ${c}"></button>`).join('')}</div></div>
+    ${orphans?`<p class="small muted" style="margin:0">Deine ${orphans} bisherigen Runden werden diesem ersten Profil zugeordnet.</p>`:''}
+    <div class="row"><button class="btn primary" data-a="saveProf">Speichern</button>${profList().length?'<button class="btn" data-a="cancelProf">Abbrechen</button>':''}
+      ${!f.isNew?'<span class="spacer"></span><button class="btn danger" data-a="askDelProf">Löschen</button>':''}</div>
+    ${cf?`<div class="confirm"><span style="flex:1">Profil «${esc(f.name)}» löschen? Seine Runden bleiben gespeichert, erscheinen aber unter keinem Profil mehr.</span><button class="btn" data-a="cancelConfirm">Behalten</button><button class="btn danger solid" data-a="delProf">Löschen</button></div>`:''}
+  </div>`;
+}
+function newProfForm(){
+  const used=new Set(profList().map(p=>p.color));
+  const old=S.profile||{};
+  S.pform={isNew:true, id:'p'+uid(), name:'', hi: profList().length?'':(old.hi??''), gender:old.gender||'m', color:PCOLORS.find(c=>!used.has(c))||PCOLORS[0]};
+}
+function saveProf(){
+  const f=S.pform; const name=String(f.name||'').trim();
+  if(!name){ toast('Bitte einen Namen eingeben.'); document.getElementById('pf-name')?.focus(); return; }
+  const first=!profList().length, now=Date.now();
+  const hi = f.hi===''||f.hi==null||isNaN(+f.hi) ? null : Math.round(+f.hi*10)/10;
+  store.write('profiles/'+f.id, {name, hi, gender:f.gender||'m', color:f.color||PCOLORS[0], _t:now});
+  if(first){ // bisherige Runden ohne Profil gehören dem ersten Profil
+    Object.entries(store.data.rounds).forEach(([id,r])=>{ if(!r.profileId && !r.mem && !r.guest){ r.profileId=f.id; r.playerName=name; r.updatedAt=now; store.markDirty('rounds/'+id); } });
+    store.emit(); store.flush(); sync.soon();
+  }
+  const wasNew=f.isNew; S.pform=null; S.confirm=null;
+  if(wasNew && (first || needWho())) pickProfile(f.id); else { toast('Profil gespeichert'); render(); }
+}
+function viewWho(){
+  const ps=profList();
+  if(!ps.length && !S.pform) newProfForm();
+  const pw = sync.on && !sync.pw;
+  return `<div class="stack who">
+    <div><h2>Wer spielt?</h2><p class="muted" style="margin:0">Wähle dein Profil. Jeder Spieler hat seine eigenen Runden und seine eigene Statistik.</p></div>
+    ${ps.length?`<div class="who-grid">${ps.map(p=>`<button class="who-btn" data-a="pick" data-v="${p.id}" ${p.id===S.me?'aria-current="true"':''}>${avatar(p,'lg')}<b>${esc(p.name)}</b><span class="small muted">HCP ${p.hi??'–'}</span></button>`).join('')}</div>`:''}
+    ${S.pform?profForm():`<button class="btn block" data-a="newProf">+ Neues Profil</button>`}
+    ${ps.length && !S.pform?`<details class="small"><summary class="muted">Profil bearbeiten</summary><div class="chips" style="margin-top:8px">${ps.map(p=>`<button class="chip" data-a="editProf" data-v="${p.id}">${esc(p.name)}</button>`).join('')}</div></details>`:''}
+    ${pw?`<div class="card stack"><h3>Schon Profile auf einem anderen Handy?</h3><p class="small" style="margin:0">Verbinde die Online-Sicherung mit eurem gemeinsamen Passwort. Profile und Runden erscheinen dann auch hier.</p>${pwForm()}</div>`:''}
+  </div>`;
+}
+function pwForm(){
+  return `<label class="f">Passwort<input class="in" id="sync-pw" type="password" autocomplete="current-password" placeholder="Passwort der Online-Sicherung"></label>
+    <label class="switch"><input type="checkbox" id="sync-rem" checked><span class="small" style="font-weight:600">Auf diesem Gerät merken</span></label>
+    <button class="btn primary" data-a="syncConnect">Verbinden</button>`;
+}
+function syncCard(){
+  const i=syncInfo(), d=store.data, n=sync.pending();
+  return `<div class="card stack"><h3>Online-Sicherung</h3>
+    <p class="small" style="margin:0">Jede Eingabe wird sofort auf diesem Gerät gespeichert und zusätzlich in deinem eigenen Netlify-Konto gesichert. So geht keine Runde verloren, und alle Handys mit dem gleichen Passwort sehen dieselben Profile und Runden.</p>
+    <div class="warnbar" style="background:${i.cls==='ok'?'var(--accent)':i.cls==='warn'?'var(--warn)':'var(--muted)'}" id="sync-status">${i.long}</div>
+    ${sync.on?`<div class="small muted">Zuletzt abgeglichen: ${fmtStamp(d.syncAt)}${n?` · ${n} Änderungen noch nicht online`:''}</div>`:''}
+    ${sync.on && (!sync.pw || sync.state==='auth') ? pwForm() : ''}
+    ${sync.on && sync.pw && sync.state!=='auth' ? `<div class="row"><button class="btn" data-a="syncNow">Jetzt abgleichen</button><button class="btn ghost" data-a="syncForget">Passwort auf diesem Gerät vergessen</button></div>`:''}
+  </div>`;
+}
+function profilesCard(){
+  const ps=profList();
+  return `<div class="card stack"><h3>Profile</h3>
+    ${ps.length?`<div class="list">${ps.map(p=>`<button class="li" data-a="editProf" data-v="${p.id}">${avatar(p)}<div class="main"><div class="t">${esc(p.name)}${p.id===S.me?' <span class="badge live">Du</span>':''}</div><div class="s">HCP ${p.hi??'–'} · ${p.gender==='w'?'Damen':'Herren'} · ${Object.values(S.rounds).filter(r=>r.profileId===p.id).length} Runden</div></div><span class="chev">›</span></button>`).join('')}</div>`:''}
+    ${S.pform && S.view && S.view.name==='data' ? profForm() : `<button class="btn" data-a="newProf">+ Neues Profil</button>`}
+  </div>`;
+}
+function viewData(){
+  return `<div class="stack">${syncCard()}${profilesCard()}${dataCard()}${privacyCard()}</div>`;
 }
 
 /* ---------- Plätze ---------- */
@@ -527,21 +747,32 @@ function girOf(h){ return h.s!=null && h.p!=null ? (h.s-h.p <= h.par-2) : null; 
 
 /* ---------- Runden ---------- */
 const roundList = () => Object.values(S.rounds).sort((a,b)=> (b.date||'').localeCompare(a.date||'') || (b.createdAt||0)-(a.createdAt||0));
-const activeRound = () => roundList().find(r=>r.status==='active');
-function curRound(){
-  const a = activeRound();
-  if(!a){ S.edit=null; return null; }
-  if(!S.edit || S.edit.id!==a.id){ S.edit = JSON.parse(JSON.stringify(a)); const h=ls('golfsc-hole-'+a.id); S.hole = typeof h==='number' ? Math.min(h,a.holes.length-1) : 0; }
-  return S.edit;
+const myRounds = () => roundList().filter(r=>r.profileId===S.me);
+const activeId = () => ls('golfsc-active');          // laufende Runde auf diesem Gerät (pro Gerät, nicht synchronisiert)
+function activeGroupRounds(){ const g=activeId(); if(!g) return []; return Object.values(S.rounds).filter(r=>r.groupId===g && r.status==='active').sort((a,b)=>(a.order||0)-(b.order||0)); }
+function curGroup(){
+  const rs=activeGroupRounds();
+  if(!rs.length){ S.group=null; return null; }
+  const ids=rs.map(r=>r.id).join(',');
+  if(!S.group || S.group.map(r=>r.id).join(',')!==ids){
+    S.group=rs.map(r=>clone(r)); const h=ls('golfsc-hole-'+activeId());
+    S.hole = typeof h==='number' ? Math.min(h, S.group[0].holes.length-1) : 0;
+  }
+  return S.group;
 }
+function refreshGroup(){ if(!S.group) return; S.group=S.group.map(e=>{ const r=S.rounds[e.id]; return r && tOf(r)>tOf(e) ? clone(r) : e; }); }
 /* Runde sofort und synchron in den localStorage schreiben: jede Eingabe ist gespeichert, bevor der nächste Tipp kommt.
-   delay nur für Notizen (Tippen in ein Textfeld). Ohne erneutes Zeichnen der Seite. */
+   Danach wird sie für die Online-Sicherung vorgemerkt. delay nur für Notizen (Tippen in ein Textfeld). */
 function saveRound(r, delay){
   r.updatedAt=Date.now();
-  const doc=JSON.parse(JSON.stringify({...r, id:undefined}));
-  const put=()=>{ store.data.rounds[r.id]=doc; if(!r.mem) store.data.changedAt=Date.now(); S.rounds[r.id]={...clone(doc), id:r.id}; store.flush(); };
-  if(delay){ clearTimeout(saveRound.t); saveRound.t=setTimeout(put, delay); saveRound.pending=put; }
-  else { clearTimeout(saveRound.t); saveRound.pending=null; put(); }
+  const id=r.id, doc=JSON.parse(JSON.stringify({...r, id:undefined}));
+  const put=()=>{ store.data.rounds[id]=doc; if(!r.mem) store.data.changedAt=Date.now();
+    if(!r.mem && !r.guest) store.markDirty('rounds/'+id);
+    S.rounds[id]={...clone(doc), id}; store.flush(); sync.soon(); };
+  const P=saveRound.pend ||= {};
+  if(P[id]) clearTimeout(P[id].t);
+  if(delay){ P[id]={t:setTimeout(()=>{ delete P[id]; put(); }, delay), f:put}; }
+  else { delete P[id]; put(); }
 }
 
 /* ---------- Render ---------- */
@@ -561,20 +792,26 @@ function softRender(){
 }
 function render(){
   S.dirty=false;
-  $('#tabs').innerHTML = TABS.map(([k,l])=>`<button data-a="tab" data-v="${k}" ${S.tab===k&&!S.view?'aria-current="page"':''}>${ICON[k]}<span>${l}</span></button>`).join('');
+  const who = S.ready && needWho();
+  document.querySelector('nav.tabs').hidden = who;
+  $('#tabs').innerHTML = who ? '' : TABS.map(([k,l])=>`<button data-a="tab" data-v="${k}" ${S.tab===k&&!S.view?'aria-current="page"':''}>${ICON[k]}<span>${l}</span></button>`).join('');
   if(!S.ready) return;
   let title='Scorekarte', back=null, html='';
   const v=S.view;
-  if(v && v.name==='round'){ const r=S.rounds[v.id]; title=r?esc(r.courseName):'Runde'; back='Runden'; html=r?viewRound(r):'<div class="empty"><b>Runde nicht gefunden</b></div>'; }
+  if(who){ title='Golf Scorecard'; html=viewWho(); }
+  else if(v && v.name==='round'){ const r=S.rounds[v.id]; title=r?esc(r.courseName):'Runde'; back='Runden'; html=r?viewRound(r):'<div class="empty"><b>Runde nicht gefunden</b></div>'; }
   else if(v && v.name==='course'){ const c=courseById(v.id); title=c?esc(c.name):'Platz'; back='Plätze'; html=c?viewCourse(c):'<div class="empty"><b>Platz nicht gefunden</b></div>'; }
   else if(v && v.name==='courseForm'){ title=S.form.isNew?'Neuer Platz':'Platz bearbeiten'; back='Abbrechen'; html=viewCourseForm(); }
   else if(v && v.name==='finish'){ title='Runde abschliessen'; back='Zurück'; html=viewFinish(); }
+  else if(v && v.name==='data'){ title='Sicherung und Daten'; back='Zurück'; html=viewData(); }
   else if(S.tab==='home'){ title='Golf Scorecard'; html=viewHome(); }
-  else if(S.tab==='play'){ const r=curRound(); if(r){ title=esc(r.courseName); html=viewHole(r);} else { title='Neue Runde'; html=viewStart(); } }
+  else if(S.tab==='play'){ const g=curGroup(); if(g){ title=esc(g[0].courseName); html = g.length>1 ? viewFlight(g) : viewHole(g[0]); } else { title='Neue Runde'; html=viewStart(); } }
   else if(S.tab==='rounds'){ title='Meine Runden'; html=viewRounds(); }
   else if(S.tab==='stats'){ title='Statistik'; html=viewStats(); }
   else if(S.tab==='courses'){ title='Golfplätze'; html=viewCourses(); }
-  $('#hdr').innerHTML = (back?`<button class="back" data-a="back">‹ ${back}</button>`:'') + `<h1>${title}</h1>`;
+  const mp=meProf();
+  $('#hdr').innerHTML = (back?`<button class="back" data-a="back">‹ ${back}</button>`:'') + `<h1>${title}</h1>`
+    + syncPill() + (who||!mp ? '' : `<button class="hdr-who" data-a="who" aria-label="Profil wechseln, aktuell ${esc(mp.name)}">${avatar(mp)}</button>`);
   const y = window.scrollY;
   $('#app').innerHTML = html + `<p class="ver">Golf Scorecard · Version ${APP_VERSION} vom ${APP_DATE}</p>`;
   window.scrollTo(0, y);   // Seite bleibt, wo sie war
@@ -583,44 +820,113 @@ function render(){
   if(cur) strip.scrollLeft = cur.offsetLeft - strip.clientWidth/2 + cur.offsetWidth/2;   // nur seitlich, nie hoch
 }
 
-/* --- Start einer Runde --- */
+/* --- Start einer Runde: Platz, Löcher, Spieler (eigenes Profil, weitere Profile, Gäste) --- */
+function newPlayer(p, c, teeIdx){ return {pid:p?p.id:null, name:p?p.name:'', hi:p&&p.hi!=null?String(p.hi):'', gender:(p&&p.gender)||'m', tee:Math.max(0,Math.min(teeIdx||0,(c?c.tees.length:1)-1))}; }
 function viewStart(){
   const cs=courses();
-  if(!S.start){ const last=roundList()[0]; const c = (last && courseById(last.courseId)) || cs[0];
-    S.start={courseId:c?.id, tee: last && c && last.courseId===c.id ? Math.max(0,c.tees.findIndex(t=>t.name===last.teeName)) : 0, mode:'all', date:today(), hi:S.profile.hi ?? '', gender:S.profile.gender||'m'}; }
+  if(!S.start){ const last=myRounds()[0]; const c = (last && courseById(last.courseId)) || cs[0];
+    const tee = last && c && last.courseId===c.id ? Math.max(0,c.tees.findIndex(t=>t.name===last.teeName)) : 0;
+    S.start={courseId:c?.id, mode:'all', date:today(), mem:false, players: meProf()? [newPlayer(meProf(), c, tee)] : []}; }
   const st=S.start, c=courseById(st.courseId);
   if(!c) return `<div class="empty"><b>Noch kein Platz erfasst</b>Lege unter «Plätze» deinen ersten Golfplatz an.</div>`;
-  const tee=c.tees[st.tee]||c.tees[0];
-  const ph = tee ? playing(st.hi===''?null:+st.hi, c, tee, st.mode, st.gender) : {};
+  const chosen=new Set(st.players.map(p=>p.pid).filter(Boolean));
   return `<div class="stack">
     <div class="section" style="margin-top:4px"><span class="eyebrow">Platz</span>
       <div class="list">${cs.map(x=>`<button class="li" data-a="startCourse" data-v="${x.id}" aria-pressed="${x.id===c.id}">
         <div class="main"><div class="t">${esc(x.name)}</div><div class="s">${esc(x.place||'')} · ${x.holes.length} Loch · Par ${coursePar(x)}</div></div>
         ${x.id===c.id?'<span class="badge live">Gewählt</span>':''}</button>`).join('')}</div></div>
-    <div class="section"><span class="eyebrow">Abschlag</span>
-      ${c.tees.length?`<div class="chips">${c.tees.map((t,i)=>`<button class="chip" data-a="startTee" data-v="${i}" aria-pressed="${i===st.tee}">Tee ${esc(t.name)} <span class="muted small num">${teeLen(t)?teeLen(t)+' m':''}</span></button>`).join('')}</div>`:'<p class="muted">Für diesen Platz ist kein Abschlag erfasst.</p>'}
-    </div>
     ${c.holes.length===18?`<div class="section"><span class="eyebrow">Löcher</span>
       <div class="seg">${[['all','Alle 18'],['front','Front 9'],['back','Back 9']].map(([k,l])=>`<button data-a="startMode" data-v="${k}" aria-pressed="${st.mode===k}">${l}</button>`).join('')}</div></div>`:''}
-    <div class="section"><span class="eyebrow">Spieler</span>
-      <div class="grid2">
-        <label class="f">Handicap-Index<input class="in num" id="st-hi" type="number" inputmode="decimal" step="0.1" min="-10" max="54" placeholder="z. B. 18.4" value="${esc(st.hi)}" data-f="start.hi"></label>
-        <label class="f">Datum<input class="in" id="st-date" type="date" value="${esc(st.date)}" data-f="start.date"></label>
-      </div>
-      <div class="seg">${[['m','Herren'],['w','Damen']].map(([k,l])=>`<button data-a="startGender" data-v="${k}" aria-pressed="${st.gender===k}">${l}</button>`).join('')}</div>
+    <div class="section"><span class="eyebrow">Spieler im Flight (${st.players.length} von 4)</span>
+      <div class="chips">${profList().map(p=>`<button class="chip" data-a="togglePlayer" data-v="${p.id}" aria-pressed="${chosen.has(p.id)}">${avatar(p,'sm')} ${esc(p.name)}</button>`).join('')}
+        <button class="chip" data-a="addGuest" ${st.players.length>=4?'disabled':''}>+ Gast</button></div>
+      ${st.players.map((pl,i)=>playerCard(pl,i,c)).join('')}
+      ${st.players.some(p=>!p.pid)?'<p class="small muted" style="margin:0">Gäste werden nur auf diesem Handy gespeichert und nicht online gesichert.</p>':''}
     </div>
-    <div class="card row" id="ph-box">${phBox(ph, tee)}</div>
-    <label class="switch card"><input type="checkbox" data-a="startMem" ${st.mem?'checked':''}><span style="flex:1">Gastrunde<br><span class="small muted" style="font-weight:400">Wird nur im Arbeitsspeicher gehalten, nicht gespeichert und nicht gesichert. Beim Schliessen der Seite ist sie weg.</span></span></label>
-    <button class="btn primary block" data-a="startRound" ${tee?'':'disabled'}>${st.mem?'Gastrunde starten':'Runde starten'}</button>
+    <label class="f">Datum<input class="in" id="st-date" type="date" value="${esc(st.date)}" data-f="start.date"></label>
+    <label class="switch card"><input type="checkbox" data-a="startMem" ${st.mem?'checked':''}><span style="flex:1">Übungsrunde, nicht speichern<br><span class="small muted" style="font-weight:400">Bleibt nur im Arbeitsspeicher und wird nirgends gesichert. Beim Schliessen der Seite ist sie weg.</span></span></label>
+    <button class="btn primary block" data-a="startRound" ${c.tees.length&&st.players.length?'':'disabled'}>${st.players.length>1?`Runde mit ${st.players.length} Spielern starten`:'Runde starten'}</button>
   </div>`;
 }
-function phBox(ph, tee){
-  if(!tee) return '';
-  return `<div class="main" style="flex:1"><div class="eyebrow">Spielvorgabe</div><div class="small muted">CR ${dec(ph.cr)} · Slope ${ph.slope??'–'} · Par ${ph.par}</div></div>
-    <div class="score-big num">${ph.ch==null?'–':ph.ch}<small>Schläge</small></div>`;
+function phText(pl, c){
+  const tee=c.tees[pl.tee]||c.tees[0]; if(!tee) return '';
+  const ph=playing(pl.hi===''||pl.hi==null?null:+pl.hi, c, tee, S.start.mode, pl.gender);
+  return `Spielvorgabe <b>${ph.ch==null?'–':ph.ch}</b> · CR ${dec(ph.cr)} · Slope ${ph.slope??'–'} · Par ${ph.par}`;
+}
+function playerCard(pl, i, c){
+  const prof=pl.pid && S.profiles[pl.pid];
+  return `<div class="card stack" style="gap:10px">
+    <div class="row">${prof?`${avatar(prof)}<b style="flex:1">${esc(prof.name)}</b>`:`${avatar({name:pl.name||'G',color:'#7A867E'})}<input class="in" style="flex:1" id="pl-name-${i}" data-f="start.players.${i}.name" value="${esc(pl.name)}" placeholder="Name des Gasts">`}
+      <button class="btn ghost small" data-a="removePlayer" data-v="${i}" aria-label="Spieler entfernen">Entfernen</button></div>
+    <div class="grid2">
+      <label class="f">HCP-Index<input class="in num" id="pl-hi-${i}" type="number" inputmode="decimal" step="0.1" min="-10" max="54" placeholder="z. B. 18.4" value="${esc(pl.hi)}" data-f="start.players.${i}.hi"></label>
+      <div class="f">Abschläge<div class="seg">${[['m','Herren'],['w','Damen']].map(([k,l])=>`<button data-a="plGender" data-p="${i}" data-v="${k}" aria-pressed="${pl.gender===k}">${l}</button>`).join('')}</div></div>
+    </div>
+    ${c.tees.length?`<div class="chips">${c.tees.map((t,k)=>`<button class="chip" data-a="plTee" data-p="${i}" data-v="${k}" aria-pressed="${k===pl.tee}">Tee ${esc(t.name)} <span class="muted small num">${teeLen(t)?teeLen(t)+' m':''}</span></button>`).join('')}</div>`:''}
+    <div class="small muted" id="ph-${i}">${phText(pl,c)}</div>
+  </div>`;
+}
+function startRound(){
+  const st=S.start, c=courseById(st.courseId);
+  if(activeGroupRounds().length){ toast('Es läuft bereits eine Runde.'); return; }
+  if(!st.players.length){ toast('Bitte mindestens einen Spieler wählen.'); return; }
+  if(st.players.some(p=>!p.pid && !String(p.name||'').trim())){ toast('Bitte den Namen des Gasts eintragen.'); return; }
+  const gid='g'+uid(), idx=holeIdx(c, st.mode), now=Date.now();
+  const modeLabel = c.holes.length===18 ? ({all:'Alle 18',front:'Front 9',back:'Back 9'})[st.mode] : '';
+  const profUpdates=[];
+  st.players.forEach((pl,k)=>{
+    const tee=c.tees[pl.tee]||c.tees[0], prof=pl.pid && S.profiles[pl.pid];
+    const hi = pl.hi===''||pl.hi==null||isNaN(+pl.hi) ? null : Math.round(+pl.hi*10)/10;
+    const ph = playing(hi, c, tee, st.mode, pl.gender);
+    const r = { id:'r'+uid()+k, groupId:gid, order:k, profileId:pl.pid||null, playerName: prof?prof.name:String(pl.name).trim(), guest:!pl.pid,
+      courseId:c.id, courseName:c.name, teeName:tee.name, date:st.date||today(), mem:!!st.mem, mode:st.mode, modeLabel,
+      hi, gender:pl.gender, ch:ph.ch, cr:ph.cr, slope:ph.slope, status:'active', notes:'', createdAt:now,
+      holes: idx.map(i=>({n:i+1, par:+c.holes[i].par, hcp:+c.holes[i].hcp, len:+(tee.len?.[i])||null, s:null, p:null, fw:null, miss:null, pen:0, sand:false, up:false})) };
+    saveRound(r);
+    if(prof && (prof.hi!==hi || prof.gender!==pl.gender)) profUpdates.push([pl.pid, {name:prof.name, color:prof.color, hi, gender:pl.gender, _t:now}]);
+  });
+  ls('golfsc-active', gid); ls('golfsc-hole-'+gid, 0); S.group=null; S.hole=0; S.det={}; S.start=null;
+  profUpdates.forEach(([id,doc])=>store.write('profiles/'+id, doc));
+  render(); window.scrollTo(0,0);
 }
 
 /* --- Lochansicht --- */
+/* Felder pro Spieler und Loch; p ist die Nummer des Spielers im Flight */
+function holeFields(h, p, gir){
+  return `${h.par>=4?`<div><div class="eyebrow" style="margin-bottom:6px">Fairway</div>
+      <div class="seg">${[['L','← Links'],['H','Getroffen'],['R','Rechts →']].map(([k,l])=>`<button data-a="fw" data-p="${p}" data-v="${k}" aria-pressed="${h.fw===k}">${l}</button>`).join('')}</div></div>`:''}
+    <div class="field-row"><span class="lab">Green in Regulation</span>
+      <span class="gir ${gir?'yes':''}">${gir==null?'Putts eintragen':gir?'Ja':'Nein'}</span></div>
+    ${gir===false?`<div><div class="eyebrow" style="margin-bottom:6px">Green verfehlt, wo lag der Ball?</div>
+      <div class="seg miss">${[['K','Kurz'],['Li','Links'],['Re','Rechts'],['La','Lang']].map(([k,l])=>`<button data-a="miss" data-p="${p}" data-v="${k}" aria-pressed="${h.miss===k}">${l}</button>`).join('')}</div></div>`:''}
+    <div class="field-row"><span class="lab">Strafschläge</span>
+      <div class="mini"><button data-a="pen-" data-p="${p}" aria-label="Strafschlag weniger">−</button><div class="val num">${h.pen||0}</div><button data-a="pen+" data-p="${p}" aria-label="Strafschlag mehr">+</button></div></div>
+    <div class="field-row"><span class="lab">Grünbunker gespielt</span>
+      <div class="seg" style="width:150px">${[[false,'Nein'],[true,'Ja']].map(([k,l])=>`<button data-a="sand" data-p="${p}" data-v="${k}" aria-pressed="${!!h.sand===k}">${l}</button>`).join('')}</div></div>
+    <div class="field-row"><span class="lab">Loch gestrichen</span>
+      <div class="seg" style="width:150px">${[[false,'Nein'],[true,'Ja']].map(([k,l])=>`<button data-a="up" data-p="${p}" data-v="${k}" aria-pressed="${!!h.up===k}">${l}</button>`).join('')}</div></div>`;
+}
+function roundWarn(r){
+  return r.mem ? '<div class="warnbar" style="background:var(--muted)">Übungsrunde: wird nicht gespeichert</div>'
+    : store.err ? '<div class="warnbar">Achtung: Dieser Browser speichert nicht. Runde nicht schliessen.</div>' : '';
+}
+function holeHead(h, lenTxt){
+  return `<div class="hole-head">
+      <div class="hole-no"><small>Loch</small>${h.n}</div>
+      <div class="hole-facts num">
+        <div><b>${h.par}</b><span>Par</span></div>
+        <div><b>${lenTxt}</b><span>Meter</span></div>
+        <div><b>${h.hcp}</b><span>Hcp</span></div>
+      </div>
+    </div>`;
+}
+function holeNav(r, i){
+  const last = i===r.holes.length-1;
+  return `<div class="hole-nav">
+      <button class="btn" data-a="prevHole" ${i===0?'disabled':''}>‹ Loch ${i>0?r.holes[i-1].n:''}</button>
+      ${last?`<button class="btn primary" data-a="toFinish">Runde abschliessen</button>`:`<button class="btn primary" data-a="nextHole">Loch ${r.holes[i+1].n} ›</button>`}
+    </div>`;
+}
 function viewHole(r){
   const i=Math.min(S.hole, r.holes.length-1), h=r.holes[i];
   if(h.s==null && !h.up){ h.s=h.par; saveRound(r); }   // Par ist vorausgefüllt, nur noch + oder − tippen
@@ -629,9 +935,7 @@ function viewHole(r){
   const gir = girOf(h);
   const dots = rec>0 ? Array(rec).fill('<i class="dot"></i>').join('') : rec<0 ? Array(-rec).fill('<i class="dot minus"></i>').join('') : '';
   const last = i===r.holes.length-1;
-  const warn = r.mem ? '<div class="warnbar" style="background:var(--muted)">Gastrunde: wird nicht gespeichert</div>'
-    : store.err ? '<div class="warnbar">Achtung: Dieser Browser speichert nicht. Runde nicht schliessen.</div>' : '';
-  return `<div class="stack">${warn}
+  return `<div class="stack">${roundWarn(r)}
     <div class="tally num">
       <div><span>Schläge</span><b>${st.played?st.strokes:'–'}</b></div>
       <div><span>zu Par</span><b>${st.played?fmtPar(st.vs):'–'}</b></div>
@@ -639,63 +943,73 @@ function viewHole(r){
     </div>
     <div class="strip" role="tablist" aria-label="Löcher">${r.holes.map((x,k)=>`<button data-a="goHole" data-v="${k}" aria-current="${k===i}"><span class="n">${x.n}</span><span class="v">${x.up?'–':x.s??'·'}</span></button>`).join('')}</div>
     <section class="hole" aria-label="Loch ${h.n}">
-      <div class="hole-head">
-        <div class="hole-no"><small>Loch</small>${h.n}</div>
-        <div class="hole-facts num">
-          <div><b>${h.par}</b><span>Par</span></div>
-          <div><b>${h.len||'–'}</b><span>Meter</span></div>
-          <div><b>${h.hcp}</b><span>Hcp</span></div>
-        </div>
-      </div>
+      ${holeHead(h, h.len||'–')}
       <div class="hole-body">
         ${r.ch!=null?`<div class="recv">${dots||''}<span>${rec>0?`${rec} Vorgabeschlag${rec>1?'e':''} · Netto-Par ${h.par+rec}`:rec<0?`${-rec} Schlag zurück`:'Kein Vorgabeschlag'}</span></div>`:''}
         <div>
           <div class="eyebrow" style="margin-bottom:6px">Schläge</div>
           <div class="counter">
-            <button data-a="s-" aria-label="Ein Schlag weniger">−</button>
+            <button data-a="s-" data-p="0" aria-label="Ein Schlag weniger">−</button>
             <div class="val num">${h.up?'X':h.s??'–'}<span class="rel">${rel}</span></div>
-            <button data-a="s+" aria-label="Ein Schlag mehr">+</button>
+            <button data-a="s+" data-p="0" aria-label="Ein Schlag mehr">+</button>
           </div>
         </div>
         <div><div class="eyebrow" style="margin-bottom:6px">Putts</div>
-          <div class="chips">${[0,1,2,3,4].map(p=>`<button class="chip num" data-a="putt" data-v="${p}" aria-pressed="${h.p===p}">${p}</button>`).join('')}</div></div>
-        ${h.par>=4?`<div><div class="eyebrow" style="margin-bottom:6px">Fairway</div>
-          <div class="seg">${[['L','← Links'],['H','Getroffen'],['R','Rechts →']].map(([k,l])=>`<button data-a="fw" data-v="${k}" aria-pressed="${h.fw===k}">${l}</button>`).join('')}</div></div>`:''}
-        <div class="field-row"><span class="lab">Green in Regulation</span>
-          <span class="gir ${gir?'yes':''}">${gir==null?'Putts eintragen':gir?'Ja':'Nein'}</span></div>
-        ${gir===false?`<div><div class="eyebrow" style="margin-bottom:6px">Green verfehlt, wo lag der Ball?</div>
-          <div class="seg miss">${[['K','Kurz'],['Li','Links'],['Re','Rechts'],['La','Lang']].map(([k,l])=>`<button data-a="miss" data-v="${k}" aria-pressed="${h.miss===k}">${l}</button>`).join('')}</div></div>`:''}
-        <div class="field-row"><span class="lab">Strafschläge</span>
-          <div class="mini"><button data-a="pen-" aria-label="Strafschlag weniger">−</button><div class="val num">${h.pen||0}</div><button data-a="pen+" aria-label="Strafschlag mehr">+</button></div></div>
-        <div class="field-row"><span class="lab">Grünbunker gespielt</span>
-          <div class="seg" style="width:150px">${[[false,'Nein'],[true,'Ja']].map(([k,l])=>`<button data-a="sand" data-v="${k}" aria-pressed="${!!h.sand===k}">${l}</button>`).join('')}</div></div>
-        <div class="field-row"><span class="lab">Loch gestrichen</span>
-          <div class="seg" style="width:150px">${[[false,'Nein'],[true,'Ja']].map(([k,l])=>`<button data-a="up" data-v="${k}" aria-pressed="${!!h.up===k}">${l}</button>`).join('')}</div></div>
+          <div class="chips">${[0,1,2,3,4].map(p=>`<button class="chip num" data-a="putt" data-p="0" data-v="${p}" aria-pressed="${h.p===p}">${p}</button>`).join('')}</div></div>
+        ${holeFields(h, 0, gir)}
       </div>
       ${holeMedia(r.courseId, h.n)}
     </section>
-    <div class="hole-nav">
-      <button class="btn" data-a="prevHole" ${i===0?'disabled':''}>‹ Loch ${i>0?r.holes[i-1].n:''}</button>
-      ${last?`<button class="btn primary" data-a="toFinish">Runde abschliessen</button>`:`<button class="btn primary" data-a="nextHole">Loch ${r.holes[i+1].n} ›</button>`}
+    ${holeNav(r, i)}
+    <p class="small muted">${esc(r.playerName||'')}${r.playerName?' · ':''}Tee ${esc(r.teeName)} · ${fmtDate(r.date)} · Spielvorgabe ${r.ch??'–'} ${last?'':' · <button class="btn ghost small" style="min-height:0;padding:0" data-a="toFinish">Runde vorzeitig abschliessen</button>'}</p>
+  </div>`;
+}
+/* Flight: mehrere Spieler auf einem Handy, pro Loch ein Block je Spieler */
+function viewFlight(g){
+  const i=Math.min(S.hole, g[0].holes.length-1), h0=g[0].holes[i];
+  g.forEach(r=>{ const h=r.holes[i]; if(h.s==null && !h.up){ h.s=h.par; saveRound(r); } });
+  const lens=[...new Set(g.map(r=>r.holes[i].len).filter(Boolean))];
+  const lenTxt = lens.length===1 ? lens[0] : lens.length ? `${Math.min(...lens)}–${Math.max(...lens)}` : '–';
+  const done = k => g.every(r=>r.holes[k].s!=null || r.holes[k].up);
+  return `<div class="stack">${roundWarn(g[0])}
+    <div class="flight-tally">${g.map(r=>{ const st=rstats(r); return `<div>${avatarFor(r,'sm')}<b class="num">${st.played?fmtPar(st.vs):'–'}</b>${r.ch!=null?`<span class="num">${st.pts} P</span>`:''}</div>`; }).join('')}</div>
+    <div class="strip" role="tablist" aria-label="Löcher">${g[0].holes.map((x,k)=>`<button data-a="goHole" data-v="${k}" aria-current="${k===i}"><span class="n">${x.n}</span><span class="v">${k!==i && done(k)?'✓':'·'}</span></button>`).join('')}</div>
+    <section class="hole" aria-label="Loch ${h0.n}">
+      ${holeHead(h0, lenTxt)}
+      ${g.map((r,p)=>playerHole(r,p,i)).join('')}
+      ${holeMedia(g[0].courseId, h0.n)}
+    </section>
+    ${holeNav(g[0], i)}
+    <p class="small muted">${fmtDate(g[0].date)} · ${g.length} Spieler · <button class="btn ghost small" style="min-height:0;padding:0" data-a="toFinish">Runde abschliessen</button></p>
+  </div>`;
+}
+function playerHole(r, p, i){
+  const h=r.holes[i], st=rstats(r), rec=st.rec[i], gir=girOf(h), open=!!S.det[p];
+  const rel = h.s!=null ? fmtPar(h.s-h.par) : h.up ? 'gestrichen' : 'noch offen';
+  return `<div class="pblock">
+    <div class="prow">${avatarFor(r)}
+      <div class="main"><b>${esc(r.playerName||'Spieler')}</b><div class="small muted">Tee ${esc(r.teeName)} · ${h.len||'–'} m${r.ch!=null?(rec>0?` · ${rec} Vorgabe${rec>1?'schläge':'schlag'}`:rec<0?' · 1 Schlag zurück':' · kein Vorgabeschlag'):''}</div></div>
+      <div class="ptot num"><b>${st.played?st.strokes:'–'}</b><span>${st.played?fmtPar(st.vs):''}${r.ch!=null&&st.played?' · '+st.pts+' P':''}</span></div></div>
+    <div class="counter sm">
+      <button data-a="s-" data-p="${p}" aria-label="${esc(r.playerName)}: ein Schlag weniger">−</button>
+      <div class="val num">${h.up?'X':h.s??'–'}<span class="rel">${rel}</span></div>
+      <button data-a="s+" data-p="${p}" aria-label="${esc(r.playerName)}: ein Schlag mehr">+</button>
     </div>
-    <p class="small muted">Tee ${esc(r.teeName)} · ${fmtDate(r.date)} · Spielvorgabe ${r.ch??'–'} ${last?'':' · <button class="btn ghost small" style="min-height:0;padding:0" data-a="toFinish">Runde vorzeitig abschliessen</button>'}</p>
+    <div class="row"><span class="eyebrow" style="width:44px">Putts</span><div class="chips" style="flex:1">${[0,1,2,3,4].map(v=>`<button class="chip num" data-a="putt" data-p="${p}" data-v="${v}" aria-pressed="${h.p===v}">${v}</button>`).join('')}</div></div>
+    <button class="btn ghost small" style="align-self:flex-start;padding-left:0" data-a="pdet" data-p="${p}" aria-expanded="${open}">${open?'Details schliessen ▴':'Fairway, Green, Bunker, Strafschläge ▾'}</button>
+    ${open?`<div class="stack" style="gap:14px">${holeFields(h, p, gir)}</div>`:''}
   </div>`;
 }
 function viewFinish(){
-  const r=curRound(); if(!r){ S.view=null; return viewStart(); }
-  const st=rstats(r);
-  const open = r.holes.filter(h=>h.s==null && !h.up).map(h=>h.n);
+  const g=curGroup(); if(!g){ S.view=null; return viewStart(); }
+  const open = g[0].holes.filter((h,k)=>g.some(r=>r.holes[k].s==null && !r.holes[k].up)).map(h=>h.n);
   return `<div class="stack">
-    <div class="kpis num">
-      <div class="kpi"><div class="v">${st.strokes||'–'}</div><div class="l">Schläge</div></div>
-      <div class="kpi"><div class="v">${fmtPar(st.vs)}</div><div class="l">zu Par</div></div>
-      <div class="kpi"><div class="v">${r.ch==null?'–':st.pts}</div><div class="l">Stableford-Punkte</div></div>
-      <div class="kpi"><div class="v">${st.puttH?st.putts:'–'}</div><div class="l">Putts</div></div>
-    </div>
     ${open.length?`<div class="card small"><b>Offene Löcher: ${open.join(', ')}</b><br><span class="muted">Ohne Score zählen sie nicht zur Runde. Für ein Score-Differential müssen alle Löcher erfasst sein.</span></div>`:''}
-    ${scorecard(r)}
-    <label class="f">Notizen zur Runde<textarea class="in" id="fin-notes" data-f="edit.notes" placeholder="Wetter, Flight, was gut lief …">${esc(r.notes||'')}</textarea></label>
-    <button class="btn primary block" data-a="finish">${r.mem?'Gastrunde abschliessen':'Runde speichern'}</button>
+    ${g.map(r=>{ const st=rstats(r); return `<div class="section" style="margin-top:6px">
+      <div class="row">${avatarFor(r)}<h3 style="flex:1">${esc(r.playerName||'Spieler')}</h3><div class="score-big num">${st.strokes||'–'}<small>${fmtPar(st.vs)}${r.ch!=null?' · '+st.pts+' P':''}${st.puttH?' · '+st.putts+' Putts':''}</small></div></div>
+      ${scorecard(r)}</div>`; }).join('')}
+    <label class="f">Notizen zur Runde<textarea class="in" id="fin-notes" data-f="edit.notes" placeholder="Wetter, Flight, was gut lief …">${esc(g[0].notes||'')}</textarea></label>
+    <button class="btn primary block" data-a="finish">${g[0].mem?'Übungsrunde beenden':g.length>1?'Runde für alle speichern':'Runde speichern'}</button>
     <button class="btn block" data-a="back">Weiter erfassen</button>
   </div>`;
 }
@@ -736,10 +1050,12 @@ function scorecard(r){
 function viewRound(r){
   const st=rstats(r);
   const cf = S.confirm==='del-'+r.id;
+  const mates=roundList().filter(x=>x.groupId===r.groupId && x.id!==r.id).sort((a,b)=>(a.order||0)-(b.order||0));
   return `<div class="stack">
+    <div class="row">${avatarFor(r)}<b style="flex:1">${esc(r.playerName||(S.profiles[r.profileId]||{}).name||'')}</b></div>
     <div class="row"><div><div class="eyebrow">${fmtDate(r.date)} · Tee ${esc(r.teeName)}${r.modeLabel?' · '+esc(r.modeLabel):''}</div>
       <div class="small muted">HCP-Index ${r.hi??'–'} · Spielvorgabe ${r.ch??'–'} · CR ${dec(r.cr)} / Slope ${r.slope??'–'}</div></div>
-      ${r.status==='active'?'<span class="badge live">Läuft</span>':''}${r.mem?'<span class="badge">Gastrunde, nicht gespeichert</span>':''}</div>
+      ${r.status==='active'?'<span class="badge live">Läuft</span>':''}${r.mem?'<span class="badge">Übungsrunde, nicht gespeichert</span>':''}</div>
     <div class="kpis num">
       <div class="kpi"><div class="v">${st.strokes||'–'}</div><div class="l">Schläge</div><div class="sub">${fmtPar(st.vs)} zu Par</div></div>
       <div class="kpi"><div class="v">${r.ch==null?'–':st.pts}</div><div class="l">Stableford</div><div class="sub">${r.ch!=null&&st.complete?'Netto '+(st.strokes-r.ch):'&nbsp;'}</div></div>
@@ -755,6 +1071,7 @@ function viewRound(r){
          ['Strafschläge', st.pen],
          ['Birdies oder besser', st.dist.e+st.dist.b]].map(([l,v])=>`<div class="li"><div class="main">${l}</div><div class="num">${v}</div></div>`).join('')}
     </div>
+    ${mates.length?`<div class="section" style="margin-top:4px"><span class="eyebrow">Im Flight</span><div class="list">${mates.map(m=>{ const ms=rstats(m); return `<button class="li" data-a="openRound" data-v="${m.id}">${avatarFor(m)}<div class="main"><div class="t">${esc(m.playerName||'')}</div><div class="s">Tee ${esc(m.teeName)}${m.guest?' · Gast':''}</div></div><div class="score-big num">${ms.strokes||'–'}<small>${fmtPar(ms.vs)}${m.ch!=null?' · '+ms.pts+' P':''}</small></div></button>`; }).join('')}</div></div>`:''}
     ${r.notes?`<div class="card"><div class="eyebrow">Notizen</div><p style="margin:4px 0 0;white-space:pre-wrap">${esc(r.notes)}</p></div>`:''}
     <div class="grid2">
       <button class="btn" data-a="reopen" data-v="${r.id}">Runde bearbeiten</button>
@@ -766,7 +1083,7 @@ function viewRound(r){
 
 /* --- Rundenliste --- */
 function viewRounds(){
-  const rs=roundList();
+  const rs=myRounds();
   if(!rs.length) return `<div class="empty"><b>Noch keine Runden</b>Starte unter «Spielen» deine erste Runde. Jede Runde landet danach hier.</div>
     <div class="stack"><button class="btn primary block" data-a="tab" data-v="play">Runde starten</button></div>`;
   const groups={};
@@ -776,7 +1093,7 @@ function viewRounds(){
     const [y,m]=k.split('-');
     return `<div class="section" style="margin-top:8px"><span class="eyebrow">${MON[+m-1]||''} ${y||''}</span><div class="list">${list.map(r=>{ const st=rstats(r);
       return `<button class="li" data-a="openRound" data-v="${r.id}">
-        <div class="main"><div class="t">${esc(r.courseName)} ${r.status==='active'?'<span class="badge live">Läuft</span>':''}${r.mem?' <span class="badge">Gast</span>':''}</div>
+        <div class="main"><div class="t">${esc(r.courseName)} ${r.status==='active'?'<span class="badge live">Läuft</span>':''}${roundList().filter(x=>x.groupId===r.groupId).length>1?' <span class="badge">Flight</span>':''}</div>
         <div class="s">${fmtDate(r.date)} · Tee ${esc(r.teeName)} · ${r.holes.length} Loch${r.modeLabel&&r.modeLabel!=='Alle 18'?' ('+esc(r.modeLabel)+')':''}${st.complete?'':' · unvollständig'}</div></div>
         <div class="score-big num">${st.strokes||'–'}<small>${fmtPar(st.vs)}${r.ch!=null?' · '+st.pts+' P':''}</small></div></button>`;}).join('')}</div></div>`;
   }).join('')}</div>`;
@@ -784,7 +1101,7 @@ function viewRounds(){
 
 /* --- Statistik --- */
 function viewStats(){
-  const all = roundList().filter(r=>r.status==='done' && !r.mem);
+  const all = myRounds().filter(r=>r.status==='done' && !r.mem);
   if(!all.length) return `<div class="empty"><b>Noch keine Auswertung</b>Sobald du eine Runde abgeschlossen hast, siehst du hier Durchschnitt, Fairways, Greens, Putts, Trend und Handicap-Schätzung.</div>`;
   const usedCourses = [...new Set(all.map(r=>r.courseId))];
   let rs = S.statCourse==='all' ? all : all.filter(r=>r.courseId===S.statCourse);
@@ -991,15 +1308,14 @@ function viewCourses(){
       <div class="main"><div class="t">${esc(c.name)}</div><div class="s">${esc(c.place||'')} · ${c.holes.length} Loch · Par ${coursePar(c)} · ${c.tees.length} Abschläge</div></div><span class="chev">›</span></button>`).join('')||'<div class="empty"><b>Keine Plätze</b></div>'}</div>
     <div class="ask">
       <h3>Neuen Platz von Claude erfassen lassen</h3>
-      <p class="small">Schreib Claude im Projekt «Golf Scorecard», welchen Platz du spielst. Claude sucht Par, Hcp, Distanzen pro Tee, Course Rating, Slope und Lochbilder im Internet und gibt dir eine neue Golf-Scorecard.html mit dem Platz. Diese liest du hier mit «Datei einlesen» ein, deine Runden bleiben erhalten.</p>
+      <p class="small">Schreib Claude im Projekt «Golf Scorecard», welchen Platz du spielst. Claude sucht Par, Hcp, Distanzen pro Tee, Course Rating, Slope und Lochbilder im Internet und baut den Platz in die App ein. Nach dem Veröffentlichen ist er auf allen Handys da, eure Runden bleiben erhalten.</p>
       <label class="f">Name des Platzes<input class="in" id="ask-name" data-f="askName" value="${esc(S.askName||'')}" placeholder="z. B. Golf Wylihof"></label>
       <p class="small" id="ask-text" style="user-select:all">${esc(askText())}</p>
       <button class="btn" data-a="copyAsk">Auftrag kopieren</button>
     </div>
     <button class="btn block" data-a="newCourse">Platz selbst erfassen</button>
     <p class="small muted">Moossee-Daten: Scorekarte und Rating-Tabelle 2026 von migrosgolf.ch. Distanzen in Metern bis Grünmitte.</p>
-    ${dataCard()}
-    ${privacyCard()}
+    <div class="list"><button class="li" data-a="openData"><div class="main"><div class="t">Sicherung, Profile und Daten</div><div class="s">Online-Sicherung, Profile verwalten, Export, Datenschutz</div></div><span class="chev">›</span></button></div>
   </div>`;
 }
 function viewCourse(c){
@@ -1067,21 +1383,22 @@ function copyAsk(){
 }
 /* --- Startseite mit animierter Golfszene (gezeichnet im Browser, ohne Video und ohne Internet) --- */
 function viewHome(){
-  const a=activeRound();
-  const done=roundList().filter(r=>r.status==='done' && !r.mem);
+  const a=activeGroupRounds()[0], mp=meProf();
+  const done=myRounds().filter(r=>r.status==='done' && !r.mem);
   const last=done[0], lst=last&&rstats(last);
   const hcp=hcpEstimate(done);
   const full18=done.map(r=>({r,s:rstats(r)})).filter(x=>x.s.complete && x.r.holes.length===18);
   const best=full18.length?Math.min(...full18.map(x=>x.s.strokes)):null;
   const hr=new Date().getHours(), greet = hr<11?'Guten Morgen':hr<17?'Guten Tag':'Guten Abend';
-  const aHole = a ? (()=>{ const i=ls('golfsc-hole-'+a.id); return a.holes[typeof i==='number'?Math.min(i,a.holes.length-1):0].n; })() : null;
+  const aHole = a ? (()=>{ const i=ls('golfsc-hole-'+a.groupId); return a.holes[typeof i==='number'?Math.min(i,a.holes.length-1):0].n; })() : null;
+  const flight = a ? activeGroupRounds().length : 0;
   return `<div class="stack">
     <section class="hero">
       <canvas id="hero-cv" aria-hidden="true"></canvas>
       <div class="hero-txt">
-        <div class="hero-eye">${greet}</div>
+        <div class="hero-eye">${greet}${mp?', '+esc(mp.name):''}</div>
         <h2>${a?'Deine Runde wartet.':'Bereit für die nächste Runde?'}</h2>
-        <p>${a?`${esc(a.courseName)} · Tee ${esc(a.teeName)} · weiter auf Loch ${aHole}`:'Fairway treffen, Green finden, Putt versenken. Deine Karte ist bereit.'}</p>
+        <p>${a?`${esc(a.courseName)} · ${flight>1?flight+' Spieler':'Tee '+esc(a.teeName)} · weiter auf Loch ${aHole}`:'Fairway treffen, Green finden, Putt versenken. Deine Karte ist bereit.'}</p>
       </div>
       <div class="hero-cta">
         ${a?`<button class="btn primary big" data-a="tab" data-v="play">Runde fortsetzen</button>`
@@ -1213,43 +1530,77 @@ function openZoom(img){
   z.innerHTML=`<button class="btn" aria-label="Schliessen">✕ Schliessen</button><img src="${img.src}" alt="${esc(img.alt)}">`;
   z.addEventListener('click', ()=>z.remove()); document.body.appendChild(z);
 }
-function setHole(i){ S.hole=i; const r=S.edit; if(r) ls('golfsc-hole-'+r.id, i); }
-function touchRound(){ saveRound(S.edit); render(); }
+function setHole(i){ S.hole=i; const g=activeId(); if(g) ls('golfsc-hole-'+g, i); }
+function touchRound(r){ saveRound(r); render(); }
 
 document.addEventListener('click', e=>{
   const b=e.target.closest('[data-a]'); if(!b) return;
   const a=b.dataset.a, v=b.dataset.v;
-  const r=S.edit, h = r ? r.holes[S.hole] : null;
+  const p = b.dataset.p!=null ? +b.dataset.p : 0;
+  const g=S.group, r = g ? g[Math.min(p, g.length-1)] : null, h = r ? r.holes[S.hole] : null;
   switch(a){
-    case 'tab': S.tab=v; try{ sessionStorage.setItem('golfsc-tab',v); }catch(e){} S.view=null; S.confirm=null; render(); window.scrollTo(0,0); break;
-    case 'back': S.view=null; S.confirm=null; S.form=null; render(); break;
-    case 'startCourse': { const c=courseById(v); S.start.courseId=v; S.start.tee=Math.min(S.start.tee, Math.max(0,c.tees.length-1)); if(c.holes.length!==18) S.start.mode='all'; render(); break; }
-    case 'startTee': S.start.tee=+v; render(); break;
+    case 'tab': S.tab=v; try{ sessionStorage.setItem('golfsc-tab',v); }catch(e){} S.view=null; S.confirm=null; S.pform=null; render(); window.scrollTo(0,0); break;
+    case 'back': S.view=null; S.confirm=null; S.form=null; S.pform=null; render(); break;
+    /* Profile */
+    case 'pick': pickProfile(v); break;
+    case 'who': S.picked=false; try{ sessionStorage.removeItem('golfsc-who'); }catch(e){} S.pform=null; S.confirm=null; render(); window.scrollTo(0,0); break;
+    case 'newProf': newProfForm(); render(); document.getElementById('pf-name')?.focus(); break;
+    case 'editProf': { const pr=S.profiles[v]; if(!pr) break; S.pform={isNew:false, id:v, name:pr.name, hi:pr.hi??'', gender:pr.gender||'m', color:pr.color||PCOLORS[0]}; S.confirm=null; render(); break; }
+    case 'pformGender': S.pform.gender=v; render(); break;
+    case 'pformColor': S.pform.color=v; render(); break;
+    case 'saveProf': saveProf(); break;
+    case 'cancelProf': S.pform=null; S.confirm=null; render(); break;
+    case 'askDelProf': S.confirm='delp-'+S.pform.id; render(); break;
+    case 'delProf': { const id=S.pform.id; S.pform=null; S.confirm=null; store.save('profiles/'+id, null, 0); if(id===S.me){ S.me=null; ls('golfsc-me', null); S.picked=false; } toast('Profil gelöscht'); render(); break; }
+    /* Online-Sicherung */
+    case 'openData': S.view={name:'data'}; S.confirm=null; render(); window.scrollTo(0,0); break;
+    case 'syncConnect': { const pw=(document.getElementById('sync-pw')||{}).value||''; const rem=!!(document.getElementById('sync-rem')||{}).checked;
+      if(pw.length<6){ toast('Das Passwort hat mindestens 6 Zeichen.'); break; } sync.connect(pw, rem); toast('Verbinde …'); break; }
+    case 'syncNow': sync.run(); break;
+    case 'syncForget': sync.forget(); toast('Passwort auf diesem Gerät gelöscht'); break;
+    /* Start einer Runde */
+    case 'startCourse': { const c=courseById(v); S.start.courseId=v; S.start.players.forEach(pl=>{ pl.tee=Math.min(pl.tee, Math.max(0,c.tees.length-1)); }); if(c.holes.length!==18) S.start.mode='all'; render(); break; }
     case 'startMode': S.start.mode=v; render(); break;
-    case 'startGender': S.start.gender=v; render(); break;
     case 'startMem': S.start.mem=b.checked; render(); break;
-    case 'miss': h.miss = h.miss===v ? null : v; touchRound(); break;
-    case 'askWipe': S.confirm='wipe'; render(); break;
-    case 'wipe': store.wipe(); S.confirm=null; S.view=null; S.tab='play'; toast('Alle Daten in diesem Browser gelöscht'); render(); break;
+    case 'togglePlayer': { const st=S.start, k=st.players.findIndex(x=>x.pid===v);
+      if(k>=0) st.players.splice(k,1);
+      else { if(st.players.length>=4){ toast('Höchstens 4 Spieler pro Flight.'); break; } const c=courseById(st.courseId); st.players.push(newPlayer(S.profiles[v], c, st.players[0]?st.players[0].tee:0)); }
+      render(); break; }
+    case 'addGuest': { const st=S.start; if(st.players.length>=4){ toast('Höchstens 4 Spieler pro Flight.'); break; } const c=courseById(st.courseId); st.players.push(newPlayer(null, c, st.players[0]?st.players[0].tee:0)); render(); document.getElementById('pl-name-'+(st.players.length-1))?.focus(); break; }
+    case 'removePlayer': S.start.players.splice(+v,1); render(); break;
+    case 'plGender': S.start.players[p].gender=v; render(); break;
+    case 'plTee': S.start.players[p].tee=+v; render(); break;
     case 'startRound': startRound(); break;
-    case 's+': if(h.up) h.up=false; h.s = h.s==null ? h.par+1 : Math.min(15,h.s+1); touchRound(); break;
-    case 's-': if(h.up) h.up=false; h.s = h.s==null ? Math.max(1,h.par-1) : Math.max(1,h.s-1); touchRound(); break;
+    /* Eingaben pro Loch und Spieler */
+    case 's+': if(h.up) h.up=false; h.s = h.s==null ? h.par+1 : Math.min(15,h.s+1); touchRound(r); break;
+    case 's-': if(h.up) h.up=false; h.s = h.s==null ? Math.max(1,h.par-1) : Math.max(1,h.s-1); touchRound(r); break;
+    case 'putt': h.p = h.p===+v ? null : +v; if(girOf(h)!==false) h.miss=null; touchRound(r); break;
+    case 'fw': h.fw = h.fw===v ? null : v; touchRound(r); break;
+    case 'miss': h.miss = h.miss===v ? null : v; touchRound(r); break;
+    case 'pen+': h.pen=(h.pen||0)+1; touchRound(r); break;
+    case 'pen-': h.pen=Math.max(0,(h.pen||0)-1); touchRound(r); break;
+    case 'sand': h.sand = v==='true'; touchRound(r); break;
+    case 'up': h.up = v==='true'; if(h.up){ h.s=null; h.p=null; h.miss=null; } touchRound(r); break;
+    case 'pdet': S.det[p]=!S.det[p]; render(); break;
     case 'zoomPic': openZoom(b.querySelector('img')); break;
-    case 'putt': h.p = h.p===+v ? null : +v; if(girOf(h)!==false) h.miss=null; touchRound(); break;
-    case 'fw': h.fw = h.fw===v ? null : v; touchRound(); break;
-    case 'pen+': h.pen=(h.pen||0)+1; touchRound(); break;
-    case 'pen-': h.pen=Math.max(0,(h.pen||0)-1); touchRound(); break;
-    case 'sand': h.sand = v==='true'; touchRound(); break;
-    case 'up': h.up = v==='true'; if(h.up){ h.s=null; h.p=null; h.miss=null; } touchRound(); break;
     case 'goHole': setHole(+v); render(); break;
-    case 'prevHole': setHole(Math.max(0,S.hole-1)); render(); window.scrollTo(0,0); break;
-    case 'nextHole': setHole(Math.min(r.holes.length-1,S.hole+1)); render(); window.scrollTo(0,0); break;
+    case 'prevHole': setHole(Math.max(0,S.hole-1)); S.det={}; render(); window.scrollTo(0,0); break;
+    case 'nextHole': setHole(Math.min(g[0].holes.length-1,S.hole+1)); S.det={}; render(); window.scrollTo(0,0); break;
     case 'toFinish': S.view={name:'finish'}; render(); window.scrollTo(0,0); break;
-    case 'finish': { const rr=S.edit; rr.status='done'; const id=rr.id; saveRound(rr,0); S.rounds[id]={...rr}; S.edit=null; S.tab='rounds'; S.view={name:'round', id}; toast(rr.mem?'Gastrunde abgeschlossen. Sie wird nicht gespeichert.':'Runde gespeichert'); render(); window.scrollTo(0,0); break; }
-    case 'openRound': { const rr=S.rounds[v]; if(rr && rr.status==='active'){ S.tab='play'; S.view=null; } else S.view={name:'round', id:v}; S.confirm=null; render(); window.scrollTo(0,0); break; }
-    case 'reopen': { const others = roundList().filter(x=>x.status==='active' && x.id!==v);
-      if(others.length){ toast('Schliesse zuerst die laufende Runde ab.'); break; }
-      const rr=JSON.parse(JSON.stringify(S.rounds[v])); rr.status='active'; S.rounds[v]=rr; S.edit=null; saveRound({...rr},0); S.tab='play'; S.view=null; render(); window.scrollTo(0,0); break; }
+    case 'finish': { const grp=S.group||[]; if(!grp.length) break;
+      grp.forEach(x=>{ x.status='done'; x.notes=grp[0].notes||''; saveRound(x); });
+      const mine=grp.find(x=>x.profileId===S.me) || grp[0], mem=grp[0].mem;
+      ls('golfsc-active', null); S.group=null; S.det={};
+      S.tab='rounds'; try{ sessionStorage.setItem('golfsc-tab','rounds'); }catch(e){}
+      S.view = mem ? null : {name:'round', id:mine.id};
+      toast(mem?'Übungsrunde beendet. Sie wird nicht gespeichert.':grp.length>1?'Runde für alle gespeichert':'Runde gespeichert'); render(); window.scrollTo(0,0); break; }
+    case 'openRound': { const rr=S.rounds[v]; if(rr && rr.status==='active' && rr.groupId===activeId()){ S.tab='play'; S.view=null; } else S.view={name:'round', id:v}; S.confirm=null; render(); window.scrollTo(0,0); break; }
+    case 'reopen': { const rr0=S.rounds[v]; if(!rr0) break;
+      if(activeGroupRounds().some(x=>x.groupId!==rr0.groupId)){ toast('Schliesse zuerst die laufende Runde ab.'); break; }
+      const rr=clone(rr0); rr.id=v; rr.status='active'; saveRound(rr); ls('golfsc-active', rr.groupId); S.group=null; S.tab='play'; S.view=null; render(); window.scrollTo(0,0); break; }
+    /* Verwaltung */
+    case 'askWipe': S.confirm='wipe'; render(); break;
+    case 'wipe': store.wipe(); S.confirm=null; S.view=null; S.tab='home'; toast('Alle Daten in diesem Browser gelöscht'); render(); break;
     case 'askDel': S.confirm='del-'+v; render(); break;
     case 'askDelCourse': S.confirm='delc-'+v; render(); break;
     case 'cancelConfirm': S.confirm=null; render(); break;
@@ -1263,7 +1614,6 @@ document.addEventListener('click', e=>{
     case 'formAddTee': S.form.tees.push({name:'',len:[],crM:'',slM:'',crW:'',slW:''}); render(); break;
     case 'formDelTee': S.form.tees.splice(+v,1); render(); break;
     case 'saveCourse': saveCourse(); break;
-    case 'delImg': { const [cid,n]=v.split('|'); delHoleImg(cid,+n); break; }
     case 'copyAsk': copyAsk(); break;
     case 'export': exportFile(); break;
   }
@@ -1272,32 +1622,20 @@ function setPath(obj, path, val){ const p=path.split('.'); let o=obj; for(let i=
 function onField(e){
   const el=e.target.closest('[data-f]'); if(!el) return;
   const f=el.dataset.f, val=el.value;
-  if(f==='start.hi'){ S.start.hi=val; const c=courseById(S.start.courseId), t=c&&c.tees[S.start.tee]; if(t) $('#ph-box').innerHTML=phBox(playing(val===''?null:+val,c,t,S.start.mode,S.start.gender),t); return; }
+  if(f.startsWith('start.players.')){ setPath(S, f, val); const i=+f.split('.')[2]; const c=courseById(S.start.courseId); const box=document.getElementById('ph-'+i); if(box && c) box.innerHTML=phText(S.start.players[i], c); return; }
   if(f==='start.date'){ S.start.date=val; return; }
+  if(f.startsWith('pform.')){ setPath(S, f, val); return; }
   if(f==='askName'){ S.askName=val; const t=$('#ask-text'); if(t) t.textContent=askText(); return; }
   if(f==='statCourse'){ S.statCourse=val; render(); return; }
   if(f==='statRange'){ S.statRange=val; render(); return; }
-  if(f==='edit.notes'){ if(S.edit){ S.edit.notes=val; saveRound(S.edit, 900); } return; }
+  if(f==='edit.notes'){ (S.group||[]).forEach(x=>{ x.notes=val; saveRound(x, 900); }); return; }
   if(f.startsWith('form.')){ setPath(S, f, val); return; }
 }
 document.addEventListener('input', onField);
-document.addEventListener('change', e=>{ const imp=e.target.closest('[data-imp]'); if(imp){ importFile(imp.files&&imp.files[0]); imp.value=''; return; } const up=e.target.closest('[data-up]'); if(up){ const [cid,n]=up.dataset.up.split('|'); uploadHoleImg(cid,+n,up.files&&up.files[0]); return; } const el=e.target.closest('[data-f]'); if(el && el.tagName==='SELECT') onField(e); });
+document.addEventListener('change', e=>{ const imp=e.target.closest('[data-imp]'); if(imp){ importFile(imp.files&&imp.files[0]); imp.value=''; return; } const el=e.target.closest('[data-f]'); if(el && el.tagName==='SELECT') onField(e); });
+document.addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target && e.target.id==='sync-pw'){ e.preventDefault(); document.querySelector('[data-a="syncConnect"]')?.click(); } });
 document.addEventListener('focusout', ()=>{ setTimeout(()=>{ if(S.dirty){ const a=document.activeElement; if(!(a && a.closest && a.closest('#app') && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) render(); } }, 50); });
 
-function startRound(){
-  const st=S.start, c=courseById(st.courseId), tee=c.tees[st.tee];
-  if(activeRound()){ toast('Es läuft bereits eine Runde.'); return; }
-  const hi = st.hi===''||st.hi==null ? null : Math.round(+st.hi*10)/10;
-  const ph = playing(hi, c, tee, st.mode, st.gender);
-  const idx = holeIdx(c, st.mode);
-  const r = { id:'r'+uid(), courseId:c.id, courseName:c.name, teeName:tee.name, date:st.date||today(),
-    mem:!!st.mem, mode:st.mode, modeLabel: c.holes.length===18 ? ({all:'Alle 18',front:'Front 9',back:'Back 9'})[st.mode] : '',
-    hi, gender:st.gender, ch:ph.ch, cr:ph.cr, slope:ph.slope, status:'active', notes:'', createdAt:Date.now(),
-    holes: idx.map(i=>({n:i+1, par:+c.holes[i].par, hcp:+c.holes[i].hcp, len:+(tee.len?.[i])||null, s:null, p:null, fw:null, miss:null, pen:0, sand:false, up:false})) };
-  S.rounds[r.id]=r; S.edit=JSON.parse(JSON.stringify(r)); S.hole=0;
-  if(hi!==S.profile.hi || st.gender!==S.profile.gender){ S.profile={...S.profile, hi, gender:st.gender}; store.save('settings/profile', {hi, gender:st.gender}, 0); }
-  saveRound(r,0); S.start=null; render(); window.scrollTo(0,0);
-}
 function saveCourse(){
   const f=S.form, n=f.holes.length;
   if(!f.name.trim()){ toast('Bitte einen Namen eingeben.'); $('#cf-name')?.focus(); return; }

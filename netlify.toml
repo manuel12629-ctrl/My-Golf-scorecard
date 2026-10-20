@@ -2,6 +2,11 @@
 [build]
   publish = "."
 
+# Online-Sicherung: Funktion unter /api/sync, Daten in Netlify Blobs
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
 [[headers]]
   for = "/*"
   [headers.values]
@@ -20,6 +25,10 @@
   for = "/"
   [headers.values]
     Cache-Control = "no-cache"
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-store"
 [[headers]]
   for = "/sw.js"
   [headers.values]

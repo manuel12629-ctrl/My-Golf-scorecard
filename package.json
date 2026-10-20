@@ -1,0 +1,9 @@
+{
+  "name": "golf-scorecard",
+  "private": true,
+  "type": "module",
+  "description": "Golf Scorecard mit Online-Sicherung über Netlify Functions und Netlify Blobs",
+  "dependencies": {
+    "@netlify/blobs": "11.1.3"
+  }
+}
