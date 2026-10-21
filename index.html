@@ -50,6 +50,7 @@ header.top h1{font-family:var(--display);font-weight:700;font-size:22px;letter-s
 
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
 nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+nav.tabs button span{font-size:11px;white-space:nowrap}
 nav.tabs button{border:0;background:none;padding:8px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;font-weight:600;color:var(--muted)}
 nav.tabs button[aria-current="page"]{color:var(--accent)}
 nav.tabs svg{width:24px;height:24px}
@@ -233,6 +234,104 @@ details summary{cursor:pointer}
 .intro h2{color:#fff;font-size:44px;line-height:1.02;margin:0;text-shadow:0 2px 16px rgba(0,0,0,.45)}
 .intro .btn.big{background:#fff;border-color:#fff;color:#13231A}
 .intro-open,.intro-open body{overflow:hidden}
+.club{border-top:1px solid var(--line)}
+.club:first-child{border-top:0}
+.club-head{display:flex;align-items:center;gap:10px;padding:8px 12px 8px 10px}
+.club-toggle{width:30px;height:30px;flex:0 0 30px;border-radius:8px;border:2px solid var(--line);background:var(--surface);color:var(--accent-ink);font-weight:800;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center}
+.club-toggle[aria-pressed="true"]{background:var(--accent);border-color:var(--accent)}
+.club-main{flex:1;min-width:0;border:0;background:none;text-align:left;padding:6px 0;display:flex;flex-direction:column;min-height:44px;justify-content:center}
+.club-main .t{font-weight:600}
+.club-main .s{font-size:13px;color:var(--muted)}
+.club-dist{font-family:var(--display);font-weight:700;font-size:20px;white-space:nowrap}
+.club:not(.in) .club-main .t{color:var(--muted)}
+.club-body{padding:4px 14px 16px 50px;display:flex;flex-direction:column;gap:12px}
+.pick-row{display:flex;align-items:center;gap:6px;border-top:1px solid var(--line);padding-right:8px}
+.pick-row:first-child{border-top:0}
+.pick{flex:1;min-width:0;display:flex;align-items:center;gap:12px;border:0;background:none;padding:10px 14px;text-align:left;min-height:58px}
+.pick .main{display:flex;flex-direction:column;min-width:0}
+.pick .t{font-weight:600}
+.pick .s{font-size:13px;color:var(--muted)}
+.pick[aria-pressed="true"] .club-toggle{background:var(--accent);border-color:var(--accent)}
+.pick-name{max-width:150px;min-height:38px;padding:6px 10px}
+.bag-bar{position:sticky;bottom:calc(70px + env(safe-area-inset-bottom,0px));z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;box-shadow:0 6px 20px rgba(0,0,0,.14)}
+.club-card{gap:12px;margin-bottom:10px}
+.club-line{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:12px 14px;min-height:62px}
+.club-line .main{flex:1;min-width:0;display:flex;flex-direction:column}
+.club-line .t{font-weight:600}
+.club-line .s{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.club-line .s i{font-style:normal;opacity:.7}
+.club-line .club-dist{text-align:right;line-height:1.05}
+.club-dist small{display:block;font-family:var(--body);font-size:11px;font-weight:600;color:var(--muted)}
+.club.open{background:var(--surface2)}
+.club .club-body{padding:2px 14px 16px}
+.stackbar.slim{height:8px;margin:5px 0 3px;max-width:220px}
+.ana-row{align-items:center}
+.ana-no{font-family:var(--display);font-weight:700;font-size:26px;width:34px;text-align:center;flex:0 0 34px}
+.ana-v{text-align:right;line-height:1.05;min-width:52px}
+.ana-v b{font-family:var(--display);font-size:24px;display:block}
+.ana-v small{font-size:12px;font-weight:700}
+.ana-v.good small{color:var(--birdie)} .ana-v.ok small{color:var(--accent)} .ana-v.meh small{color:var(--bogey)} .ana-v.bad small{color:var(--bogey)}
+.ana-link{display:flex;align-items:center;gap:8px;width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;text-align:left;font-size:14px;min-height:44px}
+.ana-link span:first-child{flex:1}
+.nw{white-space:nowrap}
+.ana-thumb{position:relative;width:44px;height:70px;flex:0 0 44px;border-radius:8px;overflow:hidden;background:var(--surface2);border:1px solid var(--line)}
+.ana-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.ana-thumb b{position:absolute;left:0;bottom:0;background:var(--accent);color:var(--accent-ink);font-family:var(--display);font-size:15px;line-height:1;padding:3px 6px;border-top-right-radius:8px}
+.danger-link{color:var(--birdie);align-self:center}
+.confirm>span{flex:1 1 100% !important}
+.confirm>.btn{flex:1 1 0}
+.hub-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hub-btn{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:14px 12px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;min-height:104px;color:var(--ink)}
+.hub-btn svg{color:var(--accent);margin-bottom:4px}
+.hub-btn b{font-size:16px}
+.hub-btn span{font-size:12px;color:var(--muted)}
+.cmp-dot{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:6px;color:#fff;font-weight:800;font-size:12px;margin-right:4px}
+.cmp-dot.a,.cmp-card.a .cmp-tag{background:var(--accent)} .cmp-dot.b,.cmp-card.b .cmp-tag{background:var(--bogey)}
+.cmp-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cmp-card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 12px 10px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.cmp-card.a{border-top:4px solid var(--accent)} .cmp-card.b{border-top:4px solid var(--bogey)}
+.cmp-tag{position:absolute;top:8px;right:8px;color:#fff;font-weight:800;font-size:11px;border-radius:5px;padding:2px 6px}
+.cmp-score{font-family:var(--display);font-weight:700;font-size:32px;line-height:1;margin-top:4px}
+.cmp-score small{display:block;font-family:var(--body);font-size:12px;font-weight:600;color:var(--muted);margin-top:2px}
+table.cmp-t td.win{color:var(--accent);font-weight:800;background:var(--accent-soft)}
+table.cmp-t td.lose{color:var(--bogey);font-weight:700}
+table.cmp-t td:first-child{white-space:normal;min-width:120px}
+.cmp-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cmp-sum>div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px;text-align:center}
+.cmp-sum b{display:block;font-family:var(--display);font-size:26px;line-height:1.1}
+.cmp-sum span{font-size:11px;color:var(--muted)}
+.cmp-sum .a b{color:var(--accent)} .cmp-sum .b b{color:var(--bogey)}
+.ht{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;border:1.5px solid currentColor;background:transparent;color:var(--accent);font:700 12px/1 var(--body);padding:0;vertical-align:1px;margin-left:2px;cursor:help;flex:0 0 auto;position:relative}
+.ht::after{content:"";position:absolute;inset:-12px}
+.ht-inline{cursor:default}
+.hole-head .ht,.tally .ht{color:inherit}
+.hdr-help{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--accent);font-weight:800;font-size:17px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.sheet-wrap{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);color:var(--ink);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:20px 20px calc(22px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px;box-shadow:0 -8px 30px rgba(0,0,0,.25)}
+.sheet h3{font-size:24px}
+.sheet p{margin:0;font-size:16px;line-height:1.5}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:sheetUp .22s ease-out}@keyframes sheetUp{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}}
+.steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+.acc{border-top:1px solid var(--line)}
+.acc:first-child{border-top:0}
+.acc summary{padding:13px 14px;font-weight:600;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;min-height:48px}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary::after{content:"▾";margin-left:auto;color:var(--muted)}
+.acc[open] summary::after{content:"▴"}
+.acc p{margin:0;padding:0 14px 14px;font-size:15px;line-height:1.5}
+.acc .badge{font-weight:600}
+.acc.hl{background:var(--accent-soft)}
+.welcome{border-color:var(--accent)}
+.mk-wrap{width:34px;display:flex;justify-content:center;font-family:var(--display);font-weight:700;font-size:19px}
+.club-card h3{font-size:21px}
+.dist{display:flex;flex-direction:column;gap:8px}
+.dist-row{display:grid;grid-template-columns:110px 1fr 64px;gap:10px;align-items:center;font-size:14px}
+.dist-n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dist-track{position:relative;height:14px;background:var(--surface2);border-radius:7px;overflow:hidden}
+.dist-carry{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:7px}
+.dist-roll{position:absolute;top:0;bottom:0;background:var(--accent-soft)}
+.dist-v{text-align:right;font-weight:700}
+.dist-v small{font-weight:500;color:var(--muted)}
 @media (prefers-reduced-motion:no-preference){.intro-txt{animation:introUp .7s .25s both}@keyframes introUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}}
 .hero{position:relative;margin:-12px -16px 0;height:min(66vh,560px);min-height:400px;overflow:hidden;border-radius:0 0 22px 22px;background:#8CC8EC}
 .hero canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
@@ -324,13 +423,13 @@ const BUILTIN = [
 ];
 
 /* ---------- Version ---------- */
-const APP_VERSION = '3.2', APP_DATE = '20.10.2026';
+const APP_VERSION = '3.9', APP_DATE = '21.10.2026';
 
 /* ---------- Zustand ---------- */
 function ls(k,v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null; } }
 
 const S = {
-  tab:(()=>{ try{ return sessionStorage.getItem('golfsc-tab')||'home'; }catch(e){ return 'home'; } })(), view:null, ready:false,
+  tab:(()=>{ try{ const t=sessionStorage.getItem('golfsc-tab')||'home'; return t==='rounds'?'play':t; }catch(e){ return 'home'; } })(), view:null, ready:false,
   rounds:{}, dbCourses:{}, profiles:{}, holeImgs:{}, profile:{hi:null, gender:'m'},
   me: ls('golfsc-me'),            // gewähltes Profil auf diesem Gerät
   picked: (()=>{ try{ return sessionStorage.getItem('golfsc-who')==='1'; }catch(e){ return false; } })(),
@@ -603,7 +702,13 @@ function privacyCard(){
 
 /* ---------- Profile ---------- */
 const PCOLORS=['#1D6842','#2D5A88','#BF3F2B','#A66A14','#6B4FA0','#1F7A8C','#8C3B6B','#4D5B2A'];
-const profList = () => Object.values(S.profiles).sort((a,b)=>String(a.name).localeCompare(String(b.name),'de'));
+/* Reihenfolge: Manuel immer zuerst, danach alphabetisch */
+const PROFILE_FIRST='manuel';
+const profList = () => Object.values(S.profiles).sort((a,b)=>{
+  const fa=String(a.name).trim().toLowerCase()===PROFILE_FIRST, fb=String(b.name).trim().toLowerCase()===PROFILE_FIRST;
+  if(fa!==fb) return fa?-1:1;
+  return String(a.name).localeCompare(String(b.name),'de');
+});
 const meProf = () => S.profiles[S.me] || null;
 const needWho = () => !S.picked || !S.profiles[S.me];
 function avatar(p, cls=''){ const n=String((p&&p.name)||'?').trim(); return `<span class="av ${cls}" style="background:${esc((p&&p.color)||'#7A867E')}" aria-hidden="true">${esc((n[0]||'?').toUpperCase())}</span>`; }
@@ -657,6 +762,7 @@ function viewWho(){
     ${ps.length?`<div class="who-grid">${ps.map(p=>`<button class="who-btn" data-a="pick" data-v="${p.id}" ${p.id===S.me?'aria-current="true"':''}>${avatar(p,'lg')}<b>${esc(p.name)}</b><span class="small muted">HCP ${p.hi??'–'}</span></button>`).join('')}</div>`:''}
     ${S.pform?profForm():`<button class="btn block" data-a="newProf">+ Neues Profil</button>`}
     ${ps.length && !S.pform?`<details class="small"><summary class="muted">Profil bearbeiten</summary><div class="chips" style="margin-top:8px">${ps.map(p=>`<button class="chip" data-a="editProf" data-v="${p.id}">${esc(p.name)}</button>`).join('')}</div></details>`:''}
+    ${!sync.on && !hasDemo() ? demoCard() : ''}
     ${pw?`<div class="card stack"><h3>Schon Profile auf einem anderen Handy?</h3><p class="small" style="margin:0">Verbinde die Online-Sicherung mit eurem gemeinsamen Passwort. Profile und Runden erscheinen dann auch hier.</p>${pwForm()}</div>`:''}
   </div>`;
 }
@@ -683,7 +789,417 @@ function profilesCard(){
   </div>`;
 }
 function viewData(){
-  return `<div class="stack">${syncCard()}${profilesCard()}${dataCard()}${privacyCard()}</div>`;
+  return `<div class="stack">${demoCard()}${syncCard()}${profilesCard()}${dataCard()}${privacyCard()}</div>`;
+}
+
+/* ---------- Schläger: Beschreibung der gängigen Schläger und eigene Distanzen pro Profil ----------
+   Gespeichert im Profil unter bag = {clubs:{id:{in, carry, total, model, note}}, custom:[{id,name,group,loft}]},
+   damit die Werte mit dem Profil online gesichert werden. Loft-Angaben sind typische Bereiche, sie variieren je nach Hersteller. */
+const CLUB_GROUPS=[['wood','Hölzer'],['hybrid','Hybride'],['iron','Eisen'],['wedge','Wedges'],['putter','Putter'],['custom','Eigene Schläger']];
+const CLUBS=[
+  {id:'D',  g:'wood',  name:'Driver',            loft:'8–12°',  desc:'Der längste Schläger im Bag. Wird fast nur vom Abschlag auf Par 4 und Par 5 gespielt, der Ball liegt dabei hoch auf dem Tee. Grosser Schlägerkopf, langer Schaft, darum auch der Schläger mit der grössten Streuung.'},
+  {id:'H3', g:'wood',  name:'Holz 3',            loft:'13–16°', desc:'Fairwayholz für lange Schläge vom Fairway und als sichere Alternative zum Driver auf engen Löchern. Etwas kürzer als der Driver, dafür besser zu kontrollieren.'},
+  {id:'H5', g:'wood',  name:'Holz 5',            loft:'17–19°', desc:'Höher fliegendes Fairwayholz. Gut für den zweiten Schlag auf Par 5 und für lange Par 3, landet weicher als ein Holz 3.'},
+  {id:'H7', g:'wood',  name:'Holz 7',            loft:'20–23°', desc:'Leicht zu treffendes Holz mit viel Loft. Ersetzt bei vielen Spielern ein langes Eisen oder Hybrid und hilft auch aus leichtem Rough.'},
+  {id:'Y3', g:'hybrid',name:'Hybrid 3',          loft:'19–21°', desc:'Mischung aus Holz und Eisen. Ersetzt das Eisen 3, startet höher und verzeiht mehr bei Fehltreffern.'},
+  {id:'Y4', g:'hybrid',name:'Hybrid 4',          loft:'22–24°', desc:'Ersatz für das Eisen 4. Vielseitig vom Fairway, aus dem Rough und für lange Annäherungen.'},
+  {id:'Y5', g:'hybrid',name:'Hybrid 5',          loft:'25–27°', desc:'Ersatz für das Eisen 5. Bringt den Ball leicht in die Luft, auch aus schlechteren Lagen.'},
+  {id:'E3', g:'iron',  name:'Eisen 3',           loft:'19–21°', desc:'Langes Eisen mit flachem Ballflug. Schwer zu treffen, darum heute oft durch Hybrid oder Holz ersetzt.'},
+  {id:'E4', g:'iron',  name:'Eisen 4',           loft:'20–24°', desc:'Langes Eisen für flache, lange Schläge, zum Beispiel unter Wind oder unter Ästen durch.'},
+  {id:'E5', g:'iron',  name:'Eisen 5',           loft:'23–27°', desc:'Längstes Eisen in vielen Sets. Für lange Annäherungen und Abschläge auf langen Par 3.'},
+  {id:'E6', g:'iron',  name:'Eisen 6',           loft:'26–30°', desc:'Mittleres Eisen für Annäherungen aus mittlerer bis langer Distanz.'},
+  {id:'E7', g:'iron',  name:'Eisen 7',           loft:'30–34°', desc:'Der klassische Referenzschläger zum Üben. Für Annäherungen aus mittlerer Distanz und für Chips mit viel Rollen.'},
+  {id:'E8', g:'iron',  name:'Eisen 8',           loft:'34–38°', desc:'Kurzes Eisen mit höherem Ballflug. Für genaue Annäherungen, der Ball bleibt schneller liegen.'},
+  {id:'E9', g:'iron',  name:'Eisen 9',           loft:'38–42°', desc:'Kürzestes Eisen. Hoher Ballflug, gut für Schläge über Hindernisse und aufs Green aus kurzer Distanz.'},
+  {id:'PW', g:'wedge', name:'Pitching Wedge',    loft:'43–47°', desc:'Für volle Schläge aus kurzer Distanz und für Pitches und Chips rund ums Green.'},
+  {id:'GW', g:'wedge', name:'Gap Wedge',         loft:'48–53°', desc:'Auch Approach Wedge genannt. Schliesst die Lücke zwischen Pitching und Sand Wedge, für volle und halbe Schläge.'},
+  {id:'SW', g:'wedge', name:'Sand Wedge',        loft:'54–58°', desc:'Der Schläger für den Grünbunker. Die breite Sohle gleitet durch den Sand. Auch für hohe, kurze Schläge aus dem Rough.'},
+  {id:'LW', g:'wedge', name:'Lob Wedge',         loft:'58–64°', desc:'Für sehr hohe, weiche Schläge über Bunker oder auf ein schnelles Green. Braucht etwas Übung.'},
+  {id:'PT', g:'putter',name:'Putter',            loft:'2–4°',   desc:'Zum Einlochen auf dem Green und für Schläge aus dem Vorgrün. Ein Schlag mit dem Putter auf dem Green zählt als Putt.'}
+];
+const BAG_MAX=14;   // Golfregel 4.1b: höchstens 14 Schläger in einer Runde
+function myBag(){ const p=meProf(); const b=(p&&p.bag)||{}; return {clubs:b.clubs||{}, custom:b.custom||[]}; }
+function allClubs(bag){ return CLUBS.concat((bag.custom||[]).map(c=>({...c, g:'custom', custom:true, desc:c.desc||''}))); }
+/* Änderung sofort im Speicher übernehmen, gespeichert und gesichert wird kurz danach */
+function bagEdit(fn, delay=600){
+  const p=meProf(); if(!p) return;
+  const id=p.id, cur=store.data.profiles[id]||{};
+  const bag=cur.bag?clone(cur.bag):{}; bag.clubs ||= {}; bag.custom ||= [];
+  fn(bag);
+  const doc={...cur, bag, _t:Date.now()};
+  store.data.profiles[id]=doc; S.profiles[id]={...clone(doc), id};
+  store.save('profiles/'+id, doc, delay);
+}
+const num = v => v===''||v==null||isNaN(+v) ? null : Math.round(+v);
+/* Zwei Schritte: 1. Bag zusammenstellen (Häkchen, «Bag fertig»), 2. Mein Bag mit Infos und Feldern pro Schläger */
+function viewBag(){
+  const p=meProf(); if(!p) return '<div class="empty"><b>Kein Profil gewählt</b></div>';
+  const bag=myBag(), raw=(p.bag||{});
+  return (S.bagSetup || !raw.done) ? viewBagSetup(p, bag) : viewBagMine(p, bag);
+}
+function viewBagSetup(p, bag){
+  const clubs=allClubs(bag), n=clubs.filter(c=>bag.clubs[c.id]&&bag.clubs[c.id].in).length, over=n>BAG_MAX;
+  return `<div class="stack bag-setup">
+    <div><h2 style="margin-top:0">Bag zusammenstellen</h2>
+      <p class="muted" style="margin:0">${avatar(p,'sm')} Wähle die Schläger, die <b>${esc(p.name)}</b> im Bag hat. Danach siehst du zu jedem Schläger Infos und kannst deine Distanzen eintragen.</p></div>
+    ${CLUB_GROUPS.map(([g,label])=>{ const cs=clubs.filter(c=>c.g===g); if(!cs.length && g!=='custom') return '';
+      return `<div class="section" style="margin-top:6px"><span class="eyebrow">${label}</span>
+        ${cs.length?`<div class="list">${cs.map(c=>{ const v=bag.clubs[c.id]||{};
+          return `<div class="pick-row">
+            <button class="pick" data-a="bagToggle" data-v="${c.id}" aria-pressed="${!!v.in}">
+              <span class="club-toggle" aria-hidden="true">${v.in?'✓':''}</span>
+              <span class="main"><span class="t">${esc(c.name)}</span><span class="s">${c.loft?'Loft '+esc(c.loft):'Eigener Schläger'}</span></span>
+            </button>
+            ${c.custom?`<input class="in pick-name" id="cl-name-${c.id}" data-f="bagc.${c.id}.name" value="${esc(c.name)}" aria-label="Name des eigenen Schlägers"><button class="btn ghost small" data-a="bagDel" data-v="${c.id}" aria-label="Eigenen Schläger entfernen">✕</button>`:''}
+          </div>`; }).join('')}</div>`:''}
+        ${g==='custom'?`<button class="btn" data-a="bagAdd">+ Eigenen Schläger hinzufügen</button>`:''}</div>`; }).join('')}
+    <div class="bag-bar">
+      <span class="num"><b style="${over?'color:var(--birdie)':''}">${n}</b> von ${BAG_MAX} Schlägern ${ht('rule14')}${over?' · zu viele':''}</span>
+      <button class="btn primary" data-a="bagDone" ${n?'':'disabled'}>Bag fertig</button>
+    </div>
+  </div>`;
+}
+function viewBagMine(p, bag){
+  const clubs=allClubs(bag), inBag=clubs.filter(c=>bag.clubs[c.id]&&bag.clubs[c.id].in);
+  const withDist=inBag.filter(c=>c.id!=='PT' && num(bag.clubs[c.id].carry)!=null).map(c=>({c, carry:num(bag.clubs[c.id].carry), total:num(bag.clubs[c.id].total)})).sort((a,b)=>b.carry-a.carry);
+  const max=withDist.length?Math.max(...withDist.map(x=>Math.max(x.total||0,x.carry))):0;
+  const gaps=withDist.slice(1).map((x,i)=>({a:withDist[i], b:x, d:withDist[i].carry-x.carry}));
+  const big=gaps.filter(x=>x.d>=20), small=gaps.filter(x=>x.d<=5);
+  const open=inBag.filter(c=>c.id!=='PT' && num(bag.clubs[c.id].carry)==null).length;
+  return `<div class="stack">
+    <div class="row"><p class="muted" style="margin:0;flex:1">${avatar(p,'sm')} Bag von <b>${esc(p.name)}</b> · ${inBag.length} Schläger</p>
+      <button class="btn small" data-a="bagSetup">Bag ändern</button></div>
+    <div class="section" style="margin-top:0"><h3>Meine Distanzen</h3>
+      ${withDist.length?`<div class="dist">${withDist.map(x=>`<div class="dist-row"><span class="dist-n">${esc(x.c.name)}</span>
+        <div class="dist-track"><div class="dist-carry" style="width:${x.carry/max*100}%"></div>${x.total&&x.total>x.carry?`<div class="dist-roll" style="left:${x.carry/max*100}%;width:${(x.total-x.carry)/max*100}%"></div>`:''}</div>
+        <span class="dist-v num">${x.carry}${x.total&&x.total>x.carry?`<small>/${x.total}</small>`:''}</span></div>`).join('')}</div>
+      <div class="legend"><span><i class="sw" style="background:var(--accent)"></i>Carry (Flug)</span><span><i class="sw" style="background:var(--accent-soft)"></i>mit Rollen</span><span>Meter</span></div>`
+      :'<p class="small muted" style="margin:0">Trag unten bei deinen Schlägern die Carry-Distanz ein, dann erscheint hier deine Übersicht.</p>'}
+      ${big.length||small.length?`<div class="card small stack" style="gap:4px">${big.map(x=>`<div>Grosse Lücke von <b>${x.d} m</b> zwischen ${esc(x.a.c.name)} und ${esc(x.b.c.name)}.</div>`).join('')}${small.map(x=>`<div>${esc(x.a.c.name)} und ${esc(x.b.c.name)} liegen nur <b>${x.d} m</b> auseinander.</div>`).join('')}</div>`:''}
+      ${withDist.length && open?`<p class="small muted" style="margin:0">Bei ${open} Schläger${open>1?'n':''} fehlt noch die Distanz.</p>`:''}
+    </div>
+    <div class="section"><h3>Meine Schläger</h3>
+      <div class="list">${inBag.map(c=>bagRow(c, bag.clubs[c.id]||{})).join('')}</div>
+      <p class="small muted" style="margin:0">Tippe einen Schläger an, um Infos zu sehen und Distanzen, Modell und Notiz einzutragen.</p>
+    </div>
+    <p class="small muted">Carry ist die Strecke, die der Ball in der Luft fliegt. Die Gesamtlänge zählt das Rollen dazu. Trag deinen durchschnittlichen, gut getroffenen Schlag ein, nicht den längsten.</p>
+  </div>`;
+}
+function bagRow(c, v){
+  const open=S.clubOpen===c.id, isP=c.id==='PT', total=num(v.total), carry=num(v.carry);
+  return `<div class="club ${open?'open':''}">
+    <button class="club-line" data-a="clubOpen" data-v="${c.id}" aria-expanded="${open}">
+      <span class="main"><span class="t">${esc(c.name)}</span><span class="s">${v.note?esc(v.note):'<i>Wann ich ihn nehme: noch leer</i>'}</span></span>
+      <span class="club-dist num">${isP?'':total!=null?`${total} m<small>gesamt</small>`:carry!=null?`${carry} m<small>carry</small>`:'<small>noch leer</small>'}</span>
+      <span class="chev" aria-hidden="true">${open?'▴':'▾'}</span>
+    </button>
+    ${open?`<div class="club-body">${clubFields(c, v)}</div>`:''}
+  </div>`;
+}
+function clubFields(c, v){
+  const isP=c.id==='PT';
+  return `${c.loft?`<div class="small muted">Loft ${ht('loft')} typisch ${esc(c.loft)}</div>`:''}
+    ${c.desc?`<p class="small" style="margin:0">${esc(c.desc)}</p>`:''}
+    ${isP?'':`<div class="grid2">
+      <label class="f">Carry in Metern ${ht('carry')}<input class="in num" type="number" inputmode="numeric" min="0" max="350" id="cl-carry-${c.id}" data-f="bag.${c.id}.carry" value="${esc(v.carry??'')}" placeholder="Meter"></label>
+      <label class="f">Gesamt mit Rollen<input class="in num" type="number" inputmode="numeric" min="0" max="400" id="cl-total-${c.id}" data-f="bag.${c.id}.total" value="${esc(v.total??'')}" placeholder="Meter"></label>
+    </div>`}
+    <label class="f">Wann ich ihn nehme<textarea class="in" id="cl-note-${c.id}" data-f="bag.${c.id}.note" placeholder="z. B. vom Abschlag auf engen Löchern">${esc(v.note||'')}</textarea></label>
+    <label class="f">Modell und Loft<input class="in" id="cl-model-${c.id}" data-f="bag.${c.id}.model" value="${esc(v.model||'')}" placeholder="z. B. Ping G430, 10.5°"></label>
+    <button class="btn small" style="align-self:flex-start" data-a="clubOpen" data-v="${c.id}">Fertig</button>`;
+}
+/* ---------- Lochanalyse: wie habe ich jedes Loch in vergangenen Runden gespielt ---------- */
+function holeHistory(courseId){
+  const rs=myRounds().filter(r=>r.courseId===courseId && r.status==='done' && !r.mem);
+  const by={};
+  rs.forEach(r=>{ const rec=alloc(r.holes, r.ch);
+    r.holes.forEach((h,i)=>{ if(h.s==null && !h.up) return;
+      (by[h.n] ||= []).push({r, h, rec:rec[i], date:r.date}); }); });
+  Object.values(by).forEach(a=>a.sort((x,y)=>(y.date||'').localeCompare(x.date||'') || (y.r.createdAt||0)-(x.r.createdAt||0)));
+  return {rounds:rs, by};
+}
+function holeStats(list){
+  const o={n:list.length, played:0, sum:0, vs:0, best:null, worst:null, dist:{e:0,b:0,p:0,bo:0,d:0}, puttN:0, putts:0, p3:0, p1:0,
+    fwA:0, fwH:0, fwL:0, fwR:0, girA:0, girH:0, miss:{K:0,Li:0,Re:0,La:0}, missN:0, pen:0, sandA:0, sandH:0, scrA:0, scrH:0, pts:0, ptsN:0, up:0};
+  list.forEach(({h,rec,r})=>{
+    if(h.up){ o.up++; return; }
+    o.played++; o.sum+=h.s; const d=h.s-h.par; o.vs+=d;
+    o.best = o.best==null ? h.s : Math.min(o.best,h.s); o.worst = o.worst==null ? h.s : Math.max(o.worst,h.s);
+    if(d<=-1) (d<=-2?o.dist.e++:o.dist.b++); else if(d===0) o.dist.p++; else if(d===1) o.dist.bo++; else o.dist.d++;
+    if(h.p!=null){ o.puttN++; o.putts+=h.p; if(h.p>=3) o.p3++; if(h.p===1) o.p1++;
+      const gir=h.s-h.p<=h.par-2; o.girA++; if(gir) o.girH++; else { o.scrA++; if(h.s<=h.par) o.scrH++; if(h.miss && o.miss[h.miss]!=null){ o.miss[h.miss]++; o.missN++; } } }
+    if(h.par>=4 && h.fw){ o.fwA++; if(h.fw==='H') o.fwH++; else if(h.fw==='L') o.fwL++; else o.fwR++; }
+    o.pen+=+h.pen||0; if(h.sand){ o.sandA++; if(h.s<=h.par) o.sandH++; }
+    if(r.ch!=null){ o.pts+=Math.max(0,2+h.par+rec-h.s); o.ptsN++; }
+  });
+  o.avg = o.played ? o.sum/o.played : null; o.avgVs = o.played ? o.vs/o.played : null;
+  return o;
+}
+const fmtVs = v => v==null ? '–' : (Math.abs(v)<0.05 ? 'E' : (v>0?'+':'')+v.toFixed(1));
+const vsCls = v => v==null ? '' : v<=-0.05 ? 'good' : v>=0.95 ? 'bad' : v>=0.45 ? 'meh' : 'ok';
+function distBar(dist, tot){
+  const L=[['e','var(--flag)'],['b','var(--birdie)'],['p','var(--accent)'],['bo','var(--bogey)'],['d','var(--muted)']];
+  return `<div class="stackbar slim">${L.map(([k,c])=>dist[k]?`<div style="width:${dist[k]/tot*100}%;background:${c}"></div>`:'').join('')}</div>`;
+}
+function anaCourses(){ const ids=[...new Set(myRounds().filter(r=>r.status==='done'&&!r.mem).map(r=>r.courseId))]; return ids.map(id=>courseById(id)||{id, name:(myRounds().find(r=>r.courseId===id)||{}).courseName||id, holes:[]}); }
+function anaPicSrc(courseId, n){ const x=holeInfo(courseId, n); return x.pic||x.own||null; }
+function anaThumb(courseId, n){
+  const src=anaPicSrc(courseId, n);
+  return src ? `<span class="ana-thumb"><img src="${src}" alt="" loading="lazy"><b class="num">${n}</b></span>` : `<div class="ana-no num">${n}</div>`;
+}
+function anaPic(courseId, n){
+  const src=anaPicSrc(courseId, n); if(!src) return '';
+  return `<button class="pic-btn" data-a="zoomPic" aria-label="Lochbild Loch ${n} gross anzeigen"><img src="${src}" alt="Lochbild Loch ${n}"></button>`;
+}
+function viewHoleTable(courseId){
+  const cs=anaCourses();
+  if(!cs.length) return `<div class="empty"><b>Noch keine Runden</b>Sobald du eine Runde abgeschlossen hast, siehst du hier für jedes Loch, wie du es gespielt hast.</div>`;
+  const cid = courseId && cs.some(c=>c.id===courseId) ? courseId : (S.anaCourse && cs.some(c=>c.id===S.anaCourse) ? S.anaCourse : cs[0].id);
+  S.anaCourse=cid;
+  const c=courseById(cid), {rounds, by}=holeHistory(cid);
+  const nums = c && c.holes.length ? c.holes.map((h,i)=>i+1) : Object.keys(by).map(Number).sort((a,b)=>a-b);
+  let rows=nums.map(n=>{ const list=by[n]||[], st=holeStats(list), hc=c&&c.holes[n-1]; return {n, st, par:hc?hc.par:(list[0]&&list[0].h.par), hcp:hc?hc.hcp:(list[0]&&list[0].h.hcp)}; });
+  const ranked=rows.filter(x=>x.st.played).sort((a,b)=>b.st.avgVs-a.st.avgVs);
+  const worst=ranked.slice(0,3).filter(x=>x.st.avgVs>0), best=ranked.slice().reverse().slice(0,3);
+  if(S.anaSort==='hard') rows=rows.slice().sort((a,b)=>(b.st.avgVs??-99)-(a.st.avgVs??-99));
+  return `<div class="stack">
+    <label class="f">Platz<select class="in" id="ana-course" data-f="anaSel">${cs.map(x=>`<option value="${x.id}" ${x.id===cid?'selected':''}>${esc(x.name)}</option>`).join('')}</select></label>
+    <p class="muted" style="margin:0">${avatar(meProf(),'sm')} ${rounds.length} Runde${rounds.length>1?'n':''} auf ${esc(c?c.name:cid)}. Tippe ein Loch an, um jede einzelne Runde darauf zu sehen.</p>
+    ${ranked.length?`<div class="grid2">
+      <div class="card small"><div class="eyebrow">Deine Stärken</div>${best.map(x=>`<div class="row" style="justify-content:space-between"><span>Loch ${x.n}</span><b class="num">${fmtVs(x.st.avgVs)}</b></div>`).join('')}</div>
+      <div class="card small"><div class="eyebrow">Kostet am meisten</div>${worst.length?worst.map(x=>`<div class="row" style="justify-content:space-between"><span>Loch ${x.n}</span><b class="num">${fmtVs(x.st.avgVs)}</b></div>`).join(''):'<span class="muted">Überall im Schnitt Par oder besser</span>'}</div>
+    </div>`:''}
+    <div class="seg">${[['num','Nach Loch'],['hard','Schwierigste zuerst']].map(([k,l])=>`<button data-a="anaSort" data-v="${k}" aria-pressed="${(S.anaSort||'num')===k}">${l}</button>`).join('')}</div>
+    <div class="list">${rows.map(x=>{ const st=x.st;
+      return `<button class="li ana-row" data-a="anaHole" data-v="${x.n}">
+        ${anaThumb(cid, x.n)}
+        <div class="main"><div class="t">Par ${x.par??'–'} <span class="muted small">· Hcp ${x.hcp??'–'}</span></div>
+          ${st.played?distBar(st.dist, st.played):'<div class="s">noch nicht gespielt</div>'}
+          <div class="s">${[`${st.n}× gespielt`, st.puttN?`Ø ${dec(st.putts/st.puttN,1)} Putts`:null, st.fwA?`FW ${pct(st.fwH,st.fwA)}`:null, st.girA?`GIR ${pct(st.girH,st.girA)}`:null].filter(Boolean).map(x=>`<span class="nw">${x}</span>`).join(' · ')}</div></div>
+        <div class="ana-v num ${vsCls(st.avgVs)}"><b>${st.avg!=null?dec(st.avg,1):'–'}</b><small>${fmtVs(st.avgVs)}</small></div>
+      </button>`; }).join('')}</div>
+    <div class="legend"><span><i class="sw" style="background:var(--birdie)"></i>Birdie+</span><span><i class="sw" style="background:var(--accent)"></i>Par</span><span><i class="sw" style="background:var(--bogey)"></i>Bogey</span><span><i class="sw" style="background:var(--muted)"></i>Doppel+</span></div>
+  </div>`;
+}
+function viewHoleDetail(courseId, n){
+  const c=courseById(courseId), {by}=holeHistory(courseId), list=by[n]||[], st=holeStats(list), hc=c&&c.holes[n-1];
+  const par = hc?hc.par:(list[0]&&list[0].h.par), hcp=hc?hc.hcp:(list[0]&&list[0].h.hcp);
+  const myTee = list[0] && list[0].h.len;
+  const ins=[];
+  if(st.fwA>=2 && st.fwL+st.fwR>0){ const side=st.fwL>st.fwR?'links':st.fwR>st.fwL?'rechts':null; if(side) ins.push(`Fairway verfehlt: meist <b>${side}</b> (${Math.max(st.fwL,st.fwR)} von ${st.fwA}).`); }
+  if(st.missN>=2){ const L={K:'zu kurz',Li:'links',Re:'rechts',La:'zu lang'}; const k=Object.keys(st.miss).sort((a,b)=>st.miss[b]-st.miss[a])[0]; if(st.miss[k]) ins.push(`Green verfehlt: meist <b>${L[k]}</b> (${st.miss[k]} von ${st.missN}).`); }
+  if(st.p3) ins.push(`${st.p3}× drei Putts oder mehr.`);
+  if(st.pen) ins.push(`${st.pen} Strafschl${st.pen>1?'äge':'ag'} insgesamt auf diesem Loch.`);
+  if(st.played>=3 && st.dist.p+st.dist.b+st.dist.e===0) ins.push('Noch nie Par oder besser gespielt.');
+  return `<div class="stack">
+    <section class="hole">
+      ${holeHead({n, par:par??'–', hcp:hcp??'–'}, myTee||'–')}
+      ${anaPic(courseId, n)}
+      ${hc&&hc.tip?`<div class="hole-tip"><p>${esc(hc.tip)}</p></div>`:''}
+    </section>
+    ${!st.n?`<div class="empty"><b>Noch nicht gespielt</b>Auf diesem Loch gibt es noch keine abgeschlossene Runde von dir.</div>`:`
+    <div class="kpis num">
+      <div class="kpi"><div class="v">${st.avg!=null?dec(st.avg,2):'–'}</div><div class="l">Ø Schläge</div><div class="sub">${fmtVs(st.avgVs)} zu Par · ${st.n}× gespielt</div></div>
+      <div class="kpi"><div class="v">${st.best??'–'}</div><div class="l">Bestes Ergebnis</div><div class="sub">${st.worst!=null?'schlechtestes '+st.worst:''}</div></div>
+      <div class="kpi"><div class="v">${st.puttN?dec(st.putts/st.puttN,1):'–'}</div><div class="l">Ø Putts</div><div class="sub">${st.puttN?`${st.p1}× ein Putt · ${st.p3}× drei+`:''}</div></div>
+      <div class="kpi"><div class="v">${st.ptsN?dec(st.pts/st.ptsN,1):'–'}</div><div class="l">Ø Stableford ${ht('stableford')}</div><div class="sub">2 Punkte = Netto-Par</div></div>
+    </div>
+    <div class="section" style="margin-top:4px"><h3>Ergebnisse</h3>
+      ${st.played?distBar(st.dist, st.played):''}
+      <div class="legend">${[['e','Eagle+','var(--flag)'],['b','Birdie','var(--birdie)'],['p','Par','var(--accent)'],['bo','Bogey','var(--bogey)'],['d','Doppel+','var(--muted)']].map(([k,l,col])=>`<span><i class="sw" style="background:${col}"></i>${l} <b class="num">${st.dist[k]}</b></span>`).join('')}${st.up?`<span>Gestrichen <b class="num">${st.up}</b></span>`:''}</div>
+    </div>
+    <div class="bars">
+      ${par>=4?barRow('Fairway getroffen', st.fwH, st.fwA):''}
+      ${barRow('Green in Regulation', st.girH, st.girA)}
+      ${barRow('Scrambling '+ht('scrambling'), st.scrH, st.scrA)}
+    </div>
+    ${ins.length?`<div class="card small stack" style="gap:4px"><div class="eyebrow">Auffällig</div>${ins.map(x=>`<div>${x}</div>`).join('')}</div>`:''}
+    <div class="section"><h3>Jede Runde auf diesem Loch</h3>
+      <div class="list">${list.map(({r,h})=>{ const gir=girOf(h);
+        return `<button class="li" data-a="openRound" data-v="${r.id}">
+          <div class="mk-wrap">${mark(h)}</div>
+          <div class="main"><div class="t">${fmtDate(r.date)} <span class="muted small">· Tee ${esc(r.teeName)}</span></div>
+            <div class="s">${h.up?'gestrichen':[h.p!=null?`${h.p} Putt${h.p===1?'':'s'}`:null, h.par>=4&&h.fw?`Fairway ${h.fw==='H'?'getroffen':h.fw==='L'?'links':'rechts'}`:null, gir!=null?`GIR ${gir?'ja':'nein'}`:null, h.miss?`Green ${({K:'kurz',Li:'links',Re:'rechts',La:'lang'})[h.miss]}`:null, h.pen?`${h.pen} Strafschl.`:null, h.sand?'Grünbunker':null].filter(Boolean).join(' · ')||'–'}</div></div>
+          <span class="chev">›</span></button>`; }).join('')}</div>
+    </div>`}
+    <div class="hole-nav">
+      <button class="btn" data-a="anaHole" data-v="${n-1}" ${n<=1?'disabled':''}>‹ Loch ${n>1?n-1:''}</button>
+      <button class="btn" data-a="anaHole" data-v="${n+1}" ${c&&n>=c.holes.length?'disabled':''}>Loch ${n+1} ›</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- Beispieldaten zum Testen, nur in der lokalen Vorschau (nicht auf der Website) ----------
+   Erzeugt Profile und abgeschlossene Runden mit typischen Mustern (z. B. Manuel verfehlt Fairways eher links,
+   Loch 7 und 15 kosten ihm oft Schläge, Loch 12 liegt ihm). Alles ist mit demo:true markiert und lässt sich wieder entfernen. */
+function demoRand(seed){ let x=seed; return ()=>{ x=(x*16807)%2147483647; return (x-1)/2147483646; }; }
+const DEMO_PEOPLE=[
+  {name:'Manuel', hi:18.4, gender:'m', color:'#1D6842', n:12, bias:'L', trouble:{moossee18:[7,15], moossee9:[1]}, strong:{moossee18:[12,4], moossee9:[5]}},
+  {name:'Anna',   hi:24.0, gender:'w', color:'#BF3F2B', n:7,  bias:'R', trouble:{moossee18:[2,16], moossee9:[3]}, strong:{moossee18:[9], moossee9:[8]}},
+  {name:'Beat',   hi:12.5, gender:'m', color:'#2D5A88', n:8,  bias:'R', trouble:{moossee18:[18], moossee9:[7]}, strong:{moossee18:[5,13], moossee9:[2]}},
+  {name:'Zora',   hi:31.0, gender:'w', color:'#6B4FA0', n:5,  bias:'L', trouble:{moossee18:[3], moossee9:[4]}, strong:{moossee18:[17], moossee9:[6]}}
+];
+function demoHole(rnd, h, nHoles, skill, pp, courseId){
+  const pick = w => { let t=rnd()*w.reduce((a,b)=>a+b[1],0); for(const [v,x] of w){ if((t-=x)<=0) return v; } return w[w.length-1][0]; };
+  const diff = nHoles===18 ? (9.5-h.hcp)/18*0.6 : (5-h.hcp)/9*0.6;
+  const trouble=(pp.trouble[courseId]||[]).includes(h.n), strong=(pp.strong[courseId]||[]).includes(h.n);
+  const e = Math.max(0, skill*0.95 + diff + (trouble?0.7:0) - (strong?0.45:0));
+  const fw = h.par>=4 ? (rnd()<Math.min(0.72,Math.max(0.22,0.62-0.25*skill-(trouble?0.2:0)+(strong?0.15:0))) ? 'H' : (rnd()<(pp.bias==='L'?0.72:0.28)?'L':'R')) : null;
+  const pen = rnd() < (0.03+0.05*skill+(trouble?0.22:0)) ? 1 : 0;
+  const girP = Math.min(0.8, Math.max(0.05, 0.66-0.45*skill-diff*0.5+(strong?0.2:0)-(trouble?0.15:0)));
+  const gir = !pen && rnd()<girP;
+  let stg, p, miss=null, sand=false;
+  if(gir){ stg=h.par-2; p=pick([[1,0.15],[2,0.7],[3,0.12+skill*0.06]]); }
+  else {
+    stg = h.par-1 + (rnd()<e*0.36?1:0) + (rnd()<e*0.08?1:0) + (rnd()<Math.max(0,e-1.2)*0.55?1:0) + (rnd()<Math.max(0,e-1.8)*0.4?1:0) + pen;
+    miss = pick([['K',0.4],['Li',pp.bias==='L'?0.3:0.15],['Re',pp.bias==='R'?0.3:0.15],['La',0.15]]);
+    sand = rnd()<0.18; p = rnd()<0.38?1:(rnd()<0.88?2:3);
+  }
+  return {n:h.n, par:h.par, hcp:h.hcp, len:h.len, s:stg+p, p, fw, miss, pen, sand, up:false};
+}
+function loadDemo(){
+  const rnd=demoRand(4242), now=Date.now(), d=store.data;
+  const byName={}; Object.entries(d.profiles).forEach(([id,p])=>{ byName[String(p.name).trim().toLowerCase()]=id; });
+  let nr=0, np=0;
+  DEMO_PEOPLE.forEach((pp,pi)=>{
+    let pid=byName[pp.name.toLowerCase()];
+    if(!pid){ pid='demo-'+pp.name.toLowerCase(); d.profiles[pid]={name:pp.name, hi:pp.hi, gender:pp.gender, color:pp.color, demo:true, _t:now}; np++; }
+    for(let k=0;k<pp.n;k++){
+      const day=new Date(now-Math.round((k+1)*(140/pp.n)+rnd()*6)*864e5);
+      const date=`${day.getFullYear()}-${String(day.getMonth()+1).padStart(2,'0')}-${String(day.getDate()).padStart(2,'0')}`;
+      const courseId = k%4===3 ? 'moossee9' : 'moossee18', c=courseById(courseId);
+      const mode = courseId==='moossee18' && k%5===4 ? 'front' : 'all';
+      const tee = c.tees.find(t=>t.name===(courseId==='moossee18' ? (pp.gender==='w'?'54':'59') : (pp.gender==='w'?'24':'26'))) || c.tees[0];
+      const hi = Math.round((pp.hi + (k/pp.n)*1.8)*10)/10;      // ältere Runden mit etwas höherem Handicap
+      const ph = playing(hi, c, tee, mode, pp.gender), idx=holeIdx(c, mode);
+      const skill = Math.max(0.2, (ph.ch ?? hi) * 1.12 / idx.length);   // Schläge über Par pro Loch, aus der Spielvorgabe
+      const holes = idx.map(i=>demoHole(rnd, {n:i+1, par:+c.holes[i].par, hcp:+c.holes[i].hcp, len:+(tee.len?.[i])||null}, c.holes.length, skill, pp, courseId));
+      const id='rdemo'+pi+'x'+k;
+      d.rounds[id]={groupId:'gdemo'+pi+'x'+k, order:0, profileId:pid, playerName:pp.name, guest:false, courseId, courseName:c.name, teeName:tee.name, date,
+        mem:false, mode, modeLabel: c.holes.length===18 ? ({all:'Alle 18',front:'Front 9',back:'Back 9'})[mode] : '', hi, gender:pp.gender, ch:ph.ch, cr:ph.cr, slope:ph.slope,
+        status:'done', notes:'', createdAt:day.getTime(), updatedAt:now, demo:true, holes};
+      nr++;
+    }
+  });
+  store.emit(); store.flush();
+  if(!S.profiles[S.me]){ const m=profList()[0]; if(m) pickProfile(m.id); }
+  render(); toast(`${nr} Beispielrunden${np?` und ${np} Profile`:''} geladen`);
+}
+function removeDemo(){
+  const d=store.data; let n=0;
+  Object.keys(d.rounds).forEach(id=>{ if(d.rounds[id].demo){ delete d.rounds[id]; n++; } });
+  Object.keys(d.profiles).forEach(id=>{ if(d.profiles[id].demo && !Object.values(d.rounds).some(r=>r.profileId===id)) delete d.profiles[id]; });
+  store.emit(); store.flush();
+  if(!S.profiles[S.me]){ S.me=null; ls('golfsc-me', null); S.picked=false; }
+  render(); toast(`${n} Beispielrunden entfernt`);
+}
+const hasDemo = () => Object.values(store.data.rounds||{}).some(r=>r.demo);
+function demoCard(){
+  if(sync.on) return '';     // nur in der lokalen Vorschau, nie auf der Website
+  return `<div class="card stack"><h3>Beispieldaten zum Testen</h3>
+    <p class="small" style="margin:0">Nur in der lokalen Vorschau: lädt die Profile Manuel, Anna, Beat und Zora mit rund 30 abgeschlossenen Runden auf Moossee 18 und 9 Loch. Ideal, um Statistik und Lochanalyse auszuprobieren. Gibt es schon ein Profil mit gleichem Namen, bekommt es die Runden dazu.</p>
+    <div class="row"><button class="btn primary" data-a="demoLoad">Beispieldaten laden</button>${hasDemo()?'<button class="btn danger" data-a="demoRemove">Beispieldaten entfernen</button>':''}</div>
+  </div>`;
+}
+
+/* ---------- Hilfe: Erste Schritte, Funktionen der App und Golf-Begriffe ---------- */
+const GLOSSARY=[
+  {k:'par', t:'Par', c:'Ergebnis', d:'Die Anzahl Schläge, die ein guter Spieler für ein Loch braucht. Ein Par 4 heisst: ankommen auf dem Green mit zwei Schlägen, dann zwei Putts. Das Par aller Löcher zusammen ist das Par des Platzes, in Moossee 72.'},
+  {k:'birdie', t:'Birdie, Eagle, Albatros', c:'Ergebnis', d:'Ein Schlag unter Par ist ein Birdie, zwei Schläge darunter ein Eagle, drei Schläge darunter ein Albatros. In der Scorekarte ist ein Birdie mit einem Kreis markiert, ein Eagle mit zwei Kreisen.'},
+  {k:'bogey', t:'Bogey, Doppelbogey', c:'Ergebnis', d:'Ein Schlag über Par ist ein Bogey, zwei Schläge darüber ein Doppelbogey. In der Scorekarte ist ein Bogey mit einem Quadrat markiert, ein Doppelbogey oder schlechter mit zwei Quadraten.'},
+  {k:'brutto', t:'Brutto und Netto', c:'Ergebnis', d:'Brutto ist die tatsächliche Anzahl Schläge. Netto zieht die Vorgabeschläge ab. Wer mit Spielvorgabe 20 eine Runde mit 92 Schlägen spielt, hat netto 72.'},
+  {k:'stableford', t:'Stableford', c:'Ergebnis', d:'Zählweise mit Punkten statt Schlägen. Pro Loch gibt es für Netto-Par 2 Punkte, für ein Netto-Birdie 3 Punkte, für ein Netto-Bogey 1 Punkt und für alles Schlechtere 0 Punkte. 36 Punkte auf 18 Loch heisst: genau so gut gespielt wie das eigene Handicap. Ein schlechtes Loch kostet so höchstens 2 Punkte.'},
+  {k:'vorgabe', t:'Vorgabeschläge', c:'Handicap', d:'Zusätzliche Schläge, die du je nach Spielvorgabe auf bestimmten Löchern bekommst. Sie werden nach dem Loch-Hcp verteilt: zuerst auf Hcp 1, dann 2 und so weiter. In der App zeigen gelbe Punkte beim Loch, wie viele Vorgabeschläge du dort hast. Netto-Par ist Par plus deine Vorgabeschläge.'},
+  {k:'hcpindex', t:'Handicap-Index (HCP)', c:'Handicap', d:'Zahl für deine Spielstärke nach dem World Handicap System. Je tiefer, desto besser. Anfänger starten bei 54. Der offizielle Index wird von deinem Club bzw. Swiss Golf aus deinen besten 8 der letzten 20 Runden berechnet. Du trägst ihn beim Start einer Runde ein.'},
+  {k:'spielvorgabe', t:'Spielvorgabe', c:'Handicap', d:'Wie viele Vorgabeschläge du auf diesem Platz und von diesem Abschlag bekommst. Sie hängt von deinem Handicap-Index, vom Course Rating und vom Slope ab und wird beim Start der Runde automatisch berechnet. Bei 9 Loch gilt der halbe Index.'},
+  {k:'lochhcp', t:'Loch-Hcp (Index)', c:'Platz', d:'Jedes Loch hat eine Zahl von 1 bis 18 (bei 9 Loch 1 bis 9). Hcp 1 ist das schwierigste Loch, dort bekommst du zuerst Vorgabeschläge. Auf der Scorekarte heisst das auch Index oder Stroke Index.'},
+  {k:'cr', t:'Course Rating (CR)', c:'Platz', d:'Wie viele Schläge ein sehr guter Spieler (Handicap 0) auf diesem Platz vom gewählten Abschlag im Schnitt braucht. Ein CR von 71.8 bei Par 72 heisst: der Platz ist leicht einfacher als Par.'},
+  {k:'slope', t:'Slope', c:'Platz', d:'Wie viel schwieriger der Platz für einen Durchschnittsspieler ist als für einen sehr guten Spieler. Der Normalwert ist 113, die Spanne reicht von 55 bis 155. Je höher, desto mehr Vorgabeschläge bekommst du.'},
+  {k:'tee', t:'Abschlag (Tee)', c:'Platz', d:'Die Stelle, von der aus jedes Loch beginnt. Es gibt mehrere Abschläge pro Loch, verschieden lang. In Moossee sind sie nach der Länge benannt: Tee 59 ist rund 5900 m lang, Tee 54 rund 5400 m. Das Tee heisst auch der kleine Stift, auf den du den Ball beim Abschlag legen darfst.'},
+  {k:'front9', t:'Front 9, Back 9, Out und In', c:'Platz', d:'Front 9 sind die Löcher 1 bis 9, Back 9 die Löcher 10 bis 18. Auf der Scorekarte steht dafür Out und In. Du kannst auf einem 18-Loch-Platz auch nur eine Hälfte spielen.'},
+  {k:'fairway', t:'Fairway getroffen', c:'Statistik', d:'Der kurz gemähte Bereich zwischen Abschlag und Green. Gezählt wird nur auf Par 4 und Par 5: Liegt dein Abschlag auf dem Fairway, ist es getroffen. Sonst trägst du ein, ob er links oder rechts daneben lag. So siehst du in der Statistik, wohin deine Abschläge gehen.'},
+  {k:'gir', t:'Green in Regulation (GIR)', c:'Statistik', d:'Du bist «rechtzeitig» auf dem Green, wenn noch zwei Putts für Par übrig sind: auf Par 3 nach dem 1. Schlag, auf Par 4 nach dem 2., auf Par 5 nach dem 3. Die App rechnet das selbst aus Schlägen minus Putts aus. Darum braucht es die Putts.'},
+  {k:'scrambling', t:'Scrambling', c:'Statistik', d:'Wie oft du trotz verfehltem Green noch Par oder besser spielst. Zeigt, wie gut dein kurzes Spiel rund ums Green ist.'},
+  {k:'sandsave', t:'Sand Save (Grünbunker)', c:'Statistik', d:'Ein Grünbunker liegt direkt neben dem Green. Ein Sand Save heisst: aus dem Grünbunker heraus und danach noch Par oder besser. Tippe «Grünbunker gespielt» nur bei Bunkern am Green an, nicht bei Fairwaybunkern.'},
+  {k:'putt', t:'Putt, Ein-Putt, Drei-Putt', c:'Statistik', d:'Ein Putt ist ein Schlag auf dem Green, meist mit dem Putter. Schläge vom Vorgrün zählen nicht als Putt. Ein-Putt heisst: mit einem Putt eingelocht. Drei-Putts kosten unnötig Schläge, darum zeigt die Statistik sie extra.'},
+  {k:'penalty', t:'Strafschlag', c:'Regeln', d:'Ein zusätzlicher Schlag, den du zählen musst, zum Beispiel wenn der Ball im Wasser (Penalty Area) oder im Aus landet. Trag Strafschläge separat ein, sie gehören aber auch zur Gesamtzahl der Schläge.'},
+  {k:'pickup', t:'Loch gestrichen', c:'Regeln', d:'Du hebst den Ball auf und spielst das Loch nicht fertig, etwa um das Spiel zu beschleunigen. Für Stableford gibt es 0 Punkte. Für das Handicap zählt die App das Loch als Netto-Doppelbogey.'},
+  {k:'ndb', t:'Netto-Doppelbogey', c:'Handicap', d:'Das höchste Ergebnis, das pro Loch für das Handicap zählt: Par plus 2 plus deine Vorgabeschläge auf diesem Loch. Ein Ausreisser verdirbt so nicht die ganze Handicap-Rechnung.'},
+  {k:'differential', t:'Score-Differential', c:'Handicap', d:'Der Wert, aus dem das Handicap berechnet wird: dein angepasstes Ergebnis minus Course Rating, umgerechnet mit dem Slope. Er macht Runden auf verschiedenen Plätzen vergleichbar. Zwei 9-Loch-Runden werden zu einem Wert zusammengezählt.'},
+  {k:'hcpest', t:'HCP-Schätzung', c:'Handicap', d:'Die App schätzt dein Handicap nach den gleichen Regeln wie das World Handicap System aus deinen Score-Differentials, ab 3 Runden. Das ist kein offizielles Handicap. Das offizielle führt dein Club.'},
+  {k:'eclectic', t:'Eclectic', c:'Statistik', d:'Deine Traumrunde: auf jedem Loch dein bestes Ergebnis aus allen gespielten Runden zusammengezählt. Zeigt, was auf diesem Platz möglich ist.'},
+  {k:'flight', t:'Flight', c:'Spiel', d:'Die Gruppe, mit der du spielst, meist 2 bis 4 Personen. In der App kann einer für den ganzen Flight schreiben: beim Start weitere Profile oder Gäste dazunehmen.'},
+  {k:'carry', t:'Carry und Gesamtlänge', c:'Bag', d:'Carry ist die Strecke, die der Ball in der Luft fliegt. Die Gesamtlänge zählt das Rollen nach der Landung dazu. Über Wasser oder Bunker zählt nur der Carry.'},
+  {k:'loft', t:'Loft', c:'Bag', d:'Der Neigungswinkel der Schlagfläche. Wenig Loft (Driver, etwa 10°) gibt einen flachen, langen Ballflug. Viel Loft (Wedge, über 50°) gibt einen hohen, kurzen Ballflug.'},
+  {k:'rule14', t:'14-Schläger-Regel', c:'Regeln', d:'In einer Runde darfst du höchstens 14 Schläger dabei haben. Welche, wählst du selbst.'},
+  {k:'clubs', t:'Holz, Hybrid, Eisen, Wedge, Putter', c:'Bag', d:'Hölzer (mit Driver) sind die langen Schläger mit grossem Kopf. Hybride ersetzen lange Eisen und sind leichter zu treffen. Eisen sind nummeriert, je höher die Zahl, desto kürzer und höher fliegt der Ball. Wedges sind für kurze, hohe Schläge und Bunker. Der Putter ist für das Green.'},
+  {k:'bunker', t:'Bunker', c:'Platz', d:'Mit Sand gefüllte Vertiefung. Fairwaybunker liegen entlang der Spielbahn, Grünbunker direkt am Green. Im Bunker darfst du den Sand vor dem Schlag nicht mit dem Schläger berühren.'},
+  {k:'rough', t:'Rough und Vorgrün', c:'Platz', d:'Das Rough ist das höhere Gras neben dem Fairway, der Ball ist dort schwerer zu spielen. Das Vorgrün ist der schmale, etwas länger gemähte Ring rund ums Green.'},
+  {k:'penaltyarea', t:'Penalty Area (Wasser)', c:'Regeln', d:'Ein Bereich wie ein Teich oder Bach, markiert mit gelben oder roten Pfosten. Landet der Ball dort, darfst du gegen einen Strafschlag neu droppen.'},
+  {k:'dogleg', t:'Dogleg', c:'Platz', d:'Ein Loch, das einen Knick nach links oder rechts macht. Der Abschlag zielt meist auf die Ecke.'},
+  {k:'updown', t:'Up and down', c:'Statistik', d:'Mit einem kurzen Schlag (Chip, Pitch oder aus dem Bunker) aufs Green und dann mit einem Putt ins Loch.'}
+];
+const HELP_FUNCS=[
+  ['Profil wählen', 'Beim Öffnen fragt die App «Wer spielt?». Jeder Spieler hat sein eigenes Profil mit eigenen Runden, eigener Statistik und eigenem Bag. Der farbige Kreis oben rechts zeigt, wer gerade gewählt ist. Antippen wechselt das Profil.'],
+  ['Runde starten', 'Unter «Spielen» auf «+ Neue Runde starten». Platz wählen, bei 18 Loch auch nur Front 9 oder Back 9 möglich. Dann die Spieler: du bist schon dabei, weitere Profile oder Gäste kannst du antippen (bis 4). Für jeden HCP-Index und Abschlag wählen, die Spielvorgabe rechnet die App selbst.'],
+  ['Während der Runde', 'Das Par ist schon eingetragen, du tippst nur noch + oder −. Dann die Putts antippen. Fairway, Strafschläge und Bunker sind freiwillig, machen die Statistik aber viel genauer. Green in Regulation rechnet die App selbst aus. Lochbild antippen zum Vergrössern. Jede Eingabe ist sofort gespeichert, auch wenn du die App schliesst.'],
+  ['Mehrere Spieler (Flight)', 'Spielen mehrere Spieler auf einem Handy, hat jeder pro Loch einen eigenen Block mit + und − und den Putts. Mit «Fairway, Green, Bunker, Strafschläge» klappst du die Details pro Spieler auf.'],
+  ['Runde abschliessen oder löschen', 'Nach dem letzten Loch «Runde abschliessen», dann siehst du die Scorekarte aller Spieler. Mit «Diese Runde löschen» unten bei jedem Loch verwirfst du eine laufende Runde, nach einer Sicherheitsabfrage.'],
+  ['Statistik', 'Durchschnitt, Trend, Fairways, Greens, Putts, Score-Verteilung und eine Handicap-Schätzung. Oben kannst du nach Platz und Zeitraum filtern.'],
+  ['Lochanalyse', 'Zeigt für jeden Platz und jedes Loch, wie du es bisher gespielt hast: Durchschnitt, beste und schlechteste Ergebnisse, Fairways, Greens, Putts und jede einzelne Runde. Während einer Runde erscheint unter dem Loch deine Bilanz, falls du es schon einmal gespielt hast.'],
+  ['Runden vergleichen', 'Zwei Runden nebeneinander, auch von anderen Spielern. Die Tabelle markiert den besseren Wert grün, darunter folgt der Vergleich Loch für Loch.'],
+  ['Bag', 'Erst stellst du deinen Bag zusammen (welche Schläger du dabei hast), dann trägst du pro Schläger ein, wie weit du ihn schlägst und wann du ihn nimmst. Die Übersicht zeigt Lücken zwischen deinen Schlägern.'],
+  ['Plätze', 'Alle Plätze mit Par, Hcp und Längen pro Abschlag, dazu Course Rating und Slope. Lochbilder lassen sich vergrössern. Einen neuen Platz kannst du selbst erfassen.'],
+  ['Speichern und Sicherung', 'Jede Eingabe wird sofort auf dem Handy gespeichert. Auf der Website wird zusätzlich alles in der Online-Sicherung abgelegt, geschützt mit eurem Passwort. Die Wolke oben zeigt den Stand: ✓ heisst gesichert, «offen» heisst, es wird nachgeholt, sobald du wieder Empfang hast.'],
+  ['App aufs Handy', 'Öffne die Website auf dem Handy und wähle im Browser-Menü «Zum Home-Bildschirm» (iPhone: Teilen-Symbol). Dann startet die App wie jede andere und funktioniert auf dem Platz auch ohne Empfang.']
+];
+const HELP_STEPS=[
+  'Profil anlegen: Name, Handicap-Index (Anfänger: 54) und Herren- oder Damenabschläge.',
+  'Unter «Spielen» auf «+ Neue Runde starten» tippen, Platz und Abschlag wählen.',
+  'Auf jedem Loch mit + und − die Schläge anpassen und die Putts antippen.',
+  'Nach dem letzten Loch «Runde abschliessen». Fertig, die Statistik füllt sich von selbst.'
+];
+const glossaryTerm = k => GLOSSARY.find(g=>g.k===k);
+function ht(k){ return `<button class="ht" data-a="help" data-v="${k}" aria-label="Erklärung: ${esc((glossaryTerm(k)||{}).t||'')}">?</button>`; }
+function showHelp(k){
+  const g=glossaryTerm(k); if(!g) return;
+  closeHelp();
+  const d=document.createElement('div'); d.className='sheet-wrap'; d.id='help-sheet';
+  d.innerHTML=`<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="help-t">
+    <div class="eyebrow">${esc(g.c)}</div><h3 id="help-t">${esc(g.t)}</h3><p>${esc(g.d)}</p>
+    <div class="row"><button class="btn primary" data-a="helpClose">Verstanden</button><button class="btn ghost" data-a="helpAll" data-v="${g.k}">Alle Begriffe</button></div></div>`;
+  d.addEventListener('click', e=>{ if(e.target===d) closeHelp(); });
+  document.body.appendChild(d); d.querySelector('[data-a="helpClose"]').focus();
+}
+function closeHelp(){ const d=document.getElementById('help-sheet'); if(d) d.remove(); }
+function viewHelp(focus){
+  const cats=[...new Set(GLOSSARY.map(g=>g.c))];
+  return `<div class="stack help">
+    <div class="card stack"><h3>Erste Schritte</h3>
+      <ol class="steps">${HELP_STEPS.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>
+      <p class="small muted" style="margin:0">Überall, wo ein kleines <span class="ht ht-inline">?</span> steht, kannst du es antippen. Dann erscheint eine kurze Erklärung.</p>
+    </div>
+    <div class="section"><h3>Die Funktionen der App</h3>
+      <div class="list">${HELP_FUNCS.map(([t,d])=>`<details class="acc"><summary>${esc(t)}</summary><p>${esc(d)}</p></details>`).join('')}</div>
+    </div>
+    <div class="section"><h3>Golf-Begriffe von A bis Z</h3>
+      <input class="in" type="search" id="help-q" data-f="helpQ" placeholder="Begriff suchen, z. B. Slope" value="${esc(S.helpQ||'')}" autocomplete="off">
+      <div class="chips">${['Alle',...cats].map(c=>`<button class="chip" data-a="helpCat" data-v="${c}" aria-pressed="${(S.helpCat||'Alle')===c}">${esc(c)}</button>`).join('')}</div>
+      <div class="list" id="gloss">${GLOSSARY.slice().sort((a,b)=>a.t.localeCompare(b.t,'de')).map(g=>`<details class="acc gl" id="g-${g.k}" data-cat="${esc(g.c)}" data-txt="${esc((g.t+' '+g.d).toLowerCase())}" ${focus===g.k?'open':''}><summary>${esc(g.t)} <span class="badge">${esc(g.c)}</span></summary><p>${esc(g.d)}</p></details>`).join('')}</div>
+      <p class="small muted" id="gloss-none" hidden>Kein Begriff gefunden.</p>
+    </div>
+  </div>`;
+}
+function filterGlossary(){
+  const q=String(S.helpQ||'').trim().toLowerCase(), cat=S.helpCat||'Alle'; let n=0;
+  document.querySelectorAll('#gloss .gl').forEach(el=>{ const ok=(!q || el.dataset.txt.includes(q)) && (cat==='Alle' || el.dataset.cat===cat); el.hidden=!ok; if(ok) n++; });
+  const none=document.getElementById('gloss-none'); if(none) none.hidden=n>0;
+}
+function welcomeCard(){
+  if(ls('golfsc-helpseen')) return '';
+  return `<div class="card stack welcome"><h3>Neu hier?</h3>
+    <p class="small" style="margin:0">In der Hilfe findest du eine kurze Anleitung, alle Funktionen und die wichtigsten Golf-Begriffe einfach erklärt. Sie ist jederzeit oben über das <b>?</b> erreichbar.</p>
+    <div class="row"><button class="btn primary" data-a="openHelp">Hilfe ansehen</button><button class="btn ghost" data-a="helpSeen">Ausblenden</button></div></div>`;
 }
 
 /* ---------- Plätze ---------- */
@@ -790,9 +1306,10 @@ const ICON = {
   play:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V3l10 4-10 4"/><ellipse cx="12" cy="21" rx="7" ry="1.6"/></svg>',
   rounds:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="4" width="17" height="16" rx="2"/><path d="M3.5 9h17M9 9v11M14.5 9v11"/></svg>',
   stats:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  bag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3L9.5 17.5"/><path d="M9.5 17.5c-.4 1.2-1.6 2.2-3 2.2H4.5c-.6 0-.9-.6-.6-1.1l.8-1.3c.3-.5.9-.8 1.5-.8h3.3z"/><path d="M18 3l-3 0"/></svg>',
   courses:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18c3-2 6-2 9 0s6 2 9 0"/><path d="M12 15V4l6 2.5L12 9"/></svg>'
 };
-const TABS=[['home','Start'],['play','Spielen'],['rounds','Runden'],['stats','Statistik'],['courses','Plätze']];
+const TABS=[['home','Start'],['play','Spielen'],['stats','Statistik'],['bag','Bag'],['courses','Plätze']];
 
 function softRender(){
   const a=document.activeElement;
@@ -808,25 +1325,31 @@ function render(){
   let title='Scorekarte', back=null, html='';
   const v=S.view;
   if(who){ title='Golf Scorecard'; html=viewWho(); }
-  else if(v && v.name==='round'){ const r=S.rounds[v.id]; title=r?esc(r.courseName):'Runde'; back='Runden'; html=r?viewRound(r):'<div class="empty"><b>Runde nicht gefunden</b></div>'; }
+  else if(v && v.name==='start'){ title='Neue Runde'; back='Spielen'; html=viewStart(); }
+  else if(v && v.name==='help'){ title='Hilfe'; back='Zurück'; html=viewHelp(v.focus); }
+  else if(v && v.name==='cmp'){ title='Runden vergleichen'; back='Zurück'; html=viewCompare(); }
+  else if(v && v.name==='ana'){ title='Lochanalyse'; back='Zurück'; html=viewHoleTable(v.course); }
+  else if(v && v.name==='anaHole'){ const c=courseById(v.course); title=`Loch ${v.n}${c?' · '+esc(c.name):''}`; back='Zurück'; html=viewHoleDetail(v.course, v.n); }
+  else if(v && v.name==='round'){ const r=S.rounds[v.id]; title=r?esc(r.courseName):'Runde'; back='Zurück'; html=r?viewRound(r):'<div class="empty"><b>Runde nicht gefunden</b></div>'; }
   else if(v && v.name==='course'){ const c=courseById(v.id); title=c?esc(c.name):'Platz'; back='Plätze'; html=c?viewCourse(c):'<div class="empty"><b>Platz nicht gefunden</b></div>'; }
   else if(v && v.name==='courseForm'){ title=S.form.isNew?'Neuer Platz':'Platz bearbeiten'; back='Abbrechen'; html=viewCourseForm(); }
   else if(v && v.name==='finish'){ title='Runde abschliessen'; back='Zurück'; html=viewFinish(); }
   else if(v && v.name==='data'){ title='Sicherung und Daten'; back='Zurück'; html=viewData(); }
   else if(S.tab==='home'){ title='Golf Scorecard'; html=viewHome(); }
-  else if(S.tab==='play'){ const g=curGroup(); if(g){ title=esc(g[0].courseName); html = g.length>1 ? viewFlight(g) : viewHole(g[0]); } else { title='Neue Runde'; html=viewStart(); } }
-  else if(S.tab==='rounds'){ title='Meine Runden'; html=viewRounds(); }
+  else if(S.tab==='play'){ const g=curGroup(); if(g){ title=esc(g[0].courseName); html = g.length>1 ? viewFlight(g) : viewHole(g[0]); } else { title='Spielen'; html=viewPlayHub(); } }
   else if(S.tab==='stats'){ title='Statistik'; html=viewStats(); }
+  else if(S.tab==='bag'){ title='Mein Bag'; html=viewBag(); }
   else if(S.tab==='courses'){ title='Golfplätze'; html=viewCourses(); }
   const mp=meProf();
   $('#hdr').innerHTML = (back?`<button class="back" data-a="back">‹ ${back}</button>`:'') + `<h1>${title}</h1>`
-    + syncPill() + (who||!mp ? '' : `<button class="hdr-who" data-a="who" aria-label="Profil wechseln, aktuell ${esc(mp.name)}">${avatar(mp)}</button>`);
+    + syncPill() + `<button class="hdr-help" data-a="openHelp" aria-label="Hilfe und Begriffe">?</button>` + (who||!mp ? '' : `<button class="hdr-who" data-a="who" aria-label="Profil wechseln, aktuell ${esc(mp.name)}">${avatar(mp)}</button>`);
   const y = window.scrollY;
   $('#app').innerHTML = html + `<p class="ver">Golf Scorecard · Version ${APP_VERSION} vom ${APP_DATE}</p>`;
   window.scrollTo(0, y);   // Seite bleibt, wo sie war
   startHero();
   const strip = document.querySelector('.strip'), cur = strip && strip.querySelector('[aria-current="true"]');
   if(cur) strip.scrollLeft = cur.offsetLeft - strip.clientWidth/2 + cur.offsetWidth/2;   // nur seitlich, nie hoch
+  if(v && v.name==='help') filterGlossary();
 }
 
 /* --- Start einer Runde: Platz, Löcher, Spieler (eigenes Profil, weitere Profile, Gäste) --- */
@@ -860,7 +1383,7 @@ function viewStart(){
 function phText(pl, c){
   const tee=c.tees[pl.tee]||c.tees[0]; if(!tee) return '';
   const ph=playing(pl.hi===''||pl.hi==null?null:+pl.hi, c, tee, S.start.mode, pl.gender);
-  return `Spielvorgabe <b>${ph.ch==null?'–':ph.ch}</b> · CR ${dec(ph.cr)} · Slope ${ph.slope??'–'} · Par ${ph.par}`;
+  return `Spielvorgabe ${ht('spielvorgabe')} <b>${ph.ch==null?'–':ph.ch}</b> · CR ${dec(ph.cr)} · Slope ${ph.slope??'–'} · Par ${ph.par}`;
 }
 function playerCard(pl, i, c){
   const prof=pl.pid && S.profiles[pl.pid];
@@ -868,7 +1391,7 @@ function playerCard(pl, i, c){
     <div class="row">${prof?`${avatar(prof)}<b style="flex:1">${esc(prof.name)}</b>`:`${avatar({name:pl.name||'G',color:'#7A867E'})}<input class="in" style="flex:1" id="pl-name-${i}" data-f="start.players.${i}.name" value="${esc(pl.name)}" placeholder="Name des Gasts">`}
       <button class="btn ghost small" data-a="removePlayer" data-v="${i}" aria-label="Spieler entfernen">Entfernen</button></div>
     <div class="grid2">
-      <label class="f">HCP-Index<input class="in num" id="pl-hi-${i}" type="number" inputmode="decimal" step="0.1" min="-10" max="54" placeholder="z. B. 18.4" value="${esc(pl.hi)}" data-f="start.players.${i}.hi"></label>
+      <label class="f">HCP-Index ${ht('hcpindex')}<input class="in num" id="pl-hi-${i}" type="number" inputmode="decimal" step="0.1" min="-10" max="54" placeholder="z. B. 18.4" value="${esc(pl.hi)}" data-f="start.players.${i}.hi"></label>
       <div class="f">Abschläge<div class="seg">${[['m','Herren'],['w','Damen']].map(([k,l])=>`<button data-a="plGender" data-p="${i}" data-v="${k}" aria-pressed="${pl.gender===k}">${l}</button>`).join('')}</div></div>
     </div>
     ${c.tees.length?`<div class="chips">${c.tees.map((t,k)=>`<button class="chip" data-a="plTee" data-p="${i}" data-v="${k}" aria-pressed="${k===pl.tee}">Tee ${esc(t.name)} <span class="muted small num">${teeLen(t)?teeLen(t)+' m':''}</span></button>`).join('')}</div>`:''}
@@ -894,7 +1417,7 @@ function startRound(){
     saveRound(r);
     if(prof && (prof.hi!==hi || prof.gender!==pl.gender)) profUpdates.push([pl.pid, {name:prof.name, color:prof.color, hi, gender:pl.gender, _t:now}]);
   });
-  ls('golfsc-active', gid); ls('golfsc-hole-'+gid, 0); S.group=null; S.hole=0; S.det={}; S.start=null;
+  ls('golfsc-active', gid); ls('golfsc-hole-'+gid, 0); S.group=null; S.hole=0; S.det={}; S.start=null; S.view=null; S.tab='play'; try{ sessionStorage.setItem('golfsc-tab','play'); }catch(e){}
   profUpdates.forEach(([id,doc])=>store.write('profiles/'+id, doc));
   render(); window.scrollTo(0,0);
 }
@@ -902,18 +1425,37 @@ function startRound(){
 /* --- Lochansicht --- */
 /* Felder pro Spieler und Loch; p ist die Nummer des Spielers im Flight */
 function holeFields(h, p, gir){
-  return `${h.par>=4?`<div><div class="eyebrow" style="margin-bottom:6px">Fairway</div>
+  return `${h.par>=4?`<div><div class="eyebrow" style="margin-bottom:6px">Fairway ${ht('fairway')}</div>
       <div class="seg">${[['L','← Links'],['H','Getroffen'],['R','Rechts →']].map(([k,l])=>`<button data-a="fw" data-p="${p}" data-v="${k}" aria-pressed="${h.fw===k}">${l}</button>`).join('')}</div></div>`:''}
-    <div class="field-row"><span class="lab">Green in Regulation</span>
+    <div class="field-row"><span class="lab">Green in Regulation ${ht('gir')}</span>
       <span class="gir ${gir?'yes':''}">${gir==null?'Putts eintragen':gir?'Ja':'Nein'}</span></div>
     ${gir===false?`<div><div class="eyebrow" style="margin-bottom:6px">Green verfehlt, wo lag der Ball?</div>
       <div class="seg miss">${[['K','Kurz'],['Li','Links'],['Re','Rechts'],['La','Lang']].map(([k,l])=>`<button data-a="miss" data-p="${p}" data-v="${k}" aria-pressed="${h.miss===k}">${l}</button>`).join('')}</div></div>`:''}
-    <div class="field-row"><span class="lab">Strafschläge</span>
+    <div class="field-row"><span class="lab">Strafschläge ${ht('penalty')}</span>
       <div class="mini"><button data-a="pen-" data-p="${p}" aria-label="Strafschlag weniger">−</button><div class="val num">${h.pen||0}</div><button data-a="pen+" data-p="${p}" aria-label="Strafschlag mehr">+</button></div></div>
-    <div class="field-row"><span class="lab">Grünbunker gespielt</span>
+    <div class="field-row"><span class="lab">Grünbunker gespielt ${ht('sandsave')}</span>
       <div class="seg" style="width:150px">${[[false,'Nein'],[true,'Ja']].map(([k,l])=>`<button data-a="sand" data-p="${p}" data-v="${k}" aria-pressed="${!!h.sand===k}">${l}</button>`).join('')}</div></div>
-    <div class="field-row"><span class="lab">Loch gestrichen</span>
+    <div class="field-row"><span class="lab">Loch gestrichen ${ht('pickup')}</span>
       <div class="seg" style="width:150px">${[[false,'Nein'],[true,'Ja']].map(([k,l])=>`<button data-a="up" data-p="${p}" data-v="${k}" aria-pressed="${!!h.up===k}">${l}</button>`).join('')}</div></div>`;
+}
+function anaLink(courseId, n){
+  const list=(holeHistory(courseId).by[n])||[]; if(!list.length) return '';
+  const st=holeStats(list);
+  return `<button class="ana-link" data-a="anaFromPlay" data-v="${n}" data-c="${esc(courseId)}"><span>Deine Bilanz auf Loch ${n}: Ø <b class="num">${st.avg!=null?dec(st.avg,1):'–'}</b> (${fmtVs(st.avgVs)}) aus ${st.n} Runde${st.n>1?'n':''}</span><span class="chev">›</span></button>`;
+}
+function delActiveUI(){
+  const g=activeGroupRounds(); if(!g.length) return '';
+  if(S.confirm!=='delActive') return `<button class="btn ghost small danger-link" data-a="askDelActive">Diese Runde löschen</button>`;
+  return `<div class="confirm"><span style="flex:1">${g.length>1?`Laufende Runde für alle ${g.length} Spieler`:'Laufende Runde'} endgültig löschen? Alle Eingaben dieser Runde gehen verloren.</span>
+    <button class="btn" data-a="cancelConfirm">Behalten</button><button class="btn danger solid" data-a="delActive">Löschen</button></div>`;
+}
+function deleteActiveRound(){
+  const g=activeGroupRounds(), d=store.data, now=Date.now();
+  g.forEach(r=>{ const P=saveRound.pend||{}; if(P[r.id]){ clearTimeout(P[r.id].t); delete P[r.id]; }
+    delete d.rounds[r.id]; d.deleted['rounds/'+r.id]=now; if(!r.mem && !r.guest) store.markDirty('rounds/'+r.id); });
+  ls('golfsc-active', null); S.group=null; S.det={}; S.confirm=null; S.view=null; S.tab='play';
+  store.emit(); store.flush(); sync.soon();
+  toast(g.length>1?'Runde für alle Spieler gelöscht':'Runde gelöscht'); render(); window.scrollTo(0,0);
 }
 function roundWarn(r){
   return r.mem ? '<div class="warnbar" style="background:var(--muted)">Übungsrunde: wird nicht gespeichert</div>'
@@ -948,13 +1490,13 @@ function viewHole(r){
     <div class="tally num">
       <div><span>Schläge</span><b>${st.played?st.strokes:'–'}</b></div>
       <div><span>zu Par</span><b>${st.played?fmtPar(st.vs):'–'}</b></div>
-      <div><span>Stableford</span><b>${r.ch==null?'–':st.pts}</b></div>
+      <div><span>Stableford ${ht('stableford')}</span><b>${r.ch==null?'–':st.pts}</b></div>
     </div>
     <div class="strip" role="tablist" aria-label="Löcher">${r.holes.map((x,k)=>`<button data-a="goHole" data-v="${k}" aria-current="${k===i}"><span class="n">${x.n}</span><span class="v">${x.up?'–':x.s??'·'}</span></button>`).join('')}</div>
     <section class="hole" aria-label="Loch ${h.n}">
       ${holeHead(h, h.len||'–')}
       <div class="hole-body">
-        ${r.ch!=null?`<div class="recv">${dots||''}<span>${rec>0?`${rec} Vorgabeschlag${rec>1?'e':''} · Netto-Par ${h.par+rec}`:rec<0?`${-rec} Schlag zurück`:'Kein Vorgabeschlag'}</span></div>`:''}
+        ${r.ch!=null?`<div class="recv">${dots||''}<span>${rec>0?`${rec} Vorgabeschlag${rec>1?'e':''} · Netto-Par ${h.par+rec} ${ht('vorgabe')}`:rec<0?`${-rec} Schlag zurück`:'Kein Vorgabeschlag'}</span></div>`:''}
         <div>
           <div class="eyebrow" style="margin-bottom:6px">Schläge</div>
           <div class="counter">
@@ -970,6 +1512,8 @@ function viewHole(r){
       ${holeMedia(r.courseId, h.n)}
     </section>
     ${holeNav(r, i)}
+    ${anaLink(r.courseId, h.n)}
+    ${delActiveUI()}
     <p class="small muted">${esc(r.playerName||'')}${r.playerName?' · ':''}Tee ${esc(r.teeName)} · ${fmtDate(r.date)} · Spielvorgabe ${r.ch??'–'} ${last?'':' · <button class="btn ghost small" style="min-height:0;padding:0" data-a="toFinish">Runde vorzeitig abschliessen</button>'}</p>
   </div>`;
 }
@@ -989,6 +1533,8 @@ function viewFlight(g){
       ${holeMedia(g[0].courseId, h0.n)}
     </section>
     ${holeNav(g[0], i)}
+    ${anaLink(g[0].courseId, h0.n)}
+    ${delActiveUI()}
     <p class="small muted">${fmtDate(g[0].date)} · ${g.length} Spieler · <button class="btn ghost small" style="min-height:0;padding:0" data-a="toFinish">Runde abschliessen</button></p>
   </div>`;
 }
@@ -1020,6 +1566,7 @@ function viewFinish(){
     <label class="f">Notizen zur Runde<textarea class="in" id="fin-notes" data-f="edit.notes" placeholder="Wetter, Flight, was gut lief …">${esc(g[0].notes||'')}</textarea></label>
     <button class="btn primary block" data-a="finish">${g[0].mem?'Übungsrunde beenden':g.length>1?'Runde für alle speichern':'Runde speichern'}</button>
     <button class="btn block" data-a="back">Weiter erfassen</button>
+    ${delActiveUI()}
   </div>`;
 }
 
@@ -1069,7 +1616,7 @@ function viewRound(r){
       <div class="kpi"><div class="v">${st.strokes||'–'}</div><div class="l">Schläge</div><div class="sub">${fmtPar(st.vs)} zu Par</div></div>
       <div class="kpi"><div class="v">${r.ch==null?'–':st.pts}</div><div class="l">Stableford</div><div class="sub">${r.ch!=null&&st.complete?'Netto '+(st.strokes-r.ch):'&nbsp;'}</div></div>
       <div class="kpi"><div class="v">${st.puttH?st.putts:'–'}</div><div class="l">Putts</div><div class="sub">${st.puttH?dec(st.putts/st.puttH,2)+' pro Loch':''}</div></div>
-      <div class="kpi"><div class="v">${st.diff==null?'–':dec(st.diff)}</div><div class="l">Score-Differential</div><div class="sub">${r.holes.length!==9&&r.holes.length!==18?'zählt nicht fürs Handicap':st.diff==null?'Runde unvollständig':r.holes.length===9?'9-Loch-Wert':'18 Loch'}</div></div>
+      <div class="kpi"><div class="v">${st.diff==null?'–':dec(st.diff)}</div><div class="l">Score-Differential ${ht('differential')}</div><div class="sub">${r.holes.length!==9&&r.holes.length!==18?'zählt nicht fürs Handicap':st.diff==null?'Runde unvollständig':r.holes.length===9?'9-Loch-Wert':'18 Loch'}</div></div>
     </div>
     ${scorecard(r)}
     <div class="list">
@@ -1082,6 +1629,7 @@ function viewRound(r){
     </div>
     ${mates.length?`<div class="section" style="margin-top:4px"><span class="eyebrow">Im Flight</span><div class="list">${mates.map(m=>{ const ms=rstats(m); return `<button class="li" data-a="openRound" data-v="${m.id}">${avatarFor(m)}<div class="main"><div class="t">${esc(m.playerName||'')}</div><div class="s">Tee ${esc(m.teeName)}${m.guest?' · Gast':''}</div></div><div class="score-big num">${ms.strokes||'–'}<small>${fmtPar(ms.vs)}${m.ch!=null?' · '+ms.pts+' P':''}</small></div></button>`; }).join('')}</div></div>`:''}
     ${r.notes?`<div class="card"><div class="eyebrow">Notizen</div><p style="margin:4px 0 0;white-space:pre-wrap">${esc(r.notes)}</p></div>`:''}
+    <button class="btn block" data-a="cmpOpen" data-v="${r.id}">Mit einer anderen Runde vergleichen</button>
     <div class="grid2">
       <button class="btn" data-a="reopen" data-v="${r.id}">Runde bearbeiten</button>
       <button class="btn danger" data-a="askDel" data-v="${r.id}">Löschen</button>
@@ -1090,11 +1638,102 @@ function viewRound(r){
   </div>`;
 }
 
+const HUB_ICON={
+  cmp:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M17 4v16"/><path d="M3 8h8M13 14h8"/><path d="M3 16h8M13 6h8" opacity=".45"/></svg>',
+  ana:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4l9 3.5L6 11"/><path d="M14 21v-6M18 21v-9M10 21v-3"/></svg>'
+};
+/* --- Spielen: neue Runde starten und alle bisherigen Runden --- */
+function viewPlayHub(){
+  return `<div class="stack">
+    <button class="btn primary block big" data-a="newRound">+ Neue Runde starten</button>
+    <div class="hub-grid">
+      <button class="hub-btn" data-a="cmpOpen" data-v="">${HUB_ICON.cmp}<b>Runden vergleichen</b><span>Zwei Runden nebeneinander</span></button>
+      <button class="hub-btn" data-a="anaOpen" data-v="">${HUB_ICON.ana}<b>Lochanalyse</b><span>Jedes Loch im Rückblick</span></button>
+    </div>
+    <h3 style="margin-top:10px">Meine Runden</h3>
+    ${viewRounds()}
+    ${!sync.on && !hasDemo() ? demoCard() : ''}
+  </div>`;
+}
+/* ---------- Runden vergleichen: zwei abgeschlossene Runden nebeneinander ---------- */
+function cmpRounds(){ return roundList().filter(r=>r.status==='done' && !r.mem); }
+function cmpLabel(r){ const st=rstats(r); return `${fmtDate(r.date)} · ${String(r.courseName||'').replace(/^Golfpark\s+/,'')}${r.modeLabel&&r.modeLabel!=='Alle 18'?' '+r.modeLabel:''} · ${st.strokes||'–'} (${fmtPar(st.vs)})`; }
+function cmpSelect(key, sel, list){
+  const groups=[]; const seen={};
+  list.forEach(r=>{ const k=r.profileId||('g:'+(r.playerName||'Gast')); if(!seen[k]){ seen[k]={name:r.profileId&&S.profiles[r.profileId]?S.profiles[r.profileId].name:(r.playerName||'Gast'), me:r.profileId===S.me, items:[]}; groups.push(seen[k]); } seen[k].items.push(r); });
+  groups.sort((a,b)=> (b.me-a.me) || String(a.name).localeCompare(String(b.name),'de'));
+  return `<select class="in" id="cmp-${key}" data-f="cmp.${key}">${groups.map(gp=>`<optgroup label="${esc(gp.name)}">${gp.items.map(r=>`<option value="${r.id}" ${r.id===sel?'selected':''}>${esc(cmpLabel(r))}</option>`).join('')}</optgroup>`).join('')}</select>`;
+}
+function viewCompare(){
+  const list=cmpRounds();
+  if(list.length<2) return `<div class="empty"><b>Noch zu wenige Runden</b>Für einen Vergleich braucht es mindestens zwei abgeschlossene Runden.</div>`;
+  const mine=list.filter(r=>r.profileId===S.me);
+  S.cmp ||= {};
+  if(!S.rounds[S.cmp.a] || S.rounds[S.cmp.a].status!=='done') S.cmp.a=(mine[0]||list[0]).id;
+  if(!S.rounds[S.cmp.b] || S.rounds[S.cmp.b].status!=='done' || S.cmp.b===S.cmp.a) S.cmp.b=((mine.length>1?mine:list).find(r=>r.id!==S.cmp.a)||list[1]).id;
+  const A=S.rounds[S.cmp.a], B=S.rounds[S.cmp.b], sa=rstats(A), sb=rstats(B);
+  const ra=x=>x[1]?x[0]/x[1]:null;
+  const p3=r=>r.holes.filter(h=>h.p!=null&&h.p>=3).length;
+  // [Label, Wert A, Wert B, Anzeige, kleiner ist besser?]
+  const rows=[
+    ['Schläge', sa.strokes||null, sb.strokes||null, v=>v, true],
+    ['Zu Par', sa.played?sa.vs:null, sb.played?sb.vs:null, v=>fmtPar(v), true],
+    ['Stableford', A.ch!=null?sa.pts:null, B.ch!=null?sb.pts:null, v=>v, false],
+    ['Putts', sa.puttH?sa.putts:null, sb.puttH?sb.putts:null, v=>v, true],
+    ['Putts pro Loch', sa.puttH?sa.putts/sa.puttH:null, sb.puttH?sb.putts/sb.puttH:null, v=>dec(v,2), true],
+    ['Fairways', ra([sa.fwH,sa.fwA]), ra([sb.fwH,sb.fwA]), v=>Math.round(v*100)+' %', false],
+    ['Greens (GIR)', ra([sa.girH,sa.girA]), ra([sb.girH,sb.girA]), v=>Math.round(v*100)+' %', false],
+    ['Scrambling', ra([sa.scrH,sa.scrA]), ra([sb.scrH,sb.scrA]), v=>Math.round(v*100)+' %', false],
+    ['Drei-Putts', sa.puttH?p3(A):null, sb.puttH?p3(B):null, v=>v, true],
+    ['Strafschläge', sa.pen, sb.pen, v=>v, true],
+    ['Birdies oder besser', sa.dist.e+sa.dist.b, sb.dist.e+sb.dist.b, v=>v, false],
+    ['Pars', sa.dist.p, sb.dist.p, v=>v, false],
+    ['Bogeys', sa.dist.bo, sb.dist.bo, v=>v, true],
+    ['Doppelbogey oder schlechter', sa.dist.d+sa.dist.t, sb.dist.d+sb.dist.t, v=>v, true]
+  ];
+  const win=(a,b,low)=> a==null||b==null||Math.abs(a-b)<1e-9 ? 0 : ((a<b)===low ? 1 : -1);
+  const aWins=rows.filter(x=>win(x[1],x[2],x[4])===1).length, bWins=rows.filter(x=>win(x[1],x[2],x[4])===-1).length;
+  const sameCourse=A.courseId===B.courseId;
+  const nums=[...new Set(A.holes.map(h=>h.n).filter(n=>B.holes.some(h=>h.n===n)))].sort((x,y)=>x-y);
+  const hA=n=>A.holes.find(h=>h.n===n), hB=n=>B.holes.find(h=>h.n===n);
+  const val=h=>h.up?null:h.s;
+  let hw={a:0,b:0,e:0}; const holeRows=nums.map(n=>{ const x=hA(n), y=hB(n), va=val(x), vb=val(y); const d = va!=null&&vb!=null ? va-vb : null;
+    if(d!=null){ if(d<0) hw.a++; else if(d>0) hw.b++; else hw.e++; }
+    return {n, par:x.par, x, y, d}; });
+  const card=(r,s,tag)=>`<div class="cmp-card ${tag}"><span class="cmp-tag">${tag.toUpperCase()}</span>${avatarFor(r,'sm')} <b>${esc(r.playerName||(S.profiles[r.profileId]||{}).name||'')}</b>
+    <div class="small muted">${fmtDate(r.date)} · ${esc(r.courseName)}${r.modeLabel&&r.modeLabel!=='Alle 18'?' · '+esc(r.modeLabel):''} · Tee ${esc(r.teeName)}</div>
+    <div class="cmp-score num">${s.strokes||'–'}<small>${fmtPar(s.vs)}${r.ch!=null?' · '+s.pts+' P':''}</small></div></div>`;
+  return `<div class="stack">
+    <label class="f"><span><span class="cmp-dot a">A</span> Erste Runde</span>${cmpSelect('a', A.id, list)}</label>
+    <label class="f"><span><span class="cmp-dot b">B</span> Zweite Runde</span>${cmpSelect('b', B.id, list)}</label>
+    <button class="btn ghost small" style="align-self:flex-start" data-a="cmpSwap">⇅ Runden tauschen</button>
+    ${A.id===B.id?'<div class="warnbar">Du hast zweimal dieselbe Runde gewählt.</div>':''}
+    <div class="cmp-cards">${card(A,sa,'a')}${card(B,sb,'b')}</div>
+    ${A.holes.length!==B.holes.length?`<p class="small muted" style="margin:0">Achtung: ${A.holes.length} gegen ${B.holes.length} Löcher. Summen wie Schläge und Putts sind darum nicht direkt vergleichbar, die Quoten schon.</p>`:''}
+    <div class="section" style="margin-top:4px"><h3>Kennzahlen</h3>
+      <div class="sc-wrap"><table class="sc cmp-t"><thead><tr><th>Wert</th><th>A</th><th>B</th></tr></thead><tbody>
+        ${rows.map(([l,a,b,f,low])=>{ const w=win(a,b,low); return `<tr><td>${l}</td><td class="${w===1?'win':''}">${a==null?'–':f(a)}</td><td class="${w===-1?'win':''}">${b==null?'–':f(b)}</td></tr>`; }).join('')}
+      </tbody></table></div>
+      <p class="small muted" style="margin:0">Grün markiert ist jeweils der bessere Wert. Runde A ist in ${aWins}, Runde B in ${bWins} von ${rows.length} Werten besser.</p>
+    </div>
+    <div class="section"><h3>Loch für Loch</h3>
+      ${!nums.length?'<p class="small muted" style="margin:0">Die beiden Runden haben keine gemeinsamen Löcher.</p>':`
+      ${!sameCourse?`<p class="small muted" style="margin:0">Verschiedene Plätze: verglichen wird nach Lochnummer.</p>`:''}
+      <div class="cmp-sum num"><div class="a"><b>${hw.a}</b><span>Löcher besser in A</span></div><div><b>${hw.e}</b><span>gleich</span></div><div class="b"><b>${hw.b}</b><span>Löcher besser in B</span></div></div>
+      <div class="sc-wrap"><table class="sc cmp-t"><thead><tr><th>Loch</th><th>Par</th><th>A</th><th>B</th><th>A−B</th></tr></thead><tbody>
+        ${holeRows.map(x=>`<tr><td>${x.n}</td><td>${x.par}</td><td>${mark(x.x)}</td><td>${mark(x.y)}</td><td class="${x.d==null?'':x.d<0?'win':x.d>0?'lose':''}">${x.d==null?'–':x.d===0?'0':(x.d>0?'+':'')+x.d}</td></tr>`).join('')}
+        <tr class="tot"><td>Total</td><td>${sum(holeRows.map(x=>x.par))}</td><td>${sum(holeRows.map(x=>val(x.x)||0))}</td><td>${sum(holeRows.map(x=>val(x.y)||0))}</td><td>${(()=>{ const d=sum(holeRows.map(x=>(val(x.x)||0)-(val(x.y)||0))); return d===0?'0':(d>0?'+':'')+d; })()}</td></tr>
+      </tbody></table></div>
+      <div class="legend"><span><span class="mk birdie">3</span> Birdie</span><span><span class="mk bogey">5</span> Bogey</span><span>A−B negativ: A war besser</span></div>`}
+    </div>
+  </div>`;
+}
+
 /* --- Rundenliste --- */
 function viewRounds(){
   const rs=myRounds();
-  if(!rs.length) return `<div class="empty"><b>Noch keine Runden</b>Starte unter «Spielen» deine erste Runde. Jede Runde landet danach hier.</div>
-    <div class="stack"><button class="btn primary block" data-a="tab" data-v="play">Runde starten</button></div>`;
+  if(!rs.length) return `<div class="empty"><b>Noch keine Runden</b>Starte oben deine erste Runde. Jede Runde landet danach hier.</div>
+`;
   const groups={};
   rs.forEach(r=>{ const k=(r.date||'').slice(0,7); (groups[k] ||= []).push(r); });
   const MON=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
@@ -1111,6 +1750,10 @@ function viewRounds(){
 /* --- Statistik --- */
 function viewStats(){
   const all = myRounds().filter(r=>r.status==='done' && !r.mem);
+  if(all.length) return `<div class="list" style="margin-bottom:12px"><button class="li" data-a="anaOpen" data-v=""><div class="main"><div class="t">Lochanalyse</div><div class="s">So hast du jedes Loch in deinen bisherigen Runden gespielt</div></div><span class="chev">›</span></button></div>` + viewStatsBody(all);
+  return viewStatsBody(all);
+}
+function viewStatsBody(all){
   if(!all.length) return `<div class="empty"><b>Noch keine Auswertung</b>Sobald du eine Runde abgeschlossen hast, siehst du hier Durchschnitt, Fairways, Greens, Putts, Trend und Handicap-Schätzung.</div>`;
   const usedCourses = [...new Set(all.map(r=>r.courseId))];
   let rs = S.statCourse==='all' ? all : all.filter(r=>r.courseId===S.statCourse);
@@ -1134,19 +1777,19 @@ function viewStats(){
     </div>
     <div class="kpis num">
       <div class="kpi"><div class="v">${rs.length}</div><div class="l">Runden</div><div class="sub">${holesPlayed} Löcher gespielt</div></div>
-      <div class="kpi"><div class="v">${hcp.value==null?'–':dec(hcp.value)}</div><div class="l">HCP-Schätzung</div><div class="sub">${hcp.value==null?`ab 3 Differentials (${hcp.n})`:`aus ${hcp.n} Differentials`}</div></div>
+      <div class="kpi"><div class="v">${hcp.value==null?'–':dec(hcp.value)}</div><div class="l">HCP-Schätzung ${ht('hcpest')}</div><div class="sub">${hcp.value==null?`ab 3 Differentials (${hcp.n})`:`aus ${hcp.n} Differentials`}</div></div>
       <div class="kpi"><div class="v">${full18.length?dec(avg(full18.map(x=>x.s.strokes))):full9.length?dec(avg(full9.map(x=>x.s.strokes))):'–'}</div><div class="l">Ø Score ${full18.length?'18 Loch':full9.length?'9 Loch':''}</div><div class="sub">${full18.length?`bestes ${best18} · Ø ${fmtPar(Math.round(avg(full18.map(x=>x.s.vs))*10)/10)}`:''}${full18.length&&full9.length?` · 9 Loch Ø ${dec(avg(full9.map(x=>x.s.strokes)))}`:''}</div></div>
-      <div class="kpi"><div class="v">${dec(avg(ss.filter(x=>x.r.ch!=null&&x.s.complete).map(x=>x.s.pts*(18/x.r.holes.length))))}</div><div class="l">Ø Stableford</div><div class="sub">auf 18 Loch gerechnet</div></div>
+      <div class="kpi"><div class="v">${dec(avg(ss.filter(x=>x.r.ch!=null&&x.s.complete).map(x=>x.s.pts*(18/x.r.holes.length))))}</div><div class="l">Ø Stableford ${ht('stableford')}</div><div class="sub">auf 18 Loch gerechnet</div></div>
     </div>
 
     <div class="section"><h3>Trend</h3><p class="small muted" style="margin:0">Schläge über Par je Runde, 9-Loch-Runden hochgerechnet auf 18 (offene Punkte).</p>${trendChart(ss)}</div>
 
     <div class="section"><h3>Spiel im Detail</h3>
       <div class="bars">
-        ${barRow('Fairways', agg('fwH'), agg('fwA'))}
-        ${barRow('Greens (GIR)', agg('girH'), agg('girA'))}
-        ${barRow('Scrambling', agg('scrH'), agg('scrA'))}
-        ${barRow('Sand Saves', agg('sandH'), agg('sandA'))}
+        ${barRow('Fairways '+ht('fairway'), agg('fwH'), agg('fwA'))}
+        ${barRow('Greens (GIR) '+ht('gir'), agg('girH'), agg('girA'))}
+        ${barRow('Scrambling '+ht('scrambling'), agg('scrH'), agg('scrA'))}
+        ${barRow('Sand Saves '+ht('sandsave'), agg('sandH'), agg('sandA'))}
       </div>
       <div class="kpis num" style="margin-top:6px">
         <div class="kpi"><div class="v">${agg('puttH')?dec(agg('putts')/agg('puttH')*18):'–'}</div><div class="l">Putts pro 18 Loch</div><div class="sub">${agg('puttH')?dec(agg('putts')/agg('puttH'),2)+' pro Loch':''}</div></div>
@@ -1171,7 +1814,7 @@ function viewStats(){
 
     ${S.statCourse!=='all'?holeChart(ss)+eclectic(ss):`<p class="small muted">Wähle oben einen Platz, um die Auswertung pro Loch und deine Bestrunde aus allen Löchern (Eclectic) zu sehen.</p>`}
 
-    ${hcp.list.length?`<div class="section"><h3>Score-Differentials</h3><p class="small muted" style="margin:0">Die besten ${hcp.used} der letzten ${hcp.list.length} zählen für die Schätzung (WHS-Tabelle). Kein offizielles Handicap.</p>
+    ${hcp.list.length?`<div class="section"><h3>Score-Differentials ${ht('differential')}</h3><p class="small muted" style="margin:0">Die besten ${hcp.used} der letzten ${hcp.list.length} zählen für die Schätzung (WHS-Tabelle). Kein offizielles Handicap.</p>
       <div class="list">${hcp.list.slice().reverse().map(x=>`<div class="li"><div class="main"><div class="t">${fmtDate(x.date)}</div><div class="s">${esc(x.label)}</div></div><div class="num" style="font-weight:${x.counts?'700':'400'}">${dec(x.v)}${x.counts?' ✓':''}</div></div>`).join('')}</div></div>`:''}
   </div>`;
 }
@@ -1189,7 +1832,7 @@ function eclectic(ss){
   const keys=Object.keys(best).map(Number).sort((a,b)=>a-b);
   if(!keys.length) return '';
   const tot=sum(keys.map(k=>best[k].s)), par=sum(keys.map(k=>best[k].par));
-  return `<div class="section"><h3>Eclectic</h3><p class="small muted" style="margin:0">Dein bester Score auf jedem Loch, über alle gewählten Runden. ${keys.length} Löcher · ${tot} Schläge (${fmtPar(tot-par)})</p>
+  return `<div class="section"><h3>Eclectic ${ht('eclectic')}</h3><p class="small muted" style="margin:0">Dein bester Score auf jedem Loch, über alle gewählten Runden. ${keys.length} Löcher · ${tot} Schläge (${fmtPar(tot-par)})</p>
     <div class="sc-wrap"><table class="sc"><thead><tr><th>Loch</th>${keys.map(k=>`<th>${k}</th>`).join('')}<th>Total</th></tr></thead>
     <tbody><tr><td>Par</td>${keys.map(k=>`<td>${best[k].par}</td>`).join('')}<td class="tot">${par}</td></tr>
     <tr class="score"><td>Best</td>${keys.map(k=>`<td>${mark(best[k])}</td>`).join('')}<td class="tot">${tot}</td></tr></tbody></table></div></div>`;
@@ -1332,8 +1975,10 @@ function viewCourse(c){
   const n=c.holes.length, half = n>9 ? [[0,9,'Out'],[9,n,'In']] : [[0,n,'Total']];
   const cols=[]; half.forEach(([a,b,l])=>{ for(let k=a;k<b;k++) cols.push({k}); cols.push({t:[a,b],l}); }); if(n>9) cols.push({t:[0,n],l:'Total'});
   const row = (lab, fn, tf) => `<tr><td>${lab}</td>${cols.map(c2=>c2.t?`<td class="tot">${tf(c2.t)}</td>`:`<td>${fn(c2.k)}</td>`).join('')}</tr>`;
+  const mine=myRounds().filter(r=>r.courseId===c.id && r.status==='done').length;
   return `<div class="stack">
     <div class="small muted">${esc(c.place||'')} · Par ${coursePar(c)}</div>
+    ${mine?`<button class="btn block" data-a="anaOpen" data-v="${c.id}">Meine Bilanz pro Loch (${mine} Runde${mine>1?'n':''}) ›</button>`:''}
     <div class="sc-wrap"><table class="sc">
       <thead><tr><th>Loch</th>${cols.map(x=>`<th>${x.t?x.l:x.k+1}</th>`).join('')}</tr></thead>
       <tbody>
@@ -1341,7 +1986,7 @@ function viewCourse(c){
         ${row('Par', k=>c.holes[k].par, ([a,b])=>sum(c.holes.slice(a,b).map(h=>h.par)))}
         ${row('Hcp', k=>c.holes[k].hcp, ()=>'')}
       </tbody></table></div>
-    <div class="section"><h3>Course Rating und Slope</h3>
+    <div class="section"><h3>Course Rating ${ht('cr')} und Slope ${ht('slope')}</h3>
       <div class="sc-wrap"><table class="sc"><thead><tr><th>Tee</th><th>Länge</th><th>CR Herren</th><th>Slope H</th><th>CR Damen</th><th>Slope D</th></tr></thead>
       <tbody>${c.tees.map(t=>`<tr><td><span class="tee-dot">${esc(t.name)}</span></td><td>${teeLen(t)||'–'} m</td><td>${dec(+t.crM)}</td><td>${t.slM||'–'}</td><td>${dec(+t.crW)}</td><td>${t.slW||'–'}</td></tr>`).join('')}</tbody></table></div>
       ${n===9?'<p class="small muted" style="margin:0">9-Loch-Ratings. Die Spielvorgabe wird mit dem halben Handicap-Index gerechnet.</p>':''}
@@ -1411,12 +2056,13 @@ function viewHome(){
       </div>
       <div class="hero-cta">
         ${a?`<button class="btn primary big" data-a="tab" data-v="play">Runde fortsetzen</button>`
-           :`<button class="btn primary big" data-a="tab" data-v="play">Runde starten</button>`}
+           :`<button class="btn primary big" data-a="newRound">Runde starten</button>`}
       </div>
     </section>
+    ${welcomeCard()}
     <div class="kpis num">
       <div class="kpi"><div class="v">${done.length}</div><div class="l">Runden gespielt</div></div>
-      <div class="kpi"><div class="v">${hcp.value==null?'–':dec(hcp.value)}</div><div class="l">HCP-Schätzung</div><div class="sub">${hcp.value==null?'ab 3 Runden':''}</div></div>
+      <div class="kpi"><div class="v">${hcp.value==null?'–':dec(hcp.value)}</div><div class="l">HCP-Schätzung ${ht('hcpest')}</div><div class="sub">${hcp.value==null?'ab 3 Runden':''}</div></div>
       <div class="kpi"><div class="v">${best??'–'}</div><div class="l">Beste 18-Loch-Runde</div></div>
       <div class="kpi"><div class="v">${lst?fmtPar(lst.vs):'–'}</div><div class="l">Letzte Runde zu Par</div></div>
     </div>
@@ -1561,8 +2207,26 @@ document.addEventListener('click', e=>{
   const p = b.dataset.p!=null ? +b.dataset.p : 0;
   const g=S.group, r = g ? g[Math.min(p, g.length-1)] : null, h = r ? r.holes[S.hole] : null;
   switch(a){
-    case 'tab': S.tab=v; try{ sessionStorage.setItem('golfsc-tab',v); }catch(e){} S.view=null; S.confirm=null; S.pform=null; render(); window.scrollTo(0,0); break;
-    case 'back': S.view=null; S.confirm=null; S.form=null; S.pform=null; render(); break;
+    case 'tab': S.bagSetup=false; S.tab=v; try{ sessionStorage.setItem('golfsc-tab',v); }catch(e){} S.view=null; S.confirm=null; S.pform=null; render(); window.scrollTo(0,0); break;
+    case 'back': S.view=(S.view&&S.view.from)||null; S.confirm=null; S.form=null; S.pform=null; render(); window.scrollTo(0,0); break;
+    case 'newRound': S.tab='play'; try{ sessionStorage.setItem('golfsc-tab','play'); }catch(e){} if(activeGroupRounds().length){ S.view=null; } else { S.start=null; S.view={name:'start'}; } render(); window.scrollTo(0,0); break;
+    case 'anaOpen': S.view={name:'ana', course:v||null, from:S.view}; render(); window.scrollTo(0,0); break;
+    case 'cmpOpen': S.cmp={a:v||null, b:null}; if(v){ const o=cmpRounds().filter(x=>x.id!==v && x.profileId===S.rounds[v].profileId); S.cmp.b=(o[0]||{}).id||null; } S.view={name:'cmp', from:S.view}; render(); window.scrollTo(0,0); break;
+    case 'cmpSwap': S.cmp={a:S.cmp.b, b:S.cmp.a}; render(); break;
+    case 'anaSort': S.anaSort=v; render(); break;
+    case 'anaHole': { const n=+v; if(S.view&&S.view.name==='anaHole'){ S.view={...S.view, n}; } else { S.view={name:'anaHole', course:S.anaCourse, n, from:S.view}; } render(); window.scrollTo(0,0); break; }
+    case 'anaFromPlay': S.view={name:'anaHole', course:b.dataset.c, n:+v, from:null}; render(); window.scrollTo(0,0); break;
+    case 'help': e.preventDefault(); showHelp(v); break;
+    case 'helpClose': closeHelp(); break;
+    case 'helpAll': { closeHelp(); S.helpQ=''; S.helpCat='Alle'; S.view={name:'help', focus:v, from:S.view}; render(); const el=document.getElementById('g-'+v); if(el){ el.scrollIntoView({block:'center'}); el.classList.add('hl'); } else window.scrollTo(0,0); break; }
+    case 'openHelp': closeHelp(); if(!(S.view&&S.view.name==='help')){ S.view={name:'help', from:S.view}; } ls('golfsc-helpseen', 1); render(); window.scrollTo(0,0); break;
+    case 'helpCat': S.helpCat=v; document.querySelectorAll('[data-a="helpCat"]').forEach(x=>x.setAttribute('aria-pressed', x.dataset.v===v)); filterGlossary(); break;
+    case 'helpSeen': ls('golfsc-helpseen', 1); render(); break;
+    case 'askDelActive': S.confirm='delActive'; render(); break;
+    case 'delActive': deleteActiveRound(); break;
+    case 'demoLoad': loadDemo(); break;
+    case 'demoRemove': removeDemo(); break;
+    case 'clubOpen': S.clubOpen = S.clubOpen===v ? null : v; render(); break;
     /* Profile */
     case 'pick': pickProfile(v); break;
     case 'who': S.picked=false; try{ sessionStorage.removeItem('golfsc-who'); }catch(e){} S.pform=null; S.confirm=null; render(); window.scrollTo(0,0); break;
@@ -1606,6 +2270,14 @@ document.addEventListener('click', e=>{
     case 'pdet': S.det[p]=!S.det[p]; render(); break;
     case 'zoomPic': openZoom(b.querySelector('img')); break;
     case 'introGo': closeIntro(); break;
+    case 'bagSetup': S.bagSetup=true; render(); window.scrollTo(0,0); break;
+    case 'bagDone': { const bg=myBag(); const n=allClubs(bg).filter(c=>bg.clubs[c.id]&&bg.clubs[c.id].in).length;
+      if(!n){ toast('Bitte mindestens einen Schläger wählen.'); break; }
+      if(n>BAG_MAX) toast(`${n} Schläger: in einer Runde sind höchstens ${BAG_MAX} erlaubt.`);
+      bagEdit(b=>{ b.done=true; }, 0); S.bagSetup=false; render(); window.scrollTo(0,0); break; }
+    case 'bagToggle': bagEdit(bag=>{ const c=bag.clubs[v] ||= {}; c.in=!c.in; }, 0); render(); break;
+    case 'bagAdd': { const id='x'+uid(); bagEdit(bag=>{ bag.custom.push({id, name:'Eigener Schläger', loft:''}); bag.clubs[id]={in:true}; }, 0); render(); document.getElementById('cl-name-'+id)?.select(); break; }
+    case 'bagDel': bagEdit(bag=>{ bag.custom=bag.custom.filter(c=>c.id!==v); delete bag.clubs[v]; }, 0); toast('Schläger entfernt'); render(); break;
     case 'goHole': setHole(+v); render(); break;
     case 'prevHole': setHole(Math.max(0,S.hole-1)); S.det={}; render(); window.scrollTo(0,0); break;
     case 'nextHole': setHole(Math.min(g[0].holes.length-1,S.hole+1)); S.det={}; render(); window.scrollTo(0,0); break;
@@ -1614,10 +2286,10 @@ document.addEventListener('click', e=>{
       grp.forEach(x=>{ x.status='done'; x.notes=grp[0].notes||''; saveRound(x); });
       const mine=grp.find(x=>x.profileId===S.me) || grp[0], mem=grp[0].mem;
       ls('golfsc-active', null); S.group=null; S.det={};
-      S.tab='rounds'; try{ sessionStorage.setItem('golfsc-tab','rounds'); }catch(e){}
+      S.tab='play'; try{ sessionStorage.setItem('golfsc-tab','play'); }catch(e){}
       S.view = mem ? null : {name:'round', id:mine.id};
       toast(mem?'Übungsrunde beendet. Sie wird nicht gespeichert.':grp.length>1?'Runde für alle gespeichert':'Runde gespeichert'); render(); window.scrollTo(0,0); break; }
-    case 'openRound': { const rr=S.rounds[v]; if(rr && rr.status==='active' && rr.groupId===activeId()){ S.tab='play'; S.view=null; } else S.view={name:'round', id:v}; S.confirm=null; render(); window.scrollTo(0,0); break; }
+    case 'openRound': { const rr=S.rounds[v]; if(rr && rr.status==='active' && rr.groupId===activeId()){ S.tab='play'; S.view=null; } else S.view={name:'round', id:v, from:S.view}; S.confirm=null; render(); window.scrollTo(0,0); break; }
     case 'reopen': { const rr0=S.rounds[v]; if(!rr0) break;
       if(activeGroupRounds().some(x=>x.groupId!==rr0.groupId)){ toast('Schliesse zuerst die laufende Runde ab.'); break; }
       const rr=clone(rr0); rr.id=v; rr.status='active'; saveRound(rr); ls('golfsc-active', rr.groupId); S.group=null; S.tab='play'; S.view=null; render(); window.scrollTo(0,0); break; }
@@ -1648,15 +2320,20 @@ function onField(e){
   if(f.startsWith('start.players.')){ setPath(S, f, val); const i=+f.split('.')[2]; const c=courseById(S.start.courseId); const box=document.getElementById('ph-'+i); if(box && c) box.innerHTML=phText(S.start.players[i], c); return; }
   if(f==='start.date'){ S.start.date=val; return; }
   if(f.startsWith('pform.')){ setPath(S, f, val); return; }
+  if(f.startsWith('bag.')){ const [,id,key]=f.split('.'); bagEdit(bag=>{ const c=bag.clubs[id] ||= {}; c[key]=val; if((key==='carry'||key==='total') && val!=='') c.in=true; }); return; }
+  if(f.startsWith('bagc.')){ const [,id]=f.split('.'); bagEdit(bag=>{ const c=bag.custom.find(x=>x.id===id); if(c) c.name=val||'Eigener Schläger'; }); return; }
   if(f==='askName'){ S.askName=val; const t=$('#ask-text'); if(t) t.textContent=askText(); return; }
   if(f==='statCourse'){ S.statCourse=val; render(); return; }
   if(f==='statRange'){ S.statRange=val; render(); return; }
+  if(f==='helpQ'){ S.helpQ=val; filterGlossary(); return; }
+  if(f==='anaSel'){ S.anaCourse=val; S.view={...S.view, course:val}; render(); return; }
+  if(f.startsWith('cmp.')){ S.cmp[f.split('.')[1]]=val; render(); return; }
   if(f==='edit.notes'){ (S.group||[]).forEach(x=>{ x.notes=val; saveRound(x, 900); }); return; }
   if(f.startsWith('form.')){ setPath(S, f, val); return; }
 }
 document.addEventListener('input', onField);
 document.addEventListener('change', e=>{ const imp=e.target.closest('[data-imp]'); if(imp){ importFile(imp.files&&imp.files[0]); imp.value=''; return; } const el=e.target.closest('[data-f]'); if(el && el.tagName==='SELECT') onField(e); });
-document.addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target && e.target.id==='sync-pw'){ e.preventDefault(); document.querySelector('[data-a="syncConnect"]')?.click(); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeHelp(); if(e.key==='Enter' && e.target && e.target.id==='sync-pw'){ e.preventDefault(); document.querySelector('[data-a="syncConnect"]')?.click(); } });
 document.addEventListener('focusout', ()=>{ setTimeout(()=>{ if(S.dirty){ const a=document.activeElement; if(!(a && a.closest && a.closest('#app') && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) render(); } }, 50); });
 
 function saveCourse(){
