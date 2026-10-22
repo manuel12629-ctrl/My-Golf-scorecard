@@ -281,6 +281,29 @@ details summary{cursor:pointer}
 .confirm>span{flex:1 1 100% !important}
 .confirm>.btn{flex:1 1 0}
 .hub-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hdr-best{color:#B8860B}
+.best{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.best-head{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+.best-head .small{flex-basis:100%}
+.best .rank-list li[data-a]{cursor:pointer}
+.editbar{display:flex;flex-direction:column;gap:10px;padding:12px;margin-bottom:12px;border-radius:14px;border:1px solid var(--warn);background:color-mix(in srgb,var(--warn) 10%,var(--surface));font-size:14px}
+.rank{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.rank-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.rank-hero{display:flex;align-items:center;gap:12px;padding:6px 2px}
+.rank-hero .crown{width:54px;height:40px;flex:none}
+.rank-title{font-family:var(--display);font-size:24px;font-weight:700;line-height:1.15}
+.rank-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.rank-list li{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:var(--surface2)}
+.rank-list li.win{background:rgba(224,177,58,.18);outline:1px solid rgba(201,150,31,.55)}
+.rank-list li.beer{background:rgba(191,63,43,.08)}
+.rank-place{width:22px;font-weight:700}
+.rank-name{flex:1;display:flex;align-items:center;gap:6px;font-weight:600;min-width:0}
+.rank-name .crown{width:22px;height:17px;flex:none}
+.rank-name .beer{width:18px;height:20px;flex:none}
+.rank-score{text-align:right;display:flex;flex-direction:column;line-height:1.1}
+.rank-score b{font-size:18px}.rank-score small{font-size:11px;color:var(--muted)}
+.rank-beer{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;border:1px dashed rgba(138,90,16,.5);background:rgba(242,182,50,.12)}
+.rank-beer .beer{width:30px;height:32px;flex:none}
 .hub-btn{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:14px 12px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;min-height:104px;color:var(--ink)}
 .hub-btn svg{color:var(--accent);margin-bottom:4px}
 .hub-btn b{font-size:16px}
@@ -423,7 +446,7 @@ const BUILTIN = [
 ];
 
 /* ---------- Version ---------- */
-const APP_VERSION = '3.9', APP_DATE = '21.10.2026';
+const APP_VERSION = '3.14', APP_DATE = '22.10.2026';
 
 /* ---------- Zustand ---------- */
 function ls(k,v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null; } }
@@ -920,8 +943,9 @@ function holeHistory(courseId){
 }
 function holeStats(list){
   const o={n:list.length, played:0, sum:0, vs:0, best:null, worst:null, dist:{e:0,b:0,p:0,bo:0,d:0}, puttN:0, putts:0, p3:0, p1:0,
-    fwA:0, fwH:0, fwL:0, fwR:0, girA:0, girH:0, miss:{K:0,Li:0,Re:0,La:0}, missN:0, pen:0, sandA:0, sandH:0, scrA:0, scrH:0, pts:0, ptsN:0, up:0};
+    fwA:0, fwH:0, fwL:0, fwR:0, girA:0, girH:0, miss:{K:0,Li:0,Re:0,La:0}, missN:0, pen:0, lost:0, sandA:0, sandH:0, scrA:0, scrH:0, pts:0, ptsN:0, up:0};
   list.forEach(({h,rec,r})=>{
+    o.lost+=+h.lost||0;
     if(h.up){ o.up++; return; }
     o.played++; o.sum+=h.s; const d=h.s-h.par; o.vs+=d;
     o.best = o.best==null ? h.s : Math.min(o.best,h.s); o.worst = o.worst==null ? h.s : Math.max(o.worst,h.s);
@@ -979,7 +1003,14 @@ function viewHoleTable(courseId){
         <div class="ana-v num ${vsCls(st.avgVs)}"><b>${st.avg!=null?dec(st.avg,1):'–'}</b><small>${fmtVs(st.avgVs)}</small></div>
       </button>`; }).join('')}</div>
     <div class="legend"><span><i class="sw" style="background:var(--birdie)"></i>Birdie+</span><span><i class="sw" style="background:var(--accent)"></i>Par</span><span><i class="sw" style="background:var(--bogey)"></i>Bogey</span><span><i class="sw" style="background:var(--muted)"></i>Doppel+</span></div>
+    <p class="small muted" style="margin:0"><b>FW</b> = Fairway getroffen ${ht('fairway')} · <b>GIR</b> = Green in Regulation ${ht('gir')}: rechtzeitig auf dem Green, so dass noch zwei Putts für Par bleiben.</p>
   </div>`;
+}
+function girNote(par){
+  const need = par>=3 && par<=6 ? par-2 : null;
+  return `<div class="card small stack gir-note" style="gap:4px"><div class="eyebrow">Was heisst Green in Regulation?</div>
+    <div>Du bist «rechtzeitig» auf dem Green, wenn dir noch zwei Putts für Par bleiben.${need!=null?` Auf diesem Par ${par} heisst das: nach spätestens <b>${need} Schl${need>1?'ägen':'ag'}</b> auf dem Green.`:''}</div>
+    <div class="muted">Par 3: nach 1 Schlag · Par 4: nach 2 · Par 5: nach 3. Die App rechnet das aus Schlägen minus Putts.</div></div>`;
 }
 function viewHoleDetail(courseId, n){
   const c=courseById(courseId), {by}=holeHistory(courseId), list=by[n]||[], st=holeStats(list), hc=c&&c.holes[n-1];
@@ -989,6 +1020,7 @@ function viewHoleDetail(courseId, n){
   if(st.fwA>=2 && st.fwL+st.fwR>0){ const side=st.fwL>st.fwR?'links':st.fwR>st.fwL?'rechts':null; if(side) ins.push(`Fairway verfehlt: meist <b>${side}</b> (${Math.max(st.fwL,st.fwR)} von ${st.fwA}).`); }
   if(st.missN>=2){ const L={K:'zu kurz',Li:'links',Re:'rechts',La:'zu lang'}; const k=Object.keys(st.miss).sort((a,b)=>st.miss[b]-st.miss[a])[0]; if(st.miss[k]) ins.push(`Green verfehlt: meist <b>${L[k]}</b> (${st.miss[k]} von ${st.missN}).`); }
   if(st.p3) ins.push(`${st.p3}× drei Putts oder mehr.`);
+  if(st.lost) ins.push(`${st.lost} Ball${st.lost>1?'e':''} verloren auf diesem Loch.`);
   if(st.pen) ins.push(`${st.pen} Strafschl${st.pen>1?'äge':'ag'} insgesamt auf diesem Loch.`);
   if(st.played>=3 && st.dist.p+st.dist.b+st.dist.e===0) ins.push('Noch nie Par oder besser gespielt.');
   return `<div class="stack">
@@ -1009,10 +1041,11 @@ function viewHoleDetail(courseId, n){
       <div class="legend">${[['e','Eagle+','var(--flag)'],['b','Birdie','var(--birdie)'],['p','Par','var(--accent)'],['bo','Bogey','var(--bogey)'],['d','Doppel+','var(--muted)']].map(([k,l,col])=>`<span><i class="sw" style="background:${col}"></i>${l} <b class="num">${st.dist[k]}</b></span>`).join('')}${st.up?`<span>Gestrichen <b class="num">${st.up}</b></span>`:''}</div>
     </div>
     <div class="bars">
-      ${par>=4?barRow('Fairway getroffen', st.fwH, st.fwA):''}
-      ${barRow('Green in Regulation', st.girH, st.girA)}
+      ${par>=4?barRow('Fairway getroffen '+ht('fairway'), st.fwH, st.fwA):''}
+      ${barRow('Green in Regulation '+ht('gir'), st.girH, st.girA)}
       ${barRow('Scrambling '+ht('scrambling'), st.scrH, st.scrA)}
     </div>
+    ${girNote(par)}
     ${ins.length?`<div class="card small stack" style="gap:4px"><div class="eyebrow">Auffällig</div>${ins.map(x=>`<div>${x}</div>`).join('')}</div>`:''}
     <div class="section"><h3>Jede Runde auf diesem Loch</h3>
       <div class="list">${list.map(({r,h})=>{ const gir=girOf(h);
@@ -1122,6 +1155,8 @@ const GLOSSARY=[
   {k:'scrambling', t:'Scrambling', c:'Statistik', d:'Wie oft du trotz verfehltem Green noch Par oder besser spielst. Zeigt, wie gut dein kurzes Spiel rund ums Green ist.'},
   {k:'sandsave', t:'Sand Save (Grünbunker)', c:'Statistik', d:'Ein Grünbunker liegt direkt neben dem Green. Ein Sand Save heisst: aus dem Grünbunker heraus und danach noch Par oder besser. Tippe «Grünbunker gespielt» nur bei Bunkern am Green an, nicht bei Fairwaybunkern.'},
   {k:'putt', t:'Putt, Ein-Putt, Drei-Putt', c:'Statistik', d:'Ein Putt ist ein Schlag auf dem Green, meist mit dem Putter. Schläge vom Vorgrün zählen nicht als Putt. Ein-Putt heisst: mit einem Putt eingelocht. Drei-Putts kosten unnötig Schläge, darum zeigt die Statistik sie extra.'},
+  {k:'wertung', t:'Wertung im Flight', c:'Ergebnis', d:'Legt fest, wer die Runde gewinnt. Schläge: Alle Schläge zusammengezählt, ohne Handicap. Wer am wenigsten braucht, gewinnt. Stableford: Punkte pro Loch mit Handicap, so haben auch Spieler mit hohem Handicap eine Chance. Lochgewinne: Wer ein Loch alleine am besten spielt, bekommt es. Spielen zwei oder mehr gleich gut, bekommt niemand das Loch. Das Handicap zählt dabei nicht. Am Schluss gewinnt, wer die meisten Löcher geholt hat.'},
+  {k:'lostball', t:'Ballverlust', c:'Regeln', d:'Ein Ball ist verloren, wenn du ihn nach drei Minuten Suche nicht findest oder er im Aus liegt. Das kostet einen Strafschlag, und du spielst von der Stelle des letzten Schlags neu. Im Zähler «Bälle verloren» siehst du später, wo dich das am meisten kostet. Wenn du einen Ball als verloren einträgst, zählt die App automatisch mindestens gleich viele Strafschläge.'},
   {k:'penalty', t:'Strafschlag', c:'Regeln', d:'Ein zusätzlicher Schlag, den du zählen musst, zum Beispiel wenn der Ball im Wasser (Penalty Area) oder im Aus landet. Trag Strafschläge separat ein, sie gehören aber auch zur Gesamtzahl der Schläge.'},
   {k:'pickup', t:'Loch gestrichen', c:'Regeln', d:'Du hebst den Ball auf und spielst das Loch nicht fertig, etwa um das Spiel zu beschleunigen. Für Stableford gibt es 0 Punkte. Für das Handicap zählt die App das Loch als Netto-Doppelbogey.'},
   {k:'ndb', t:'Netto-Doppelbogey', c:'Handicap', d:'Das höchste Ergebnis, das pro Loch für das Handicap zählt: Par plus 2 plus deine Vorgabeschläge auf diesem Loch. Ein Ausreisser verdirbt so nicht die ganze Handicap-Rechnung.'},
@@ -1141,9 +1176,10 @@ const GLOSSARY=[
 ];
 const HELP_FUNCS=[
   ['Profil wählen', 'Beim Öffnen fragt die App «Wer spielt?». Jeder Spieler hat sein eigenes Profil mit eigenen Runden, eigener Statistik und eigenem Bag. Der farbige Kreis oben rechts zeigt, wer gerade gewählt ist. Antippen wechselt das Profil.'],
+  ['Bestenliste', 'Der Pokal oben im Kopf öffnet die Bestenliste. Dort werden in verschiedenen Kategorien die Besten aller Profile gekürt: tiefste Runde, meiste Stableford-Punkte, wenigste Putts, beste Fairway-Quote, meiste Siege im Flight und mehr. Mit dem Platz-Filter siehst du die Rekorde pro Platz.'],
   ['Runde starten', 'Unter «Spielen» auf «+ Neue Runde starten». Platz wählen, bei 18 Loch auch nur Front 9 oder Back 9 möglich. Dann die Spieler: du bist schon dabei, weitere Profile oder Gäste kannst du antippen (bis 4). Für jeden HCP-Index und Abschlag wählen, die Spielvorgabe rechnet die App selbst.'],
   ['Während der Runde', 'Das Par ist schon eingetragen, du tippst nur noch + oder −. Dann die Putts antippen. Fairway, Strafschläge und Bunker sind freiwillig, machen die Statistik aber viel genauer. Green in Regulation rechnet die App selbst aus. Lochbild antippen zum Vergrössern. Jede Eingabe ist sofort gespeichert, auch wenn du die App schliesst.'],
-  ['Mehrere Spieler (Flight)', 'Spielen mehrere Spieler auf einem Handy, hat jeder pro Loch einen eigenen Block mit + und − und den Putts. Mit «Fairway, Green, Bunker, Strafschläge» klappst du die Details pro Spieler auf.'],
+  ['Mehrere Spieler (Flight)', 'Spielen mehrere Spieler auf einem Handy, hat jeder pro Loch einen eigenen Block mit + und − und den Putts. Mit «Fairway, Green, Bunker, Strafen, Ballverlust» klappst du die Details pro Spieler auf.'],
   ['Runde abschliessen oder löschen', 'Nach dem letzten Loch «Runde abschliessen», dann siehst du die Scorekarte aller Spieler. Mit «Diese Runde löschen» unten bei jedem Loch verwirfst du eine laufende Runde, nach einer Sicherheitsabfrage.'],
   ['Statistik', 'Durchschnitt, Trend, Fairways, Greens, Putts, Score-Verteilung und eine Handicap-Schätzung. Oben kannst du nach Platz und Zeitraum filtern.'],
   ['Lochanalyse', 'Zeigt für jeden Platz und jedes Loch, wie du es bisher gespielt hast: Durchschnitt, beste und schlechteste Ergebnisse, Fairways, Greens, Putts und jede einzelne Runde. Während einer Runde erscheint unter dem Loch deine Bilanz, falls du es schon einmal gespielt hast.'],
@@ -1244,11 +1280,12 @@ function alloc(holes, ch){
 }
 function rstats(r){
   const rec = alloc(r.holes, r.ch);
-  const o={strokes:0,par:0,pts:0,played:0,putts:0,puttH:0,fwA:0,fwH:0,fwL:0,fwR:0,girA:0,girH:0,scrA:0,scrH:0,sandA:0,sandH:0,pen:0,ags:0,pickups:0,
+  const o={strokes:0,par:0,pts:0,played:0,putts:0,puttH:0,fwA:0,fwH:0,fwL:0,fwR:0,girA:0,girH:0,scrA:0,scrH:0,sandA:0,sandH:0,pen:0,lost:0,ags:0,pickups:0,
     p1:0,p3:0,miss:{K:0,Li:0,Re:0,La:0},missN:0,
     dist:{e:0,b:0,p:0,bo:0,d:0,t:0}, byPar:{3:[0,0],4:[0,0],5:[0,0]}, rec};
   r.holes.forEach((h,i)=>{
     const ndb = h.par+2+rec[i];
+    o.lost += +h.lost||0;
     if(h.up){ o.played++; o.pickups++; o.strokes+=ndb; o.par+=h.par; o.ags+=ndb; return; }
     if(h.s==null) return;
     o.played++; o.strokes+=h.s; o.par+=h.par; o.ags+=Math.min(h.s,ndb);
@@ -1330,19 +1367,21 @@ function render(){
   else if(v && v.name==='cmp'){ title='Runden vergleichen'; back='Zurück'; html=viewCompare(); }
   else if(v && v.name==='ana'){ title='Lochanalyse'; back='Zurück'; html=viewHoleTable(v.course); }
   else if(v && v.name==='anaHole'){ const c=courseById(v.course); title=`Loch ${v.n}${c?' · '+esc(c.name):''}`; back='Zurück'; html=viewHoleDetail(v.course, v.n); }
+  else if(v && v.name==='result'){ title='Rangliste'; html=viewResult(v.gid, v.list); }
   else if(v && v.name==='round'){ const r=S.rounds[v.id]; title=r?esc(r.courseName):'Runde'; back='Zurück'; html=r?viewRound(r):'<div class="empty"><b>Runde nicht gefunden</b></div>'; }
   else if(v && v.name==='course'){ const c=courseById(v.id); title=c?esc(c.name):'Platz'; back='Plätze'; html=c?viewCourse(c):'<div class="empty"><b>Platz nicht gefunden</b></div>'; }
   else if(v && v.name==='courseForm'){ title=S.form.isNew?'Neuer Platz':'Platz bearbeiten'; back='Abbrechen'; html=viewCourseForm(); }
-  else if(v && v.name==='finish'){ title='Runde abschliessen'; back='Zurück'; html=viewFinish(); }
+  else if(v && v.name==='best'){ title='Bestenliste'; back='Zurück'; html=viewBest(); }
+  else if(v && v.name==='finish'){ title=(S.group||[]).some(r=>r.editing)?'Abschliessen und speichern':'Runde abschliessen'; back='Zurück'; html=viewFinish(); }
   else if(v && v.name==='data'){ title='Sicherung und Daten'; back='Zurück'; html=viewData(); }
   else if(S.tab==='home'){ title='Golf Scorecard'; html=viewHome(); }
-  else if(S.tab==='play'){ const g=curGroup(); if(g){ title=esc(g[0].courseName); html = g.length>1 ? viewFlight(g) : viewHole(g[0]); } else { title='Spielen'; html=viewPlayHub(); } }
+  else if(S.tab==='play'){ const g=curGroup(); if(g){ title=esc(g[0].courseName); html = editBar(g) + (g.length>1 ? viewFlight(g) : viewHole(g[0])); } else { title='Spielen'; html=viewPlayHub(); } }
   else if(S.tab==='stats'){ title='Statistik'; html=viewStats(); }
   else if(S.tab==='bag'){ title='Mein Bag'; html=viewBag(); }
   else if(S.tab==='courses'){ title='Golfplätze'; html=viewCourses(); }
   const mp=meProf();
   $('#hdr').innerHTML = (back?`<button class="back" data-a="back">‹ ${back}</button>`:'') + `<h1>${title}</h1>`
-    + syncPill() + `<button class="hdr-help" data-a="openHelp" aria-label="Hilfe und Begriffe">?</button>` + (who||!mp ? '' : `<button class="hdr-who" data-a="who" aria-label="Profil wechseln, aktuell ${esc(mp.name)}">${avatar(mp)}</button>`);
+    + syncPill() + (who?'':`<button class="hdr-help hdr-best" data-a="openBest" aria-label="Bestenliste">${TROPHY}</button>`) + `<button class="hdr-help" data-a="openHelp" aria-label="Hilfe und Begriffe">?</button>` + (who||!mp ? '' : `<button class="hdr-who" data-a="who" aria-label="Profil wechseln, aktuell ${esc(mp.name)}">${avatar(mp)}</button>`);
   const y = window.scrollY;
   $('#app').innerHTML = html + `<p class="ver">Golf Scorecard · Version ${APP_VERSION} vom ${APP_DATE}</p>`;
   window.scrollTo(0, y);   // Seite bleibt, wo sie war
@@ -1375,6 +1414,9 @@ function viewStart(){
       ${st.players.map((pl,i)=>playerCard(pl,i,c)).join('')}
       ${st.players.some(p=>!p.pid)?'<p class="small muted" style="margin:0">Gäste werden nur auf diesem Handy gespeichert und nicht online gesichert.</p>':''}
     </div>
+    ${st.players.length>1?`<div><div class="eyebrow" style="margin-bottom:6px">Wertung im Flight ${ht('wertung')}</div>
+      <div class="seg">${RANK_MODES.map(([k,l])=>`<button data-a="startRank" data-v="${k}" aria-pressed="${(st.rank||ls('golfsc-rank')||'gross')===k}">${l}</button>`).join('')}</div>
+      <p class="small muted" style="margin:6px 0 0">Bestimmt die Rangliste am Schluss. Lässt sich danach noch umstellen.</p></div>`:''}
     <label class="f">Datum<input class="in" id="st-date" type="date" value="${esc(st.date)}" data-f="start.date"></label>
     <label class="switch card"><input type="checkbox" data-a="startMem" ${st.mem?'checked':''}><span style="flex:1">Übungsrunde, nicht speichern<br><span class="small muted" style="font-weight:400">Bleibt nur im Arbeitsspeicher und wird nirgends gesichert. Beim Schliessen der Seite ist sie weg.</span></span></label>
     <button class="btn primary block" data-a="startRound" ${c.tees.length&&st.players.length?'':'disabled'}>${st.players.length>1?`Runde mit ${st.players.length} Spielern starten`:'Runde starten'}</button>
@@ -1412,8 +1454,8 @@ function startRound(){
     const ph = playing(hi, c, tee, st.mode, pl.gender);
     const r = { id:'r'+uid()+k, groupId:gid, order:k, profileId:pl.pid||null, playerName: prof?prof.name:String(pl.name).trim(), guest:!pl.pid,
       courseId:c.id, courseName:c.name, teeName:tee.name, date:st.date||today(), mem:!!st.mem, mode:st.mode, modeLabel,
-      hi, gender:pl.gender, ch:ph.ch, cr:ph.cr, slope:ph.slope, status:'active', notes:'', createdAt:now,
-      holes: idx.map(i=>({n:i+1, par:+c.holes[i].par, hcp:+c.holes[i].hcp, len:+(tee.len?.[i])||null, s:null, p:null, fw:null, miss:null, pen:0, sand:false, up:false})) };
+      hi, gender:pl.gender, ch:ph.ch, cr:ph.cr, slope:ph.slope, status:'active', notes:'', createdAt:now, rank:st.rank||ls('golfsc-rank')||'gross',
+      holes: idx.map(i=>({n:i+1, par:+c.holes[i].par, hcp:+c.holes[i].hcp, len:+(tee.len?.[i])||null, s:null, p:null, fw:null, miss:null, pen:0, lost:0, sand:false, up:false})) };
     saveRound(r);
     if(prof && (prof.hi!==hi || prof.gender!==pl.gender)) profUpdates.push([pl.pid, {name:prof.name, color:prof.color, hi, gender:pl.gender, _t:now}]);
   });
@@ -1433,6 +1475,8 @@ function holeFields(h, p, gir){
       <div class="seg miss">${[['K','Kurz'],['Li','Links'],['Re','Rechts'],['La','Lang']].map(([k,l])=>`<button data-a="miss" data-p="${p}" data-v="${k}" aria-pressed="${h.miss===k}">${l}</button>`).join('')}</div></div>`:''}
     <div class="field-row"><span class="lab">Strafschläge ${ht('penalty')}</span>
       <div class="mini"><button data-a="pen-" data-p="${p}" aria-label="Strafschlag weniger">−</button><div class="val num">${h.pen||0}</div><button data-a="pen+" data-p="${p}" aria-label="Strafschlag mehr">+</button></div></div>
+    <div class="field-row"><span class="lab">Bälle verloren ${ht('lostball')}</span>
+      <div class="mini"><button data-a="lost-" data-p="${p}" aria-label="Ein verlorener Ball weniger">−</button><div class="val num">${h.lost||0}</div><button data-a="lost+" data-p="${p}" aria-label="Ein verlorener Ball mehr">+</button></div></div>
     <div class="field-row"><span class="lab">Grünbunker gespielt ${ht('sandsave')}</span>
       <div class="seg" style="width:150px">${[[false,'Nein'],[true,'Ja']].map(([k,l])=>`<button data-a="sand" data-p="${p}" data-v="${k}" aria-pressed="${!!h.sand===k}">${l}</button>`).join('')}</div></div>
     <div class="field-row"><span class="lab">Loch gestrichen ${ht('pickup')}</span>
@@ -1442,6 +1486,12 @@ function anaLink(courseId, n){
   const list=(holeHistory(courseId).by[n])||[]; if(!list.length) return '';
   const st=holeStats(list);
   return `<button class="ana-link" data-a="anaFromPlay" data-v="${n}" data-c="${esc(courseId)}"><span>Deine Bilanz auf Loch ${n}: Ø <b class="num">${st.avg!=null?dec(st.avg,1):'–'}</b> (${fmtVs(st.avgVs)}) aus ${st.n} Runde${st.n>1?'n':''}</span><span class="chev">›</span></button>`;
+}
+/* Abgeschlossene Runde wird bearbeitet: Hinweis oben mit Knopf zum Beenden */
+function editBar(g){
+  if(!g.some(r=>r.editing)) return '';
+  return `<div class="editbar"><span><b>Du bearbeitest eine abgeschlossene Runde.</b> Jede Änderung wird sofort gesichert. Mit dem Knopf schliesst du die Runde wieder ab.</span>
+    <button class="btn primary block" data-a="endEdit">Bearbeitung beenden und speichern</button></div>`;
 }
 function delActiveUI(){
   const g=activeGroupRounds(); if(!g.length) return '';
@@ -1475,7 +1525,7 @@ function holeNav(r, i){
   const last = i===r.holes.length-1;
   return `<div class="hole-nav">
       <button class="btn" data-a="prevHole" ${i===0?'disabled':''}>‹ Loch ${i>0?r.holes[i-1].n:''}</button>
-      ${last?`<button class="btn primary" data-a="toFinish">Runde abschliessen</button>`:`<button class="btn primary" data-a="nextHole">Loch ${r.holes[i+1].n} ›</button>`}
+      ${last?`<button class="btn primary" data-a="toFinish">${r.editing?'Runde abschliessen und speichern':'Runde abschliessen'}</button>`:`<button class="btn primary" data-a="nextHole">Loch ${r.holes[i+1].n} ›</button>`}
     </div>`;
 }
 function viewHole(r){
@@ -1514,7 +1564,7 @@ function viewHole(r){
     ${holeNav(r, i)}
     ${anaLink(r.courseId, h.n)}
     ${delActiveUI()}
-    <p class="small muted">${esc(r.playerName||'')}${r.playerName?' · ':''}Tee ${esc(r.teeName)} · ${fmtDate(r.date)} · Spielvorgabe ${r.ch??'–'} ${last?'':' · <button class="btn ghost small" style="min-height:0;padding:0" data-a="toFinish">Runde vorzeitig abschliessen</button>'}</p>
+    <p class="small muted">${esc(r.playerName||'')}${r.playerName?' · ':''}Tee ${esc(r.teeName)} · ${fmtDate(r.date)} · Spielvorgabe ${r.ch??'–'} ${last?'':` · <button class="btn ghost small" style="min-height:0;padding:0" data-a="toFinish">${r.editing?'Runde abschliessen und speichern':'Runde vorzeitig abschliessen'}</button>`}</p>
   </div>`;
 }
 /* Flight: mehrere Spieler auf einem Handy, pro Loch ein Block je Spieler */
@@ -1535,7 +1585,7 @@ function viewFlight(g){
     ${holeNav(g[0], i)}
     ${anaLink(g[0].courseId, h0.n)}
     ${delActiveUI()}
-    <p class="small muted">${fmtDate(g[0].date)} · ${g.length} Spieler · <button class="btn ghost small" style="min-height:0;padding:0" data-a="toFinish">Runde abschliessen</button></p>
+    <p class="small muted">${fmtDate(g[0].date)} · ${g.length} Spieler · <button class="btn ghost small" style="min-height:0;padding:0" data-a="toFinish">${g.some(r=>r.editing)?'Runde abschliessen und speichern':'Runde abschliessen'}</button></p>
   </div>`;
 }
 function playerHole(r, p, i){
@@ -1551,7 +1601,7 @@ function playerHole(r, p, i){
       <button data-a="s+" data-p="${p}" aria-label="${esc(r.playerName)}: ein Schlag mehr">+</button>
     </div>
     <div class="row"><span class="eyebrow" style="width:44px">Putts</span><div class="chips" style="flex:1">${[0,1,2,3,4].map(v=>`<button class="chip num" data-a="putt" data-p="${p}" data-v="${v}" aria-pressed="${h.p===v}">${v}</button>`).join('')}</div></div>
-    <button class="btn ghost small" style="align-self:flex-start;padding-left:0" data-a="pdet" data-p="${p}" aria-expanded="${open}">${open?'Details schliessen ▴':'Fairway, Green, Bunker, Strafschläge ▾'}</button>
+    <button class="btn ghost small" style="align-self:flex-start;padding-left:0" data-a="pdet" data-p="${p}" aria-expanded="${open}">${open?'Details schliessen ▴':'Fairway, Green, Bunker, Strafen, Ballverlust ▾'}</button>
     ${open?`<div class="stack" style="gap:14px">${holeFields(h, p, gir)}</div>`:''}
   </div>`;
 }
@@ -1564,7 +1614,7 @@ function viewFinish(){
       <div class="row">${avatarFor(r)}<h3 style="flex:1">${esc(r.playerName||'Spieler')}</h3><div class="score-big num">${st.strokes||'–'}<small>${fmtPar(st.vs)}${r.ch!=null?' · '+st.pts+' P':''}${st.puttH?' · '+st.putts+' Putts':''}</small></div></div>
       ${scorecard(r)}</div>`; }).join('')}
     <label class="f">Notizen zur Runde<textarea class="in" id="fin-notes" data-f="edit.notes" placeholder="Wetter, Flight, was gut lief …">${esc(g[0].notes||'')}</textarea></label>
-    <button class="btn primary block" data-a="finish">${g[0].mem?'Übungsrunde beenden':g.length>1?'Runde für alle speichern':'Runde speichern'}</button>
+    <button class="btn primary block" data-a="finish">${g.some(r=>r.editing)?'Runde abschliessen und speichern':g[0].mem?'Übungsrunde beenden':g.length>1?'Runde für alle speichern':'Runde speichern'}</button>
     <button class="btn block" data-a="back">Weiter erfassen</button>
     ${delActiveUI()}
   </div>`;
@@ -1603,6 +1653,156 @@ function scorecard(r){
 }
 
 /* --- Runde im Detail --- */
+/* ---------- Rangliste nach der Runde: Sieger mit Krone, Letzter zahlt die Runde Bier ---------- */
+const CROWN='<svg class="crown" viewBox="0 0 32 24" aria-hidden="true"><path d="M3 20h26l2-14-8 6-7-10-7 10-8-6z" fill="#E0B13A" stroke="#9A7414" stroke-width="1.4" stroke-linejoin="round"/><circle cx="16" cy="3" r="2" fill="#E0B13A" stroke="#9A7414"/><circle cx="1.5" cy="5.5" r="1.6" fill="#E0B13A" stroke="#9A7414"/><circle cx="30.5" cy="5.5" r="1.6" fill="#E0B13A" stroke="#9A7414"/><rect x="3" y="20" width="26" height="3" rx="1" fill="#C8961F"/></svg>';
+const BEER='<svg class="beer" viewBox="0 0 28 30" aria-hidden="true"><path d="M4 8h15v18a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" fill="#F2B632" stroke="#8A5A10" stroke-width="1.4"/><path d="M19 12h3a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-3" fill="none" stroke="#8A5A10" stroke-width="1.6"/><path d="M3.5 9c0-3 2-5 4.5-4.5C9 2 12.5 1.5 14 4c2-1.5 5.5-.5 5.5 3v2H3.5z" fill="#FFF8E7" stroke="#8A5A10" stroke-width="1.2"/></svg>';
+/* Wertung im Flight, wählbar: Stableford-Punkte (mit Handicap), Lochgewinne (wer ein Loch alleine am besten spielt, gewinnt es)
+   oder Bruttoschläge (ohne Handicap). Gespeichert pro Runde als r.rank, Vorgabe für neue Runden in localStorage golfsc-rank. */
+const RANK_MODES=[['gross','Schläge'],['pts','Stableford'],['holes','Lochgewinne']];
+const rankModeOf = rounds => { const m=rounds[0]&&rounds[0].rank; return RANK_MODES.some(x=>x[0]===m) ? m : 'gross'; };
+function ranking(rounds, mode){
+  const rs=rounds.map(r=>({r, s:rstats(r), won:0}));
+  const allCh = rs.every(x=>x.r.ch!=null);
+  const eff = mode==='pts' && !allCh ? 'gross' : mode;
+  if(eff==='holes'){     // Lochgewinne ohne Handicap: zählt nur, wer am wenigsten Schläge braucht
+    const nh=Math.max(...rs.map(x=>x.r.holes.length));
+    for(let i=0;i<nh;i++){
+      const v=rs.map(x=>{ const h=x.r.holes[i]; if(!h) return null;
+        if(h.up) return h.par+2; if(h.s==null) return null; return h.s; });
+      if(v.some(x=>x==null)) continue;
+      const best=Math.min(...v); if(v.filter(x=>x===best).length===1) rs[v.indexOf(best)].won++;
+    }
+  }
+  rs.forEach(x=>{ x.score = eff==='pts' ? x.s.pts : eff==='holes' ? x.won : x.s.strokes; });
+  const hiGood = eff!=='gross';
+  rs.sort((a,b)=> hiGood ? (b.score-a.score) : (a.score-b.score));
+  let place=0, prev=null;
+  rs.forEach((x,i)=>{ if(prev===null || x.score!==prev){ place=i+1; prev=x.score; } x.place=place; });
+  const top=rs[0]&&rs[0].score, bottom=rs[rs.length-1]&&rs[rs.length-1].score;
+  rs.forEach(x=>{ x.win = x.score===top; x.beer = rs.length>1 && x.score===bottom && top!==bottom; });
+  return {rs, mode, eff, fallback: eff!==mode};
+}
+function rankingCard(rounds, big){
+  if(rounds.length<2) return '';
+  const mode=rankModeOf(rounds), gid=rounds[0].groupId;
+  const {rs, eff, fallback}=ranking(rounds, mode);
+  const winners=rs.filter(x=>x.win), losers=rs.filter(x=>x.beer);
+  const unit = v => eff==='pts' ? v+' Punkten' : eff==='holes' ? v+(v===1?' Lochgewinn':' Lochgewinnen') : v+' Schlägen';
+  const main = x => eff==='pts' ? x.s.pts+' P' : eff==='holes' ? x.won+(x.won===1?' Loch':' Löcher') : x.s.strokes;
+  const sub = x => eff==='gross' ? fmtPar(x.s.vs) : x.s.strokes+' Schläge';
+  const note = eff==='pts' ? 'Punkte mit Handicap, höchste Zahl gewinnt.'
+    : eff==='holes' ? `Wer ein Loch alleine am besten spielt, gewinnt es. Bei Gleichstand bekommt niemand das Loch. Ohne Handicap gerechnet.`
+    : 'Alle Schläge zusammengezählt, ohne Handicap. Wenigste Schläge gewinnen.';
+  return `<div class="rank ${big?'big':''}">
+    <div class="rank-head"><span class="eyebrow">Rangliste</span><span class="small muted">Wertung ${ht('wertung')}</span></div>
+    <div class="seg" role="group" aria-label="Wertung wählen">${RANK_MODES.map(([k,l])=>`<button data-a="rankMode" data-v="${k}" data-g="${gid}" aria-pressed="${mode===k}">${l}</button>`).join('')}</div>
+    <p class="small muted" style="margin:0">${fallback?'Nicht alle Spieler haben eine Spielvorgabe, darum wird nach Schlägen gewertet. ':''}${note}</p>
+    ${big?`<div class="rank-hero">${CROWN}<div><div class="rank-title">${winners.map(x=>esc(x.r.playerName||'')).join(' & ')} ${winners.length>1?'gewinnen':'gewinnt'}!</div>
+      <div class="small muted">${winners.length>1?'Geteilter Sieg':'Sieger der Runde'} mit ${unit(winners[0].score)}</div></div></div>`:''}
+    <ol class="rank-list">${rs.map(x=>`<li class="${x.win?'win':''} ${x.beer?'beer':''}">
+      <span class="rank-place num">${x.place}.</span>${avatarFor(x.r,'sm')}
+      <span class="rank-name">${esc(x.r.playerName||'')}${x.win?CROWN:''}${x.beer?BEER:''}</span>
+      <span class="rank-score num"><b>${main(x)}</b><small>${sub(x)}</small></span></li>`).join('')}</ol>
+    ${losers.length?`<div class="rank-beer">${BEER}<span><b>${losers.map(x=>esc(x.r.playerName||'')).join(' & ')}</b> ${losers.length>1?'geben':'gibt'} eine Runde Bier aus. Prost!</span></div>`:''}
+  </div>`;
+}
+function viewResult(groupId, list){
+  let rs=roundList().filter(r=>r.groupId===groupId);
+  if(!rs.length && list) rs=list;
+  rs=rs.slice().sort((a,b)=>(a.order||0)-(b.order||0));
+  if(!rs.length) return '<div class="empty"><b>Runde nicht gefunden</b></div>';
+  const mine=rs.find(r=>r.profileId===S.me)||rs[0];
+  return `<div class="stack">
+    <p class="muted" style="margin:0">${fmtDate(rs[0].date)} · ${esc(rs[0].courseName)}${rs[0].modeLabel&&rs[0].modeLabel!=='Alle 18'?' · '+esc(rs[0].modeLabel):''}</p>
+    ${rankingCard(rs, true)}
+    ${S.rounds[mine.id]?`<button class="btn primary block" data-a="openRound" data-v="${mine.id}">Scorekarte ansehen</button>`:'<p class="small muted" style="margin:0">Übungsrunde: sie wird nicht gespeichert.</p>'}
+    <button class="btn block" data-a="tab" data-v="play">Zu meinen Runden</button>
+  </div>`;
+}
+/* ---------- Bestenliste: in verschiedenen Kategorien die Besten aller Profile ----------
+   Zählt nur abgeschlossene Runden von Profilen (keine Gäste, keine Übungsrunden). Pro Kategorie die besten drei Spieler,
+   jeder Spieler höchstens einmal. Platz-Filter in S.bestCourse ('all' oder Kurs-ID). */
+const BEST_MIN=3;
+const BEST_ONE={Siege:'Sieg', Birdies:'Birdie', Runden:'Runde', Putts:'Putt', 'Löcher':'Loch', Punkte:'Punkt', 'Schläge':'Schlag'};   // so viele Runden braucht es für Durchschnitts-Kategorien
+function bestRounds(){
+  return roundList().filter(r=>r.status==='done' && !r.mem && r.profileId && S.profiles[r.profileId]
+    && (!S.bestCourse || S.bestCourse==='all' || r.courseId===S.bestCourse));
+}
+const ratio=(a,b)=>b?a/b:null;
+const BEST_CATS=[
+  {g:'Rundenrekorde', t:'Wenigste Schläge auf 18 Loch', kind:'round', low:true, ok:(r,s)=>s.complete&&r.holes.length===18, v:(r,s)=>s.strokes, f:v=>v, unit:'Schläge'},
+  {g:'Rundenrekorde', t:'Wenigste Schläge auf 9 Loch', kind:'round', low:true, ok:(r,s)=>s.complete&&r.holes.length===9, v:(r,s)=>s.strokes, f:v=>v, unit:'Schläge'},
+  {g:'Rundenrekorde', t:'Meiste Stableford-Punkte', d:'9-Loch-Runden doppelt gerechnet', kind:'round', low:false, ok:(r,s)=>s.complete&&r.ch!=null, v:(r,s)=>s.pts*18/r.holes.length, f:v=>Math.round(v), unit:'Punkte', help:'stableford'},
+  {g:'Rundenrekorde', t:'Bestes Score-Differential', kind:'round', low:true, ok:(r,s)=>s.diff!=null, v:(r,s)=>s.diff, f:v=>dec(v), unit:'', help:'differential'},
+  {g:'Rundenrekorde', t:'Wenigste Putts auf 18 Loch', kind:'round', low:true, ok:(r,s)=>r.holes.length===18&&s.puttH===18, v:(r,s)=>s.putts, f:v=>v, unit:'Putts'},
+  {g:'Rundenrekorde', t:'Meiste Birdies in einer Runde', d:'Birdie oder besser', kind:'round', low:false, ok:(r,s)=>s.dist.e+s.dist.b>0, v:(r,s)=>s.dist.e+s.dist.b, f:v=>v, unit:'Birdies'},
+  {g:'Rundenrekorde', t:'Meiste Pars in einer Runde', d:'Par oder besser', kind:'round', low:false, ok:(r,s)=>s.played>0, v:(r,s)=>s.dist.e+s.dist.b+s.dist.p, f:v=>v, unit:'Löcher'},
+  {g:'Über alle Runden', t:'Ø Stableford-Punkte', d:`auf 18 Loch gerechnet, ab ${BEST_MIN} Runden`, kind:'player', low:false,
+    v:rs=>{ const x=rs.filter(o=>o.s.complete&&o.r.ch!=null); return x.length>=BEST_MIN ? ratio(sum(x.map(o=>o.s.pts*18/o.r.holes.length)), x.length) : null; }, f:v=>dec(v), unit:'Punkte', help:'stableford'},
+  {g:'Über alle Runden', t:'Fairways getroffen', d:`ab ${BEST_MIN} Runden`, kind:'player', low:false,
+    v:rs=>{ if(rs.length<BEST_MIN) return null; const a=sum(rs.map(o=>o.s.fwA)); return a>=10?ratio(sum(rs.map(o=>o.s.fwH)),a):null; }, f:v=>Math.round(v*100)+' %', unit:'', help:'fairway'},
+  {g:'Über alle Runden', t:'Greens in Regulation', d:`ab ${BEST_MIN} Runden`, kind:'player', low:false,
+    v:rs=>{ if(rs.length<BEST_MIN) return null; const a=sum(rs.map(o=>o.s.girA)); return a>=10?ratio(sum(rs.map(o=>o.s.girH)),a):null; }, f:v=>Math.round(v*100)+' %', unit:'', help:'gir'},
+  {g:'Über alle Runden', t:'Wenigste Putts pro Loch', d:`ab ${BEST_MIN} Runden`, kind:'player', low:true,
+    v:rs=>{ if(rs.length<BEST_MIN) return null; const a=sum(rs.map(o=>o.s.puttH)); return a>=18?ratio(sum(rs.map(o=>o.s.putts)),a):null; }, f:v=>dec(v,2), unit:'Putts'},
+  {g:'Über alle Runden', t:'Wenigste Bälle verloren', d:`pro Runde, ab ${BEST_MIN} Runden`, kind:'player', low:true,
+    v:rs=>rs.length>=BEST_MIN ? sum(rs.map(o=>o.s.lost))/rs.length : null, f:v=>dec(v), unit:'pro Runde', help:'lostball'},
+  {g:'Über alle Runden', t:'Meiste Runden gespielt', kind:'player', low:false, v:rs=>rs.length||null, f:v=>v, unit:'Runden'},
+  {g:'Im Flight', t:'Meiste Siege', d:'Runden mit mindestens zwei Spielern, nach der gewählten Wertung', kind:'flight', key:'win', low:false, f:v=>v, unit:'Siege', help:'wertung'},
+  {g:'Im Flight', t:'Meiste Runden Bier bezahlt', d:'wer am Schluss Letzter war', kind:'flight', key:'beer', low:false, f:v=>v, unit:'Runden', beer:true},
+  {g:'Handicap', t:'Tiefstes Handicap', d:'aktueller Handicap-Index im Profil', kind:'hcp', low:true, f:v=>dec(v), unit:'', help:'hcpindex'}
+];
+function bestCompute(cat, rounds){
+  const byP={}; rounds.forEach(r=>{ (byP[r.profileId] ||= []).push({r, s:rstats(r)}); });
+  let rows=[];
+  if(cat.kind==='round'){
+    Object.entries(byP).forEach(([pid,rs])=>{ let best=null;
+      rs.forEach(o=>{ if(!cat.ok(o.r,o.s)) return; const v=cat.v(o.r,o.s); if(v==null||isNaN(v)) return;
+        if(!best || (cat.low ? v<best.v : v>best.v)) best={pid, v, r:o.r}; });
+      if(best) rows.push(best); });
+  } else if(cat.kind==='player'){
+    Object.entries(byP).forEach(([pid,rs])=>{ const v=cat.v(rs); if(v!=null && !isNaN(v)) rows.push({pid, v, n:rs.length}); });
+  } else if(cat.kind==='flight'){
+    const groups={}; roundList().filter(r=>r.status==='done' && !r.mem && (!S.bestCourse||S.bestCourse==='all'||r.courseId===S.bestCourse)).forEach(r=>{ (groups[r.groupId] ||= []).push(r); });
+    const cnt={};
+    Object.values(groups).filter(g=>g.length>1).forEach(g=>{ ranking(g, rankModeOf(g)).rs.forEach(x=>{ if(x[cat.key] && x.r.profileId && S.profiles[x.r.profileId]) cnt[x.r.profileId]=(cnt[x.r.profileId]||0)+1; }); });
+    rows=Object.entries(cnt).map(([pid,v])=>({pid, v}));
+  } else if(cat.kind==='hcp'){
+    rows=profList().filter(p=>p.hi!=null && p.hi!=='' && !isNaN(+p.hi)).map(p=>({pid:p.id, v:+p.hi}));
+  }
+  rows.sort((a,b)=> cat.low ? a.v-b.v : b.v-a.v);
+  let place=0, prev=null;
+  rows.forEach((x,i)=>{ const k=cat.f(x.v); if(prev===null || k!==prev){ place=i+1; prev=k; } x.place=place; });
+  return rows.filter(x=>x.place<=3);
+}
+function viewBest(){
+  const all=roundList().filter(r=>r.status==='done' && !r.mem && r.profileId && S.profiles[r.profileId]);
+  if(!all.length) return `<div class="empty"><b>Noch keine Runden</b>Sobald ihr Runden abschliesst, werden hier in verschiedenen Kategorien die Besten gekürt.</div>`;
+  const used=[...new Set(all.map(r=>r.courseId))];
+  if(S.bestCourse && S.bestCourse!=='all' && !used.includes(S.bestCourse)) S.bestCourse='all';
+  const rounds=bestRounds();
+  let lastG='';
+  const cards=BEST_CATS.map(cat=>{
+    const rows=bestCompute(cat, rounds);
+    const head = cat.g!==lastG ? `<h3 style="margin:14px 0 0">${cat.g}</h3>` : ''; lastG=cat.g;
+    return head + `<div class="best">
+      <div class="best-head"><b>${cat.t}</b>${cat.help?' '+ht(cat.help):''}${cat.d?`<span class="small muted">${cat.d}</span>`:''}</div>
+      ${rows.length?`<ol class="rank-list">${rows.map(x=>{ const p=S.profiles[x.pid]||{name:'?'};
+        const sub = x.r ? `${fmtDate(x.r.date)} · ${esc(String(x.r.courseName||'').replace(/^Golfpark\s+/,''))}${x.r.modeLabel&&x.r.modeLabel!=='Alle 18'?' '+esc(x.r.modeLabel):''}` : '';
+        return `<li class="${x.place===1?(cat.beer?'beer':'win'):''}" ${x.r?`data-a="openRound" data-v="${x.r.id}" role="button" tabindex="0"`:''}>
+          <span class="rank-place num">${x.place}.</span>${avatar({...p, id:x.pid},'sm')}
+          <span class="rank-name">${esc(p.name)}${x.place===1?(cat.beer?BEER:CROWN):''}</span>
+          <span class="rank-score num"><b>${cat.f(x.v)}${cat.unit?` <small style="display:inline">${String(cat.f(x.v))==='1'?(BEST_ONE[cat.unit]||cat.unit):cat.unit}</small>`:''}</b>${sub?`<small>${sub}</small>`:''}</span></li>`; }).join('')}</ol>`
+        : `<p class="small muted" style="margin:0">Noch keine Werte in dieser Kategorie.</p>`}
+    </div>`;
+  }).join('');
+  return `<div class="stack">
+    <p class="muted" style="margin:0">Wer ist in welcher Disziplin vorne? Gezählt werden alle abgeschlossenen Runden der Profile, Gäste und Übungsrunden nicht. Tippe auf einen Rekord, um die Runde zu sehen.</p>
+    ${used.length>1?`<label class="f">Platz<select class="in" id="best-course" data-f="bestCourse"><option value="all">Alle Plätze</option>${used.map(id=>{ const r=all.find(x=>x.courseId===id); return `<option value="${id}" ${S.bestCourse===id?'selected':''}>${esc(r.courseName)}</option>`; }).join('')}</select></label>`:''}
+    ${cards}
+  </div>`;
+}
+const TROPHY='<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/><path d="M12 14v4M8 21h8M9.5 18h5"/></svg>';
 function viewRound(r){
   const st=rstats(r);
   const cf = S.confirm==='del-'+r.id;
@@ -1625,9 +1825,12 @@ function viewRound(r){
          ['Scrambling', st.scrA?`${pct(st.scrH,st.scrA)} <span class="muted">(${st.scrH}/${st.scrA})</span>`:'–'],
          ['Sand Saves', st.sandA?`${pct(st.sandH,st.sandA)} <span class="muted">(${st.sandH}/${st.sandA})</span>`:'–'],
          ['Strafschläge', st.pen],
+         ['Bälle verloren', st.lost],
          ['Birdies oder besser', st.dist.e+st.dist.b]].map(([l,v])=>`<div class="li"><div class="main">${l}</div><div class="num">${v}</div></div>`).join('')}
     </div>
+    ${mates.length&&r.status==='done'?rankingCard([r,...mates], false):''}
     ${mates.length?`<div class="section" style="margin-top:4px"><span class="eyebrow">Im Flight</span><div class="list">${mates.map(m=>{ const ms=rstats(m); return `<button class="li" data-a="openRound" data-v="${m.id}">${avatarFor(m)}<div class="main"><div class="t">${esc(m.playerName||'')}</div><div class="s">Tee ${esc(m.teeName)}${m.guest?' · Gast':''}</div></div><div class="score-big num">${ms.strokes||'–'}<small>${fmtPar(ms.vs)}${m.ch!=null?' · '+ms.pts+' P':''}</small></div></button>`; }).join('')}</div></div>`:''}
+    ${r.status==='done'&&!r.mem?`<label class="f">Datum der Runde ${mates.length?'<span class="small muted">(gilt für den ganzen Flight)</span>':''}<input class="in" id="rd-date" type="date" value="${esc(r.date||'')}" data-f="rdate.${r.id}"></label>`:''}
     ${r.notes?`<div class="card"><div class="eyebrow">Notizen</div><p style="margin:4px 0 0;white-space:pre-wrap">${esc(r.notes)}</p></div>`:''}
     <button class="btn block" data-a="cmpOpen" data-v="${r.id}">Mit einer anderen Runde vergleichen</button>
     <div class="grid2">
@@ -1686,6 +1889,7 @@ function viewCompare(){
     ['Scrambling', ra([sa.scrH,sa.scrA]), ra([sb.scrH,sb.scrA]), v=>Math.round(v*100)+' %', false],
     ['Drei-Putts', sa.puttH?p3(A):null, sb.puttH?p3(B):null, v=>v, true],
     ['Strafschläge', sa.pen, sb.pen, v=>v, true],
+    ['Bälle verloren', sa.lost, sb.lost, v=>v, true],
     ['Birdies oder besser', sa.dist.e+sa.dist.b, sb.dist.e+sb.dist.b, v=>v, false],
     ['Pars', sa.dist.p, sb.dist.p, v=>v, false],
     ['Bogeys', sa.dist.bo, sb.dist.bo, v=>v, true],
@@ -1794,7 +1998,7 @@ function viewStatsBody(all){
       <div class="kpis num" style="margin-top:6px">
         <div class="kpi"><div class="v">${agg('puttH')?dec(agg('putts')/agg('puttH')*18):'–'}</div><div class="l">Putts pro 18 Loch</div><div class="sub">${agg('puttH')?dec(agg('putts')/agg('puttH'),2)+' pro Loch':''}</div></div>
         <div class="kpi"><div class="v">${puttsPerGir(ss)}</div><div class="l">Putts pro GIR</div></div>
-        <div class="kpi"><div class="v">${rs.length?dec(agg('pen')/rs.length):'–'}</div><div class="l">Strafschläge / Runde</div></div>
+        <div class="kpi"><div class="v">${rs.length?dec(agg('pen')/rs.length):'–'}</div><div class="l">Strafschläge / Runde</div><div class="sub">${rs.length?dec(agg('lost')/rs.length)+' Bälle verloren':''}</div></div>
         <div class="kpi"><div class="v">${agg('fwA')?`${pct(agg('fwL'),agg('fwA'))}`:'–'}<span class="muted" style="font-size:18px"> / ${agg('fwA')?pct(agg('fwR'),agg('fwA')):'–'}</span></div><div class="l">Fairway verfehlt links / rechts</div></div>
         <div class="kpi"><div class="v">${agg('puttH')?pct(agg('p1'),agg('puttH')):'–'}</div><div class="l">Ein-Putt-Quote</div></div>
         <div class="kpi"><div class="v">${agg('puttH')?dec(agg('p3')/agg('puttH')*18):'–'}</div><div class="l">Drei-Putts pro 18 Loch</div><div class="sub">${agg('p3')} insgesamt</div></div>
@@ -2219,6 +2423,7 @@ document.addEventListener('click', e=>{
     case 'help': e.preventDefault(); showHelp(v); break;
     case 'helpClose': closeHelp(); break;
     case 'helpAll': { closeHelp(); S.helpQ=''; S.helpCat='Alle'; S.view={name:'help', focus:v, from:S.view}; render(); const el=document.getElementById('g-'+v); if(el){ el.scrollIntoView({block:'center'}); el.classList.add('hl'); } else window.scrollTo(0,0); break; }
+    case 'openBest': if(!(S.view&&S.view.name==='best')) S.view={name:'best', from:S.view}; render(); window.scrollTo(0,0); break;
     case 'openHelp': closeHelp(); if(!(S.view&&S.view.name==='help')){ S.view={name:'help', from:S.view}; } ls('golfsc-helpseen', 1); render(); window.scrollTo(0,0); break;
     case 'helpCat': S.helpCat=v; document.querySelectorAll('[data-a="helpCat"]').forEach(x=>x.setAttribute('aria-pressed', x.dataset.v===v)); filterGlossary(); break;
     case 'helpSeen': ls('golfsc-helpseen', 1); render(); break;
@@ -2247,6 +2452,12 @@ document.addEventListener('click', e=>{
     /* Start einer Runde */
     case 'startCourse': { const c=courseById(v); S.start.courseId=v; S.start.players.forEach(pl=>{ pl.tee=Math.min(pl.tee, Math.max(0,c.tees.length-1)); }); if(c.holes.length!==18) S.start.mode='all'; render(); break; }
     case 'startMode': S.start.mode=v; render(); break;
+    case 'startRank': S.start.rank=v; ls('golfsc-rank', v); render(); break;
+    case 'rankMode': { const gid=b.dataset.g; let grp=roundList().filter(x=>x.groupId===gid);
+      if(grp.length) grp.forEach(x=>{ x.rank=v; saveRound(x); });
+      else if(S.view && S.view.list) S.view.list.forEach(x=>{ x.rank=v; });
+      if(S.group) S.group.forEach(x=>{ if(x.groupId===gid) x.rank=v; });
+      ls('golfsc-rank', v); render(); break; }
     case 'startMem': S.start.mem=b.checked; render(); break;
     case 'togglePlayer': { const st=S.start, k=st.players.findIndex(x=>x.pid===v);
       if(k>=0) st.players.splice(k,1);
@@ -2265,6 +2476,8 @@ document.addEventListener('click', e=>{
     case 'miss': h.miss = h.miss===v ? null : v; touchRound(r); break;
     case 'pen+': h.pen=(h.pen||0)+1; touchRound(r); break;
     case 'pen-': h.pen=Math.max(0,(h.pen||0)-1); touchRound(r); break;
+    case 'lost+': h.lost=(h.lost||0)+1; if((h.pen||0)<h.lost) h.pen=h.lost; touchRound(r); break;
+    case 'lost-': h.lost=Math.max(0,(h.lost||0)-1); touchRound(r); break;
     case 'sand': h.sand = v==='true'; touchRound(r); break;
     case 'up': h.up = v==='true'; if(h.up){ h.s=null; h.p=null; h.miss=null; } touchRound(r); break;
     case 'pdet': S.det[p]=!S.det[p]; render(); break;
@@ -2282,17 +2495,21 @@ document.addEventListener('click', e=>{
     case 'prevHole': setHole(Math.max(0,S.hole-1)); S.det={}; render(); window.scrollTo(0,0); break;
     case 'nextHole': setHole(Math.min(g[0].holes.length-1,S.hole+1)); S.det={}; render(); window.scrollTo(0,0); break;
     case 'toFinish': S.view={name:'finish'}; render(); window.scrollTo(0,0); break;
+    case 'endEdit': curGroup(); /* weiter wie Abschliessen */
     case 'finish': { const grp=S.group||[]; if(!grp.length) break;
-      grp.forEach(x=>{ x.status='done'; x.notes=grp[0].notes||''; saveRound(x); });
+      const wasEdit=grp.some(x=>x.editing);
+      grp.forEach(x=>{ x.status='done'; delete x.editing; x.notes=grp[0].notes||''; saveRound(x); });
       const mine=grp.find(x=>x.profileId===S.me) || grp[0], mem=grp[0].mem;
       ls('golfsc-active', null); S.group=null; S.det={};
       S.tab='play'; try{ sessionStorage.setItem('golfsc-tab','play'); }catch(e){}
-      S.view = mem ? null : {name:'round', id:mine.id};
-      toast(mem?'Übungsrunde beendet. Sie wird nicht gespeichert.':grp.length>1?'Runde für alle gespeichert':'Runde gespeichert'); render(); window.scrollTo(0,0); break; }
+      S.view = grp.length>1 ? {name:'result', gid:grp[0].groupId, mem, list:mem?grp.map(x=>clone(x)):null} : mem ? null : {name:'round', id:mine.id};
+      toast(wasEdit?'Bearbeitung beendet, Änderungen gespeichert':mem?'Übungsrunde beendet. Sie wird nicht gespeichert.':grp.length>1?'Runde für alle gespeichert':'Runde gespeichert'); render(); window.scrollTo(0,0); break; }
     case 'openRound': { const rr=S.rounds[v]; if(rr && rr.status==='active' && rr.groupId===activeId()){ S.tab='play'; S.view=null; } else S.view={name:'round', id:v, from:S.view}; S.confirm=null; render(); window.scrollTo(0,0); break; }
     case 'reopen': { const rr0=S.rounds[v]; if(!rr0) break;
       if(activeGroupRounds().some(x=>x.groupId!==rr0.groupId)){ toast('Schliesse zuerst die laufende Runde ab.'); break; }
-      const rr=clone(rr0); rr.id=v; rr.status='active'; saveRound(rr); ls('golfsc-active', rr.groupId); S.group=null; S.tab='play'; S.view=null; render(); window.scrollTo(0,0); break; }
+      const grp0=rr0.mem?[rr0]:roundList().filter(x=>x.groupId===rr0.groupId);
+      grp0.forEach(x0=>{ const rr=clone(x0); rr.id=x0.id; rr.status='active'; rr.editing=true; saveRound(rr); });
+      ls('golfsc-active', rr0.groupId); S.hole=0; ls('golfsc-hole-'+rr0.groupId, 0); S.group=null; S.tab='play'; S.view=null; render(); window.scrollTo(0,0); break; }
     /* Verwaltung */
     case 'askWipe': S.confirm='wipe'; render(); break;
     case 'wipe': store.wipe(); S.confirm=null; S.view=null; S.tab='home'; toast('Alle Daten in diesem Browser gelöscht'); render(); break;
@@ -2324,10 +2541,13 @@ function onField(e){
   if(f.startsWith('bagc.')){ const [,id]=f.split('.'); bagEdit(bag=>{ const c=bag.custom.find(x=>x.id===id); if(c) c.name=val||'Eigener Schläger'; }); return; }
   if(f==='askName'){ S.askName=val; const t=$('#ask-text'); if(t) t.textContent=askText(); return; }
   if(f==='statCourse'){ S.statCourse=val; render(); return; }
+  if(f==='bestCourse'){ S.bestCourse=val; render(); return; }
   if(f==='statRange'){ S.statRange=val; render(); return; }
   if(f==='helpQ'){ S.helpQ=val; filterGlossary(); return; }
   if(f==='anaSel'){ S.anaCourse=val; S.view={...S.view, course:val}; render(); return; }
   if(f.startsWith('cmp.')){ S.cmp[f.split('.')[1]]=val; render(); return; }
+  if(f.startsWith('rdate.')){ const r0=S.rounds[f.slice(6)]; if(!r0 || !/^\d{4}-\d{2}-\d{2}$/.test(val)) return;
+    roundList().filter(x=>x.groupId===r0.groupId).forEach(x=>{ x.date=val; saveRound(x); }); toast('Datum geändert: '+fmtDate(val)); S.dirty=true; return; }
   if(f==='edit.notes'){ (S.group||[]).forEach(x=>{ x.notes=val; saveRound(x, 900); }); return; }
   if(f.startsWith('form.')){ setPath(S, f, val); return; }
 }
