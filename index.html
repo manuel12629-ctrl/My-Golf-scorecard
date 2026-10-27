@@ -291,6 +291,8 @@ details summary{cursor:pointer}
 .hw-t td.hw-name{text-align:left;font-weight:600;white-space:nowrap}
 .hw-t tr.hw-foot td{color:var(--muted);font-size:12px}
 .hw-t td.tot{font-weight:700}
+.club-model{font-weight:500;font-size:13px;color:var(--accent)}
+.dist-n small{display:block;font-size:11px;color:var(--muted);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .editbar{display:flex;flex-direction:column;gap:10px;padding:12px;margin-bottom:12px;border-radius:14px;border:1px solid var(--warn);background:color-mix(in srgb,var(--warn) 10%,var(--surface));font-size:14px}
 .rank{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px}
 .rank-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
@@ -475,7 +477,7 @@ const BUILTIN = [
 ];
 
 /* ---------- Version ---------- */
-const APP_VERSION = '3.16', APP_DATE = '27.10.2026';
+const APP_VERSION = '3.17', APP_DATE = '27.10.2026';
 
 /* ---------- Zustand ---------- */
 function ls(k,v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null; } }
@@ -934,7 +936,7 @@ function bagEdit(fn, delay=600){
 const num = v => v===''||v==null||isNaN(+v) ? null : Math.round(+v);
 /* Zwei Schritte: 1. Bag zusammenstellen (Häkchen, «Bag fertig»), 2. Mein Bag mit Infos und Feldern pro Schläger */
 /* Bag aus den Tageskopien der Online-Sicherung zurückholen. Übernimmt nur Werte, die jetzt fehlen, überschreibt nichts. */
-const clubVals = v => ['carry','total','model','note'].filter(k=>v && v[k]!==undefined && v[k]!==null && v[k]!=='');
+const clubVals = v => ['carry','total','model','loft','note'].filter(k=>v && v[k]!==undefined && v[k]!==null && v[k]!=='');
 async function bagRestoreLoad(){
   S.bagRestore={busy:true}; render();
   try{
@@ -996,7 +998,7 @@ function viewBagSetup(p, bag){
           return `<div class="pick-row">
             <button class="pick" data-a="bagToggle" data-v="${c.id}" aria-pressed="${!!v.in}">
               <span class="club-toggle" aria-hidden="true">${v.in?'✓':''}</span>
-              <span class="main"><span class="t">${esc(c.name)}</span><span class="s">${c.loft?'Loft '+esc(c.loft):'Eigener Schläger'}${!v.in&&(num(v.carry)!=null||num(v.total)!=null||v.model||v.note)?` · <b>Werte gespeichert</b>${num(v.carry)!=null?' ('+num(v.carry)+' m)':''}`:''}</span></span>
+              <span class="main"><span class="t">${esc(c.name)}</span><span class="s">${clubMine(v)?'<b>'+clubMine(v)+'</b>':c.loft?'Loft '+esc(c.loft):'Eigener Schläger'}${!v.in&&(num(v.carry)!=null||num(v.total)!=null||v.model||v.loft||v.note)?` · <b>Werte gespeichert</b>${num(v.carry)!=null?' ('+num(v.carry)+' m)':''}`:''}</span></span>
             </button>
             ${c.custom?`<input class="in pick-name" id="cl-name-${c.id}" data-f="bagc.${c.id}.name" value="${esc(c.name)}" aria-label="Name des eigenen Schlägers"><button class="btn ghost small" data-a="bagDel" data-v="${c.id}" aria-label="Eigenen Schläger entfernen">✕</button>`:''}
           </div>`; }).join('')}</div>`:''}
@@ -1020,7 +1022,7 @@ function viewBagMine(p, bag){
     <div class="row"><p class="muted" style="margin:0;flex:1">${avatar(p,'sm')} Bag von <b>${esc(p.name)}</b> · ${inBag.length} Schläger</p>
       <button class="btn small" data-a="bagSetup">Bag ändern</button></div>
     <div class="section" style="margin-top:0"><h3>Meine Distanzen</h3>
-      ${withDist.length?`<div class="dist">${withDist.map(x=>`<div class="dist-row"><span class="dist-n">${esc(x.c.name)}</span>
+      ${withDist.length?`<div class="dist">${withDist.map(x=>`<div class="dist-row"><span class="dist-n">${esc(x.c.name)}${bag.clubs[x.c.id].model?`<small>${esc(bag.clubs[x.c.id].model)}</small>`:''}</span>
         <div class="dist-track"><div class="dist-carry" style="width:${x.carry/max*100}%"></div>${x.total&&x.total>x.carry?`<div class="dist-roll" style="left:${x.carry/max*100}%;width:${(x.total-x.carry)/max*100}%"></div>`:''}</div>
         <span class="dist-v num">${x.carry}${x.total&&x.total>x.carry?`<small>/${x.total}</small>`:''}</span></div>`).join('')}</div>
       <div class="legend"><span><i class="sw" style="background:var(--accent)"></i>Carry (Flug)</span><span><i class="sw" style="background:var(--accent-soft)"></i>mit Rollen</span><span>Meter</span></div>`
@@ -1030,7 +1032,7 @@ function viewBagMine(p, bag){
     </div>
     <div class="section"><h3>Meine Schläger</h3>
       <div class="list">${inBag.map(c=>bagRow(c, bag.clubs[c.id]||{})).join('')}</div>
-      <p class="small muted" style="margin:0">Tippe einen Schläger an, um Infos zu sehen und Distanzen, Modell und Notiz einzutragen.</p>
+      <p class="small muted" style="margin:0">Tippe einen Schläger an, um Infos zu sehen und Distanzen, Modell, Loft und Notiz einzutragen.</p>
     </div>
     <p class="small muted">Carry ist die Strecke, die der Ball in der Luft fliegt. Die Gesamtlänge zählt das Rollen dazu. Trag deinen durchschnittlichen, gut getroffenen Schlag ein, nicht den längsten.</p>
     <p class="small muted" style="margin:0">Nimmst du einen Schläger aus dem Bag, bleiben seine Werte gespeichert und sind wieder da, wenn er zurückkommt.</p>
@@ -1041,23 +1043,28 @@ function bagRow(c, v){
   const open=S.clubOpen===c.id, isP=c.id==='PT', total=num(v.total), carry=num(v.carry);
   return `<div class="club ${open?'open':''}">
     <button class="club-line" data-a="clubOpen" data-v="${c.id}" aria-expanded="${open}">
-      <span class="main"><span class="t">${esc(c.name)}</span><span class="s">${v.note?esc(v.note):'<i>Wann ich ihn nehme: noch leer</i>'}</span></span>
+      <span class="main"><span class="t">${esc(c.name)}${clubMine(v)?` <span class="club-model">${clubMine(v)}</span>`:''}</span><span class="s">${v.note?esc(v.note):'<i>Wann ich ihn nehme: noch leer</i>'}</span></span>
       <span class="club-dist num">${isP?'':total!=null?`${total} m<small>gesamt</small>`:carry!=null?`${carry} m<small>carry</small>`:'<small>noch leer</small>'}</span>
       <span class="chev" aria-hidden="true">${open?'▴':'▾'}</span>
     </button>
     ${open?`<div class="club-body">${clubFields(c, v)}</div>`:''}
   </div>`;
 }
+/* eigenes Modell und eigener Loft als kurze Zeile, z. B. «Ping G430 · 10.5°» */
+function clubMine(v){ const a=[]; if(v && v.model) a.push(esc(v.model)); if(v && v.loft!==undefined && v.loft!==null && v.loft!=='') a.push(esc(String(v.loft).replace('.',','))+'°'); return a.join(' · '); }
 function clubFields(c, v){
   const isP=c.id==='PT';
-  return `${c.loft?`<div class="small muted">Loft ${ht('loft')} typisch ${esc(c.loft)}</div>`:''}
+  return `${c.loft?`<div class="small muted">Loft typisch ${esc(c.loft)}</div>`:''}
     ${c.desc?`<p class="small" style="margin:0">${esc(c.desc)}</p>`:''}
     ${isP?'':`<div class="grid2">
       <label class="f">Carry in Metern ${ht('carry')}<input class="in num" type="number" inputmode="numeric" min="0" max="350" id="cl-carry-${c.id}" data-f="bag.${c.id}.carry" value="${esc(v.carry??'')}" placeholder="Meter"></label>
       <label class="f">Gesamt mit Rollen<input class="in num" type="number" inputmode="numeric" min="0" max="400" id="cl-total-${c.id}" data-f="bag.${c.id}.total" value="${esc(v.total??'')}" placeholder="Meter"></label>
     </div>`}
     <label class="f">Wann ich ihn nehme<textarea class="in" id="cl-note-${c.id}" data-f="bag.${c.id}.note" placeholder="z. B. vom Abschlag auf engen Löchern">${esc(v.note||'')}</textarea></label>
-    <label class="f">Modell und Loft<input class="in" id="cl-model-${c.id}" data-f="bag.${c.id}.model" value="${esc(v.model||'')}" placeholder="z. B. Ping G430, 10.5°"></label>
+    <div class="grid2">
+      <label class="f">Modell<input class="in" id="cl-model-${c.id}" data-f="bag.${c.id}.model" value="${esc(v.model||'')}" placeholder="z. B. Ping G430"></label>
+      <label class="f">Loft in Grad ${ht('loft')}<input class="in num" type="number" inputmode="decimal" step="0.5" min="0" max="80" id="cl-loft-${c.id}" data-f="bag.${c.id}.loft" value="${esc(v.loft??'')}" placeholder="${c.loft?esc(String(c.loft).replace(/°/g,'')):'z. B. 10.5'}"></label>
+    </div>
     <button class="btn small" style="align-self:flex-start" data-a="clubOpen" data-v="${c.id}">Fertig</button>`;
 }
 /* ---------- Lochanalyse: wie habe ich jedes Loch in vergangenen Runden gespielt ---------- */

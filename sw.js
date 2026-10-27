@@ -1,7 +1,7 @@
 /* Offline-Speicher der Golf Scorecard.
    Holt immer zuerst die neuste Version vom Server. Ohne Empfang startet die zuletzt geladene Version aus dem Handy.
    Lädt nichts von anderen Seiten, nur die eigenen Dateien. Deine Runden liegen nicht hier, sondern im Browserspeicher. */
-const CACHE = 'golf-scorecard-v3.16';
+const CACHE = 'golf-scorecard-v3.17';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'swing.gif'];
 
 self.addEventListener('install', e => {
