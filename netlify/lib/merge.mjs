@@ -43,10 +43,10 @@ export function mergeProfile(cur, inc){
 }
 const canon = v => JSON.stringify(v, (k, x) => (x && typeof x==='object' && !Array.isArray(x)) ? Object.keys(x).sort().reduce((o,kk)=>(o[kk]=x[kk],o),{}) : x);
 
-export const COLS = ['rounds', 'courses', 'profiles'];
+export const COLS = ['rounds', 'courses', 'profiles', 'training'];
 const ID = /^[A-Za-z0-9_-]{1,64}$/;
 export const tOf = o => (o && (o.updatedAt || o._t)) || 0;
-export const emptyDb = () => ({ rounds: {}, courses: {}, profiles: {}, deleted: {} });
+export const emptyDb = () => ({ rounds: {}, courses: {}, profiles: {}, training: {}, deleted: {} });
 
 export function mergeDb(base, inc) {
   const out = { ...emptyDb(), ...structuredClone(base || {}) };

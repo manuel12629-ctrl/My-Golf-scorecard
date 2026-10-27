@@ -301,6 +301,48 @@ details summary{cursor:pointer}
 .hcp-list{display:flex;flex-wrap:wrap;gap:6px}
 .hcp-list span{padding:3px 8px;border-radius:8px;background:var(--surface2);font-size:13px;color:var(--muted)}
 .hcp-list span.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.tally-wrap{display:flex;flex-direction:column;gap:4px}
+.tally-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.flight-tally>div{position:relative}
+.flight-tally>div.lead{border-color:rgba(201,150,31,.8);background:rgba(224,177,58,.14)}
+.flight-tally>div .crown{position:absolute;top:-9px;right:6px;width:20px;height:15px}
+.flight-tally span{line-height:1.15}
+.flight-tally.holes b{font-size:26px;color:var(--accent)}
+.rank-score.holes b{font-size:24px;color:var(--accent)}
+.won-l{font-size:13px;font-weight:600;margin-left:4px;color:var(--ink)}
+.pick-row{flex-wrap:wrap}
+.pick-row>.pick{flex:1 1 0;min-width:0}
+.pick-custom{display:flex;gap:6px;align-items:center;flex:1 1 100%;padding:0 0 10px 52px}
+.pick-custom .pick-name{flex:1 1 0;max-width:none;min-width:0}
+.pick-custom .pick-group{flex:0 0 120px;width:120px;min-height:38px;padding:6px 8px}
+.dist-pre{position:absolute;left:0;top:0;bottom:0;background:var(--accent-soft)}
+.dist-range{position:absolute;top:0;bottom:0;background:var(--accent);border-radius:7px}
+.hw-t td.hw-half{background:rgba(224,177,58,.15);font-weight:700}
+.hub-btn.wide{grid-column:1/-1;min-height:0}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.tr-resume{display:flex;flex-direction:column;gap:2px;text-align:left;border:1px solid var(--accent);background:var(--accent-soft);color:var(--ink);cursor:pointer}
+.tr-tip{display:flex;flex-direction:column;gap:2px;text-align:left;border:1px solid var(--line);background:var(--surface2);border-radius:12px;padding:10px 12px;color:var(--ink)}
+.tr-tip span{font-size:13px;color:var(--muted)}
+.tr-bars{display:flex;align-items:flex-end;gap:4px;height:110px;padding:4px 0}
+.tr-bars>div{flex:1 1 0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px}
+.tr-bars i{display:block;width:100%;background:var(--accent);border-radius:5px 5px 2px 2px}
+.tr-bars span{font-size:11px;color:var(--muted)}
+.tr-score{display:flex;gap:10px}
+.tr-score>div{flex:1 1 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 12px;display:flex;flex-direction:column}
+.tr-score b{font-family:var(--display);font-size:30px;line-height:1.1}
+.tr-score small{font-size:14px;color:var(--muted);font-weight:600}
+.tr-label{font-family:var(--display);font-size:26px;font-weight:700;text-align:center;padding:6px 0}
+.tr-btns{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+.tr-btns.n3{grid-template-columns:1fr 1.2fr 1fr}
+.tr-btns .btn.big{min-height:76px;font-size:18px}
+.tr-dots{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;min-height:14px}
+.tr-dots i{width:20px;height:20px;border-radius:50%;font-style:normal;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;background:var(--line);color:var(--ink)}
+.tr-dots i.ok{background:var(--accent);color:var(--accent-ink)}
+.tr-dots i.no{background:color-mix(in srgb,var(--birdie) 35%,var(--surface))}
+.tr-dots i.side{background:color-mix(in srgb,var(--warn) 40%,var(--surface))}
+.tr-done{text-align:center;position:relative;display:flex;flex-direction:column;align-items:center;gap:4px}
+.tr-done .crown{width:56px;height:42px}
+.tr-big{font-family:var(--display);font-size:40px;font-weight:700}
 .editbar{display:flex;flex-direction:column;gap:10px;padding:12px;margin-bottom:12px;border-radius:14px;border:1px solid var(--warn);background:color-mix(in srgb,var(--warn) 10%,var(--surface));font-size:14px}
 .rank{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px}
 .rank-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
@@ -485,7 +527,7 @@ const BUILTIN = [
 ];
 
 /* ---------- Version ---------- */
-const APP_VERSION = '3.18', APP_DATE = '27.10.2026';
+const APP_VERSION = '3.21', APP_DATE = '27.10.2026';
 
 /* ---------- Zustand ---------- */
 function ls(k,v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null; } }
@@ -535,9 +577,9 @@ function idbLegacy(){
     }catch(e){ fin(null); }
   });
 }
-const DATA0 = () => ({rounds:{},courses:{},profiles:{},holeimgs:{},profile:null,deleted:{},dirty:{},syncAt:null,savedAt:null,changedAt:null});
+const DATA0 = () => ({rounds:{},courses:{},profiles:{},training:{},holeimgs:{},profile:null,deleted:{},dirty:{},syncAt:null,savedAt:null,changedAt:null});
 const tOf = o => (o && (o.updatedAt||o._t)) || 0;
-const SYNC_COLS = ['rounds','courses','profiles'];
+const SYNC_COLS = ['rounds','courses','profiles','training'];
 const localOnly = (col,o) => col==='rounds' && o && (o.mem || o.guest);
 /* Bag sicher zusammenführen: jeder Schläger einzeln nach seinem Zeitstempel (_t), nichts geht verloren,
    was nicht ausdrücklich gelöscht wurde (del: Zeitpunkt des Löschens pro Schläger). Ein Profil ohne Bag löscht nie einen Bag. */
@@ -587,7 +629,7 @@ const store = {
     try{ const raw=localStorage.getItem(KEY); saved = raw ? JSON.parse(raw) : null; }catch(e){ canStore=false; }
     if(!saved){ const old = await idbLegacy(); if(old){ saved=old; this.data.changedAt=Date.now(); } }
     if(saved) this.data = {...this.data, ...saved};
-    ['rounds','courses','profiles','deleted','dirty','holeimgs'].forEach(k=>{ this.data[k] ||= {}; });
+    ['rounds','courses','profiles','training','deleted','dirty','holeimgs'].forEach(k=>{ this.data[k] ||= {}; });
     const emb = readEmbedded(); if(emb) this.merge(emb);
     this.migrate();
     if(!canStore) this.err='blocked';
@@ -693,7 +735,7 @@ const sync = {
     if(this.busy){ this.again=true; return; }
     this.busy=true; const prev=this.state; this.state='busy'; paintSync();
     const d=store.data, keys=Object.keys(d.dirty||{}), sent={};
-    const changes={rounds:{},courses:{},profiles:{},deleted:d.deleted||{}};
+    const changes={rounds:{},courses:{},profiles:{},training:{},deleted:d.deleted||{}};
     keys.forEach(k=>{ const [col,id]=k.split('/'); const o=(d[col]||{})[id]; if(o && !localOnly(col,o) && changes[col]) changes[col][id]=o; sent[k]=o?tOf(o):'gone'; });
     try{
       const ctl=new AbortController(); const to=setTimeout(()=>ctl.abort(), 20000);
@@ -924,7 +966,9 @@ const CLUBS=[
 ];
 const BAG_MAX=14;   // Golfregel 4.1b: höchstens 14 Schläger in einer Runde
 function myBag(){ const p=meProf(); const b=(p&&p.bag)||{}; return {clubs:b.clubs||{}, custom:b.custom||[]}; }
-function allClubs(bag){ return CLUBS.concat((bag.custom||[]).map(c=>({...c, g:'custom', custom:true, desc:c.desc||''}))); }
+const GROUP_OK = g => CLUB_GROUPS.some(x=>x[0]===g);
+function allClubs(bag){ const all=CLUBS.concat((bag.custom||[]).map(c=>({...c, g:GROUP_OK(c.group)?c.group:'custom', custom:true, desc:c.desc||''})));
+  const gi=g=>CLUB_GROUPS.findIndex(x=>x[0]===g); return all.map((c,i)=>({c,i})).sort((a,b)=>gi(a.c.g)-gi(b.c.g) || a.i-b.i).map(x=>x.c); }
 /* Änderung sofort im Speicher übernehmen, gespeichert und gesichert wird kurz danach */
 function bagEdit(fn, delay=600){
   const p=meProf(); if(!p) return;
@@ -944,7 +988,7 @@ function bagEdit(fn, delay=600){
 const num = v => v===''||v==null||isNaN(+v) ? null : Math.round(+v);
 /* Zwei Schritte: 1. Bag zusammenstellen (Häkchen, «Bag fertig»), 2. Mein Bag mit Infos und Feldern pro Schläger */
 /* Bag aus den Tageskopien der Online-Sicherung zurückholen. Übernimmt nur Werte, die jetzt fehlen, überschreibt nichts. */
-const clubVals = v => ['carry','total','model','loft','note'].filter(k=>v && v[k]!==undefined && v[k]!==null && v[k]!=='');
+const clubVals = v => ['carry','dmax','model','loft','note'].filter(k=>v && v[k]!==undefined && v[k]!==null && v[k]!=='');
 async function bagRestoreLoad(){
   S.bagRestore={busy:true}; render();
   try{
@@ -961,7 +1005,7 @@ function bagRestoreCandidates(){
     const names={}; allClubs({custom:pb.custom||[]}).forEach(c=>{ names[c.id]=c.name; });
     const withVals=Object.entries(pb.clubs||{}).filter(([id,v])=>clubVals(v).length);
     const missing=withVals.filter(([id,v])=>clubVals(v).some(k=>!clubVals(cur.clubs[id]).includes(k)));
-    return {day:d.day, bag:pb, n:withVals.length, missing:missing.length, list:withVals.map(([id,v])=>`${names[id]||id}${num(v.carry)!=null?' '+num(v.carry)+' m':''}`)}; }).filter(Boolean);
+    return {day:d.day, bag:pb, n:withVals.length, missing:missing.length, list:withVals.map(([id,v])=>`${names[id]||id}${distTxt(v)?' '+distTxt(v):''}`)}; }).filter(Boolean);
 }
 function viewBagRestore(){
   const p=meProf(); const st=S.bagRestore||{};
@@ -1006,9 +1050,11 @@ function viewBagSetup(p, bag){
           return `<div class="pick-row">
             <button class="pick" data-a="bagToggle" data-v="${c.id}" aria-pressed="${!!v.in}">
               <span class="club-toggle" aria-hidden="true">${v.in?'✓':''}</span>
-              <span class="main"><span class="t">${esc(c.name)}</span><span class="s">${clubMine(v)?'<b>'+clubMine(v)+'</b>':c.loft?'Loft '+esc(c.loft):'Eigener Schläger'}${!v.in&&(num(v.carry)!=null||num(v.total)!=null||v.model||v.loft||v.note)?` · <b>Werte gespeichert</b>${num(v.carry)!=null?' ('+num(v.carry)+' m)':''}`:''}</span></span>
+              <span class="main"><span class="t">${esc(c.name)}</span><span class="s">${clubMine(v)?'<b>'+clubMine(v)+'</b>':c.loft?'Loft '+esc(c.loft):'Eigener Schläger'}${!v.in&&(num(v.carry)!=null||v.model||v.loft||v.note)?` · <b>Werte gespeichert</b>${distTxt(v)?' ('+distTxt(v)+')':''}`:''}</span></span>
             </button>
-            ${c.custom?`<input class="in pick-name" id="cl-name-${c.id}" data-f="bagc.${c.id}.name" value="${esc(c.name)}" aria-label="Name des eigenen Schlägers"><button class="btn ghost small" data-a="bagDel" data-v="${c.id}" aria-label="Eigenen Schläger entfernen">✕</button>`:''}
+            ${c.custom?`<div class="pick-custom"><input class="in pick-name" id="cl-name-${c.id}" data-f="bagc.${c.id}.name" value="${esc(c.name)}" aria-label="Name des eigenen Schlägers">
+              <select class="in pick-group" id="cl-group-${c.id}" data-f="bagc.${c.id}.group" aria-label="Kategorie">${CLUB_GROUPS.map(([k,l])=>`<option value="${k}" ${c.g===k?'selected':''}>${k==='custom'?'Ohne Kategorie':l}</option>`).join('')}</select>
+              <button class="btn ghost small" data-a="bagDel" data-v="${c.id}" aria-label="Eigenen Schläger entfernen">✕</button></div>`:''}
           </div>`; }).join('')}</div>`:''}
         ${g==='custom'?`<button class="btn" data-a="bagAdd">+ Eigenen Schläger hinzufügen</button>`:''}</div>`; }).join('')}
     <div class="bag-bar">
@@ -1021,57 +1067,60 @@ function viewBagSetup(p, bag){
 }
 function viewBagMine(p, bag){
   const clubs=allClubs(bag), inBag=clubs.filter(c=>bag.clubs[c.id]&&bag.clubs[c.id].in);
-  const withDist=inBag.filter(c=>c.id!=='PT' && num(bag.clubs[c.id].carry)!=null).map(c=>({c, carry:num(bag.clubs[c.id].carry), total:num(bag.clubs[c.id].total)})).sort((a,b)=>b.carry-a.carry);
-  const max=withDist.length?Math.max(...withDist.map(x=>Math.max(x.total||0,x.carry))):0;
-  const gaps=withDist.slice(1).map((x,i)=>({a:withDist[i], b:x, d:withDist[i].carry-x.carry}));
-  const big=gaps.filter(x=>x.d>=20), small=gaps.filter(x=>x.d<=5);
-  const open=inBag.filter(c=>c.id!=='PT' && num(bag.clubs[c.id].carry)==null).length;
+  const withDist=inBag.filter(c=>c.id!=='PT' && distOf(bag.clubs[c.id])).map(c=>({c, ...distOf(bag.clubs[c.id])})).sort((a,b)=>b.mid-a.mid || b.hi-a.hi);
+  const max=withDist.length?Math.max(...withDist.map(x=>x.hi)):0;
+  const gaps=withDist.slice(1).map((x,i)=>({a:withDist[i], b:x, d:withDist[i].lo-x.hi}));   // Abstand zwischen den Spannen
+  const big=gaps.filter(x=>x.d>=15), small=gaps.filter(x=>x.d<0);
+  const open=inBag.filter(c=>c.id!=='PT' && !distOf(bag.clubs[c.id])).length;
   return `<div class="stack">
     <div class="row"><p class="muted" style="margin:0;flex:1">${avatar(p,'sm')} Bag von <b>${esc(p.name)}</b> · ${inBag.length} Schläger</p>
       <button class="btn small" data-a="bagSetup">Bag ändern</button></div>
     <div class="section" style="margin-top:0"><h3>Meine Distanzen</h3>
       ${withDist.length?`<div class="dist">${withDist.map(x=>`<div class="dist-row"><span class="dist-n">${esc(x.c.name)}${bag.clubs[x.c.id].model?`<small>${esc(bag.clubs[x.c.id].model)}</small>`:''}</span>
-        <div class="dist-track"><div class="dist-carry" style="width:${x.carry/max*100}%"></div>${x.total&&x.total>x.carry?`<div class="dist-roll" style="left:${x.carry/max*100}%;width:${(x.total-x.carry)/max*100}%"></div>`:''}</div>
-        <span class="dist-v num">${x.carry}${x.total&&x.total>x.carry?`<small>/${x.total}</small>`:''}</span></div>`).join('')}</div>
-      <div class="legend"><span><i class="sw" style="background:var(--accent)"></i>Carry (Flug)</span><span><i class="sw" style="background:var(--accent-soft)"></i>mit Rollen</span><span>Meter</span></div>`
-      :'<p class="small muted" style="margin:0">Trag unten bei deinen Schlägern die Carry-Distanz ein, dann erscheint hier deine Übersicht.</p>'}
-      ${big.length||small.length?`<div class="card small stack" style="gap:4px">${big.map(x=>`<div>Grosse Lücke von <b>${x.d} m</b> zwischen ${esc(x.a.c.name)} und ${esc(x.b.c.name)}.</div>`).join('')}${small.map(x=>`<div>${esc(x.a.c.name)} und ${esc(x.b.c.name)} liegen nur <b>${x.d} m</b> auseinander.</div>`).join('')}</div>`:''}
+        <div class="dist-track"><div class="dist-pre" style="width:${x.lo/max*100}%"></div><div class="dist-range" style="left:${x.lo/max*100}%;width:${Math.max(1.5,(x.hi-x.lo)/max*100)}%"></div></div>
+        <span class="dist-v num">${x.lo===x.hi?x.lo:`${x.lo}<small>–${x.hi}</small>`}</span></div>`).join('')}</div>
+      <div class="legend"><span><i class="sw" style="background:var(--accent)"></i>deine Spanne von bis</span><span>Meter, Flugstrecke</span></div>`
+      :'<p class="small muted" style="margin:0">Trag unten bei deinen Schlägern die Distanz von bis ein, dann erscheint hier deine Übersicht.</p>'}
+      ${big.length||small.length?`<div class="card small stack" style="gap:4px">${big.map(x=>`<div>Lücke von <b>${x.d} m</b> zwischen ${esc(x.a.c.name)} und ${esc(x.b.c.name)}.</div>`).join('')}${small.map(x=>`<div>${esc(x.a.c.name)} und ${esc(x.b.c.name)} überschneiden sich um <b>${-x.d} m</b>.</div>`).join('')}</div>`:''}
       ${withDist.length && open?`<p class="small muted" style="margin:0">Bei ${open} Schläger${open>1?'n':''} fehlt noch die Distanz.</p>`:''}
     </div>
     <div class="section"><h3>Meine Schläger</h3>
       <div class="list">${inBag.map(c=>bagRow(c, bag.clubs[c.id]||{})).join('')}</div>
       <p class="small muted" style="margin:0">Tippe einen Schläger an, um Infos zu sehen und Distanzen, Modell, Loft und Notiz einzutragen.</p>
     </div>
-    <p class="small muted">Carry ist die Strecke, die der Ball in der Luft fliegt. Die Gesamtlänge zählt das Rollen dazu. Trag deinen durchschnittlichen, gut getroffenen Schlag ein, nicht den längsten.</p>
+    <p class="small muted">Trag als Spanne ein, wie weit der Ball mit dem Schläger normalerweise fliegt, zum Beispiel 140 bis 150 m. Von deinem kürzeren bis zum längeren gut getroffenen Schlag, Ausreisser nicht mitzählen.</p>
     <p class="small muted" style="margin:0">Nimmst du einen Schläger aus dem Bag, bleiben seine Werte gespeichert und sind wieder da, wenn er zurückkommt.</p>
     ${sync.on&&sync.pw?'<button class="btn ghost small" style="align-self:flex-start" data-a="bagRestoreOpen">Ältere Schlägerwerte aus der Online-Sicherung holen</button>':''}
   </div>`;
 }
 function bagRow(c, v){
-  const open=S.clubOpen===c.id, isP=c.id==='PT', total=num(v.total), carry=num(v.carry);
+  const open=S.clubOpen===c.id, isP=c.id==='PT', d=distOf(v);
   return `<div class="club ${open?'open':''}">
     <button class="club-line" data-a="clubOpen" data-v="${c.id}" aria-expanded="${open}">
       <span class="main"><span class="t">${esc(c.name)}${clubMine(v)?` <span class="club-model">${clubMine(v)}</span>`:''}</span><span class="s">${v.note?esc(v.note):'<i>Wann ich ihn nehme: noch leer</i>'}</span></span>
-      <span class="club-dist num">${isP?'':total!=null?`${total} m<small>gesamt</small>`:carry!=null?`${carry} m<small>carry</small>`:'<small>noch leer</small>'}</span>
+      <span class="club-dist num">${isP?'':d?`${d.lo===d.hi?d.lo:d.lo+'–'+d.hi} m`:'<small>noch leer</small>'}</span>
       <span class="chev" aria-hidden="true">${open?'▴':'▾'}</span>
     </button>
     ${open?`<div class="club-body">${clubFields(c, v)}</div>`:''}
   </div>`;
 }
 /* eigenes Modell und eigener Loft als kurze Zeile, z. B. «Ping G430 · 10.5°» */
+/* Distanz als Spanne: carry = von, dmax = bis (Meter, Flugstrecke) */
+function distOf(v){ let lo=num(v&&v.carry), hi=num(v&&v.dmax); if(lo==null && hi==null) return null; if(lo==null) lo=hi; if(hi==null) hi=lo; if(hi<lo){ const t=lo; lo=hi; hi=t; } return {lo, hi, mid:(lo+hi)/2}; }
+const distTxt = v => { const d=distOf(v); return !d ? '' : d.lo===d.hi ? `${d.lo} m` : `${d.lo}–${d.hi} m`; };
 function clubMine(v){ const a=[]; if(v && v.model) a.push(esc(v.model)); if(v && v.loft!==undefined && v.loft!==null && v.loft!=='') a.push(esc(String(v.loft).replace('.',','))+'°'); return a.join(' · '); }
 function clubFields(c, v){
   const isP=c.id==='PT';
   return `${c.loft?`<div class="small muted">Loft typisch ${esc(c.loft)}</div>`:''}
     ${c.desc?`<p class="small" style="margin:0">${esc(c.desc)}</p>`:''}
-    ${isP?'':`<div class="grid2">
-      <label class="f">Carry in Metern ${ht('carry')}<input class="in num" type="number" inputmode="numeric" min="0" max="350" id="cl-carry-${c.id}" data-f="bag.${c.id}.carry" value="${esc(v.carry??'')}" placeholder="Meter"></label>
-      <label class="f">Gesamt mit Rollen<input class="in num" type="number" inputmode="numeric" min="0" max="400" id="cl-total-${c.id}" data-f="bag.${c.id}.total" value="${esc(v.total??'')}" placeholder="Meter"></label>
+    ${isP?'':`<div class="eyebrow" style="margin-bottom:-4px">Distanz in Metern ${ht('carry')}</div><div class="grid2">
+      <label class="f">Von<input class="in num" type="number" inputmode="numeric" min="0" max="350" id="cl-carry-${c.id}" data-f="bag.${c.id}.carry" value="${esc(v.carry??'')}" placeholder="Meter"></label>
+      <label class="f">bis<input class="in num" type="number" inputmode="numeric" min="0" max="350" id="cl-dmax-${c.id}" data-f="bag.${c.id}.dmax" value="${esc(v.dmax??'')}" placeholder="Meter"></label>
     </div>`}
     <label class="f">Wann ich ihn nehme<textarea class="in" id="cl-note-${c.id}" data-f="bag.${c.id}.note" placeholder="z. B. vom Abschlag auf engen Löchern">${esc(v.note||'')}</textarea></label>
     <div class="grid2">
       <label class="f">Modell<input class="in" id="cl-model-${c.id}" data-f="bag.${c.id}.model" value="${esc(v.model||'')}" placeholder="z. B. Ping G430"></label>
-      <label class="f">Loft in Grad ${ht('loft')}<input class="in num" type="number" inputmode="decimal" step="0.5" min="0" max="80" id="cl-loft-${c.id}" data-f="bag.${c.id}.loft" value="${esc(v.loft??'')}" placeholder="${c.loft?esc(String(c.loft).replace(/°/g,'')):'z. B. 10.5'}"></label>
+      <label class="f">Loft (Grad)<input class="in num" type="number" inputmode="decimal" step="0.5" min="0" max="80" id="cl-loft-${c.id}" data-f="bag.${c.id}.loft" value="${esc(v.loft??'')}" placeholder="${c.loft?esc(String(c.loft).replace(/°/g,'')):'z. B. 10.5'}"></label>
     </div>
     <button class="btn small" style="align-self:flex-start" data-a="clubOpen" data-v="${c.id}">Fertig</button>`;
 }
@@ -1257,6 +1306,13 @@ function loadDemo(){
         status:'done', notes:'', createdAt:day.getTime(), updatedAt:now, demo:true, holes};
       nr++;
     }
+    d.training ||= {};
+    TRAIN_GAMES.forEach((gm,gi)=>{ for(let k=0;k<4;k++){ const day=new Date(now-(30-k*7-gi)*864e5), date=`${day.getFullYear()}-${String(day.getMonth()+1).padStart(2,'0')}-${String(day.getDate()).padStart(2,'0')}`;
+      const lvl=Math.max(0.15, Math.min(0.85, 0.75-pp.hi/60+k*0.04)); let shots=[];
+      if(gm.kind==='strokes') shots=Array.from({length:gm.n},()=>gm.par+(rnd()<lvl?0:1)+(rnd()<0.12?1:0)-(rnd()<0.06?1:0));
+      else if(gm.kind==='streak'){ let best=0,cur=0; for(let j=0;j<30 && best<gm.n;j++){ const ok=rnd()<lvl+0.1; shots.push(ok?'ok':'no'); cur=ok?cur+1:0; best=Math.max(best,cur); } }
+      else shots=Array.from({length:gm.n},()=>rnd()<lvl?'ok':(gm.id==='fir'?(rnd()<(pp.bias==='L'?0.7:0.3)?'L':'R'):'no'));
+      d.training['tdemo'+pi+gm.id+k]={profileId:pid, game:gm.id, date, status:'done', shots, setup:{club:'', d:gm.dists?['40','60','80']:[]}, createdAt:day.getTime(), updatedAt:now, demo:true}; } });
   });
   store.emit(); store.flush();
   if(!S.profiles[S.me]){ const m=profList()[0]; if(m) pickProfile(m.id); }
@@ -1265,6 +1321,7 @@ function loadDemo(){
 function removeDemo(){
   const d=store.data; let n=0;
   Object.keys(d.rounds).forEach(id=>{ if(d.rounds[id].demo){ delete d.rounds[id]; n++; } });
+  Object.keys(d.training||{}).forEach(id=>{ if(d.training[id].demo) delete d.training[id]; });
   Object.keys(d.profiles).forEach(id=>{ if(d.profiles[id].demo && !Object.values(d.rounds).some(r=>r.profileId===id)) delete d.profiles[id]; });
   store.emit(); store.flush();
   if(!S.profiles[S.me]){ S.me=null; ls('golfsc-me', null); S.picked=false; }
@@ -1299,7 +1356,7 @@ const GLOSSARY=[
   {k:'scrambling', t:'Scrambling', c:'Statistik', d:'Wie oft du trotz verfehltem Green noch Par oder besser spielst. Zeigt, wie gut dein kurzes Spiel rund ums Green ist.'},
   {k:'sandsave', t:'Sand Save (Grünbunker)', c:'Statistik', d:'Ein Grünbunker liegt direkt neben dem Green. Ein Sand Save heisst: aus dem Grünbunker heraus und danach noch Par oder besser. Tippe «Grünbunker gespielt» nur bei Bunkern am Green an, nicht bei Fairwaybunkern.'},
   {k:'putt', t:'Putt, Ein-Putt, Drei-Putt', c:'Statistik', d:'Ein Putt ist ein Schlag auf dem Green, meist mit dem Putter. Schläge vom Vorgrün zählen nicht als Putt. Ein-Putt heisst: mit einem Putt eingelocht. Drei-Putts kosten unnötig Schläge, darum zeigt die Statistik sie extra.'},
-  {k:'wertung', t:'Wertung im Flight', c:'Ergebnis', d:'Legt fest, wer die Runde gewinnt. Schläge: Alle Schläge zusammengezählt, ohne Handicap. Wer am wenigsten braucht, gewinnt. Stableford: Punkte pro Loch mit Handicap, so haben auch Spieler mit hohem Handicap eine Chance. Lochgewinne: Wer ein Loch alleine mit den wenigsten Schlägen spielt, bekommt 1 Punkt. Spielen zwei oder mehr gleich gut, bekommt niemand den Punkt. Das Handicap zählt dabei nicht. Am Schluss gewinnt, wer die meisten Punkte hat, bei Gleichstand wer weniger Schläge gespielt hat.'},
+  {k:'wertung', t:'Wertung im Flight', c:'Ergebnis', d:'Legt fest, wer die Runde gewinnt. Schläge: Alle Schläge zusammengezählt, ohne Handicap. Wer am wenigsten braucht, gewinnt. Stableford: Punkte pro Loch mit Handicap, so haben auch Spieler mit hohem Handicap eine Chance. Lochgewinne wie beim Ryder Cup: Wer ein Loch alleine mit den wenigsten Schlägen spielt, bekommt 1 Punkt. Spielen zwei oder mehr gleich gut, ist das Loch geteilt und jeder von ihnen bekommt ½ Punkt. Das Handicap zählt dabei nicht. Am Schluss gewinnt, wer die meisten Punkte hat, bei Gleichstand wer weniger Schläge gespielt hat.'},
   {k:'lostball', t:'Ballverlust', c:'Regeln', d:'Ein Ball ist verloren, wenn du ihn nach drei Minuten Suche nicht findest oder er im Aus liegt. Das kostet einen Strafschlag, und du spielst von der Stelle des letzten Schlags neu. Im Zähler «Bälle verloren» siehst du später, wo dich das am meisten kostet. Wenn du einen Ball als verloren einträgst, zählt die App automatisch mindestens gleich viele Strafschläge.'},
   {k:'penalty', t:'Strafschlag', c:'Regeln', d:'Ein zusätzlicher Schlag, den du zählen musst, zum Beispiel wenn der Ball im Wasser (Penalty Area) oder im Aus landet. Trag Strafschläge separat ein, sie gehören aber auch zur Gesamtzahl der Schläge.'},
   {k:'pickup', t:'Loch gestrichen', c:'Regeln', d:'Du hebst den Ball auf und spielst das Loch nicht fertig, etwa um das Spiel zu beschleunigen. Für Stableford gibt es 0 Punkte. Für das Handicap zählt die App das Loch als Netto-Doppelbogey.'},
@@ -1308,7 +1365,7 @@ const GLOSSARY=[
   {k:'hcpest', t:'HCP-Schätzung', c:'Handicap', d:'Die App schätzt dein Handicap nach den gleichen Regeln wie das World Handicap System aus deinen Score-Differentials, ab 3 Runden. Das ist kein offizielles Handicap. Das offizielle führt dein Club.'},
   {k:'eclectic', t:'Eclectic', c:'Statistik', d:'Deine Traumrunde: auf jedem Loch dein bestes Ergebnis aus allen gespielten Runden zusammengezählt. Zeigt, was auf diesem Platz möglich ist.'},
   {k:'flight', t:'Flight', c:'Spiel', d:'Die Gruppe, mit der du spielst, meist 2 bis 4 Personen. In der App kann einer für den ganzen Flight schreiben: beim Start weitere Profile oder Gäste dazunehmen.'},
-  {k:'carry', t:'Carry und Gesamtlänge', c:'Bag', d:'Carry ist die Strecke, die der Ball in der Luft fliegt. Die Gesamtlänge zählt das Rollen nach der Landung dazu. Über Wasser oder Bunker zählt nur der Carry.'},
+  {k:'carry', t:'Distanz (Carry)', c:'Bag', d:'Die Strecke, die der Ball in der Luft fliegt, bis er landet. Im Bag trägst du sie als Spanne ein, zum Beispiel 140 bis 150 m, weil kein Schlag genau gleich weit geht. Über Wasser oder Bunker zählt nur die Flugstrecke, das Rollen danach nicht.'},
   {k:'loft', t:'Loft', c:'Bag', d:'Der Neigungswinkel der Schlagfläche. Wenig Loft (Driver, etwa 10°) gibt einen flachen, langen Ballflug. Viel Loft (Wedge, über 50°) gibt einen hohen, kurzen Ballflug.'},
   {k:'rule14', t:'14-Schläger-Regel', c:'Regeln', d:'In einer Runde darfst du höchstens 14 Schläger dabei haben. Welche, wählst du selbst.'},
   {k:'clubs', t:'Holz, Hybrid, Eisen, Wedge, Putter', c:'Bag', d:'Hölzer (mit Driver) sind die langen Schläger mit grossem Kopf. Hybride ersetzen lange Eisen und sind leichter zu treffen. Eisen sind nummeriert, je höher die Zahl, desto kürzer und höher fliegt der Ball. Wedges sind für kurze, hohe Schläge und Bunker. Der Putter ist für das Green.'},
@@ -1320,6 +1377,7 @@ const GLOSSARY=[
 ];
 const HELP_FUNCS=[
   ['Profil wählen', 'Beim Öffnen fragt die App «Wer spielt?». Jeder Spieler hat sein eigenes Profil mit eigenen Runden, eigener Statistik und eigenem Bag. Der farbige Kreis oben rechts zeigt, wer gerade gewählt ist. Antippen wechselt das Profil.'],
+  ['Training', 'Unter «Spielen» findest du die Kachel «Training» mit Übungsspielen: Clock und Speed Control fürs Putten, Par 18 und 15 Chips fürs kurze Spiel, Fairways in Regulation und Kurz, mittel, lang für die Range. Jedes Spiel erklärt Aufbau und Wertung. Du tippst nach jedem Ball an, was passiert ist, das Ergebnis wird gespeichert. Oben stehen Vorschläge, welche Übung zu deinen Schwächen aus den letzten Runden passt. Die Bestwerte erscheinen auch in der Bestenliste.'],
   ['Bestenliste', 'Der Pokal oben im Kopf öffnet die Bestenliste. Dort werden in verschiedenen Kategorien die Besten aller Profile gekürt: tiefste Runde, meiste Stableford-Punkte, wenigste Putts, beste Fairway-Quote, meiste Siege im Flight und mehr. Mit dem Platz-Filter siehst du die Rekorde pro Platz.'],
   ['Runde starten', 'Unter «Spielen» auf «+ Neue Runde starten». Platz wählen, bei 18 Loch auch nur Front 9 oder Back 9 möglich. Dann die Spieler: du bist schon dabei, weitere Profile oder Gäste kannst du antippen (bis 4). Für jeden HCP-Index und Abschlag wählen, die Spielvorgabe rechnet die App selbst.'],
   ['Während der Runde', 'Das Par ist schon eingetragen, du tippst nur noch + oder −. Dann die Putts antippen. Fairway, Strafschläge und Bunker sind freiwillig, machen die Statistik aber viel genauer. Green in Regulation rechnet die App selbst aus. Lochbild antippen zum Vergrössern. Jede Eingabe ist sofort gespeichert, auch wenn du die App schliesst.'],
@@ -1416,7 +1474,12 @@ function helpHcpCard(){
         <div class="f1"><span>+ (${nf(cr)} − ${par})</span><b>${(cr-par)>=0?'+':'−'} ${nf(Math.abs(cr-par),1)}</b></div>
         <div class="f1"><span>= ${nf(raw,2)}, gerundet</span><b class="big">${ph.ch}</b></div>
       </div>
-      <p class="small" style="margin:0">Formel: Spielvorgabe = HCP-Index × Slope ÷ 113 + (Course Rating − Par). ${alloc}</p>`}
+      <div class="calc num">
+        <div><span>Par des Platzes${n!==18?` (${n} Loch)`:''}</span><b>${par}</b></div>
+        <div><span>+ deine Vorgabeschläge</span><b>${ph.ch>=0?'+':'−'} ${Math.abs(ph.ch)}</b></div>
+        <div class="f1"><span>= deine Schläge für Netto-Par</span><b class="big">${par+ph.ch}</b></div>
+      </div>
+      <p class="small" style="margin:0">Formel: Spielvorgabe = HCP-Index × Slope ÷ 113 + (Course Rating − Par). ${alloc} Mit ${par+ph.ch} Schlägen spielst du genau dein Handicap, das gibt ${n===18?36:n===9?18:2*n} Stableford-Punkte. Jeder Schlag weniger ist ein Punkt mehr.</p>`}
     </div>
     <div class="section"><span class="eyebrow">3. Deine HCP-Schätzung ${ht('hcpest')}</span>
       <p class="small" style="margin:4px 0 0">Aus jeder vollständigen Runde rechnet die App ein Score-Differential ${ht('differential')}: 113 ÷ Slope × (bereinigte Schläge − Course Rating). Bereinigt heisst: pro Loch zählen höchstens Netto-Doppelbogey, also Par + 2 + deine Vorgabeschläge auf diesem Loch. Zwei 9-Loch-Runden werden zu einem Wert zusammengezählt.</p>
@@ -1442,6 +1505,163 @@ function welcomeCard(){
   return `<div class="card stack welcome"><h3>Neu hier?</h3>
     <p class="small" style="margin:0">In der Hilfe findest du eine kurze Anleitung, alle Funktionen und die wichtigsten Golf-Begriffe einfach erklärt. Sie ist jederzeit oben über das <b>?</b> erreichbar.</p>
     <div class="row"><button class="btn primary" data-a="openHelp">Hilfe ansehen</button><button class="btn ghost" data-a="helpSeen">Ausblenden</button></div></div>`;
+}
+
+/* ---------- Training: Übungsspiele mit Wertung, Verlauf, Bestwerten und Vorschlägen aus der Statistik ----------
+   Gespeichert in data.training (synchronisiert wie Runden): {profileId, game, date, status:'active'|'done', shots:[], setup:{club, d:[]}, createdAt, updatedAt}
+   kind 'streak': Serie, ein Fehler setzt zurück, Wert = längste Serie. kind 'shots': jeder Ball zählt Punkte. kind 'strokes': Schläge pro Station, weniger ist besser. */
+const TRAIN_AREAS=[['putt','Putten'],['short','Kurzes Spiel'],['range','Driving Range']];
+const TRAIN_GAMES=[
+  {id:'clock', area:'putt', name:'Clock', dur:'10 Minuten', kind:'streak', n:12, short:'12 Putts rund ums Loch, ein Fehler und du beginnst von vorne.',
+    setup:'Lege 12 Bälle wie die Zahlen einer Uhr rund ums Loch: 4 Bälle auf etwa 1 m, 4 auf 1,5 m und 4 auf 2 m.',
+    rules:'Beginne mit den kurzen Putts. Locht ein Putt, gehst du zum nächsten Ball. Verfehlst du, beginnst du wieder beim ersten. Gewertet wird deine längste Serie, das Ziel sind alle 12.',
+    label:i=>`Ball ${i%12+1} · ${['1 m','1,5 m','2 m'][Math.floor((i%12)/4)]}`, btns:[['ok','Gelocht',1],['no','Verfehlt',0]], unit:'Putts in Serie'},
+  {id:'speed', area:'putt', name:'Speed Control', dur:'10 Minuten', kind:'streak', n:6, short:'Lange Putts mit dem richtigen Tempo: nicht zu kurz, nicht zu weit.',
+    setup:'Leg einen Flaggenstock oder einen Schläger etwa 60 cm hinter das Loch. Bälle auf 1, 2 und 3 Putterlängen, danach nochmals 1, 2 und 3.',
+    rules:'Jeder Ball muss ins Loch oder darüber hinaus rollen, darf den Stock aber nicht berühren. Bleibt einer zu kurz oder trifft den Stock, beginnst du von vorne. Ziel: 6 hintereinander.',
+    label:i=>{ const k=i%3+1; return `Ball ${i%6+1} · ${k} Putterlänge${k>1?'n':''}`; }, btns:[['ok','Drin oder knapp vorbei',1],['no','Zu kurz oder Stock',0]], unit:'Putts in Serie'},
+  {id:'par18', area:'short', name:'Par 18', dur:'20 Minuten', kind:'strokes', n:9, par:2, short:'9 Stationen rund ums Grün, chippen und zu Ende putten. Jede ist ein Par 2.',
+    setup:'Wähle 9 Stellen rund ums Übungsgrün, verschieden weit und mit verschiedenen Lagen, gern auch eine aus dem Bunker. Ein Loch als Ziel.',
+    rules:'Von jeder Station chippen und zu Ende putten, wie auf dem Platz. Jede Station ist ein Par 2. Zähle deine Schläge. 18 oder weniger ist sehr gut, unter 22 ordentlich.',
+    label:i=>`Station ${i+1}`, unit:'Schläge'},
+  {id:'chips15', area:'short', name:'15 Chips', dur:'15 Minuten', kind:'shots', n:15, short:'Je 5 Chips von einer leichten, mittleren und schweren Lage.',
+    setup:'Wähle drei Stellen: eine leichte (kurz, gute Lage), eine mittlere und eine schwere (weit weg, schlechte Lage oder bergab). Je 5 Bälle.',
+    rules:'Jeder Ball, der innerhalb von zwei Schlägerlängen vom Loch liegen bleibt, gibt 1 Punkt. Gelocht zählt auch. Maximal 15.',
+    label:i=>`${['Leicht','Mittel','Schwer'][Math.floor(i/5)]} · Ball ${i%5+1}`, btns:[['ok','Nah am Loch',1],['no','Zu weit',0]], unit:'Punkte'},
+  {id:'fir', area:'range', name:'Fairways in Regulation', dur:'15 Minuten', kind:'shots', n:10, club:true, short:'10 Abschläge auf ein gedachtes Fairway, mit Richtung der Fehlschläge.',
+    setup:'Such dir auf der Range zwei Ziele, die ein Fairway von etwa 30 m Breite begrenzen, zum Beispiel zwei Fahnen oder Bäume.',
+    rules:'10 Abschläge mit dem Schläger, den du auf dem Platz vom Tee nimmst. Vor jedem Schlag deine Routine wie auf dem Platz. Jeder Ball zwischen den Zielen zählt. Die App merkt sich, auf welche Seite du verfehlst.',
+    label:i=>`Abschlag ${i+1}`, btns:[['L','← Links',0],['ok','Fairway',1],['R','Rechts →',0]], unit:'Fairways'},
+  {id:'sml', area:'range', name:'Kurz, mittel, lang', dur:'15 Minuten', kind:'shots', n:9, club:true, dists:true, short:'Ein Wedge, drei Distanzen im Wechsel. Schult die Längenkontrolle.',
+    setup:'Nimm ein Wedge und wähle drei Ziele auf der Range, zum Beispiel 40, 60 und 80 m. Die Distanzen kannst du unten eintragen.',
+    rules:'Abwechselnd kurz, mittel und lang, je dreimal. Ein Ball zählt, wenn er auf etwa 5 m beim Ziel landet. Nicht zweimal hintereinander auf dasselbe Ziel.',
+    label:(i,set)=>`${['Kurz','Mittel','Lang'][i%3]}${set&&set.d&&set.d[i%3]?' · '+set.d[i%3]+' m':''}`, btns:[['ok','Im Ziel',1],['no','Daneben',0]], unit:'Treffer'}
+];
+const trainGame = id => TRAIN_GAMES.find(g=>g.id===id);
+const trainList = () => Object.entries(store.data.training||{}).map(([id,t])=>({...t, id})).sort((a,b)=>(b.date||'').localeCompare(a.date||'') || (b.createdAt||0)-(a.createdAt||0));
+const myTrain = () => trainList().filter(t=>t.profileId===S.me);
+const trainActive = () => myTrain().find(t=>t.status==='active');
+function trainScore(t){
+  const g=trainGame(t.game); if(!g) return {v:null};
+  const sh=t.shots||[];
+  if(g.kind==='streak'){ let best=0, cur=0; sh.forEach(x=>{ if(x==='ok'){ cur++; best=Math.max(best,cur); } else cur=0; }); return {v:best, cur, max:g.n, txt:`${best} von ${g.n}`, done:best>=g.n, tries:sh.length}; }
+  if(g.kind==='strokes'){ const v=sum(sh.map(x=>+x||0)), par=sh.length*g.par; return {v, max:g.n*g.par, txt:`${v} Schläge`, vs:v-par, played:sh.length}; }
+  const pts=sh.reduce((a,x)=>a+((g.btns.find(b=>b[0]===x)||[])[2]||0),0);
+  const o={v:pts, max:g.n, txt:`${pts} von ${g.n}`};
+  if(g.id==='fir'){ o.L=sh.filter(x=>x==='L').length; o.R=sh.filter(x=>x==='R').length; }
+  return o;
+}
+const trainBetter = (g,a,b) => g.kind==='strokes' ? a<b : a>b;
+function trainBest(id, pid){
+  const g=trainGame(id); let best=null;
+  trainList().filter(t=>t.game===id && t.status==='done' && t.profileId===(pid||S.me) && (g.kind!=='strokes' || (t.shots||[]).length===g.n)).forEach(t=>{ const s=trainScore(t); if(s.v!=null && (best==null || trainBetter(g,s.v,best.v))) best={v:s.v, t}; });
+  return best;
+}
+function trainSave(t, delay){
+  t.updatedAt=Date.now(); const {id, ...doc}=t;
+  store.data.training ||= {};
+  if(delay) store.save('training/'+id, doc, delay); else store.write('training/'+id, doc);
+}
+/* --- Vorschläge aus der Statistik --- */
+function trainTips(){
+  const rs=myRounds().filter(r=>r.status==='done' && !r.mem).slice(0,10).map(r=>rstats(r));
+  const tips=[];
+  if(rs.length){
+    const agg=k=>sum(rs.map(s=>s[k])), puttH=agg('puttH');
+    const p3=puttH?agg('p3')/puttH*18:0, pph=puttH?agg('putts')/puttH:0;
+    if(puttH>=18 && p3>=1.5) tips.push({game:'clock', why:`Im Schnitt ${dec(p3)} Drei-Putts pro 18 Loch. Kurze Putts sicher lochen spart sofort Schläge.`});
+    if(puttH>=18 && pph>=1.9) tips.push({game:'speed', why:`${dec(pph,2)} Putts pro Loch. Mit besserem Tempo bei langen Putts bleibt der zweite Putt kurz.`});
+    const scrA=agg('scrA'), scr=scrA?agg('scrH')/scrA:null;
+    if(scrA>=6 && scr<0.35) tips.push({game:'par18', why:`Scrambling ${Math.round(scr*100)} %: Nach einem verfehlten Grün rettest du selten noch das Par.`});
+    const fwA=agg('fwA'), fw=fwA?agg('fwH')/fwA:null, L=agg('fwL'), R=agg('fwR');
+    if(fwA>=10 && fw<0.5) tips.push({game:'fir', why:`Nur ${Math.round(fw*100)} % Fairways getroffen${L+R?`, meist ${L>R?'links':R>L?'rechts':'auf beide Seiten'} verfehlt`:''}.`});
+    const gir=agg('girA')?agg('girH')/agg('girA'):null;
+    if(!tips.some(t=>t.game==='par18') && agg('girA')>=18 && gir<0.3) tips.push({game:'chips15', why:`Nur ${Math.round(gir*100)} % Greens in Regulation. Gute Chips machen verfehlte Grüns weniger teuer.`});
+  }
+  const bag=myBag(); const ws=allClubs(bag).filter(c=>bag.clubs[c.id]&&bag.clubs[c.id].in && c.id!=='PT' && distOf(bag.clubs[c.id])).map(c=>({c, ...distOf(bag.clubs[c.id])})).sort((a,b)=>b.mid-a.mid);
+  const gap=ws.slice(1).map((x,i)=>({a:ws[i], b:x, d:ws[i].lo-x.hi})).find(x=>x.d>=15 || x.d<0);
+  if(gap) tips.push({game:'sml', why: gap.d<0 ? `${gap.a.c.name} und ${gap.b.c.name} überschneiden sich in deinem Bag. Mit genauer Längenkontrolle trennst du sie sauber.` : `Zwischen ${gap.a.c.name} und ${gap.b.c.name} fehlen ${gap.d} m. Übe Zwischenlängen mit einem Wedge.`});
+  return {tips:tips.slice(0,3), rounds:rs.length};
+}
+/* --- Ansichten --- */
+function trainBars(g, list){
+  const xs=list.filter(t=>t.status==='done').slice(0,12).reverse().map(t=>({t, s:trainScore(t)})).filter(x=>x.s.v!=null);
+  if(xs.length<2) return '';
+  const hi=Math.max(...xs.map(x=>x.s.v), g.kind==='strokes'?g.n*g.par+6:g.n), lo=g.kind==='strokes'?Math.min(...xs.map(x=>x.s.v))-2:0;
+  return `<div class="tr-bars" aria-label="Verlauf">${xs.map(x=>{ const h=g.kind==='strokes' ? (hi-x.s.v)/(hi-lo) : x.s.v/hi; return `<div title="${fmtDate(x.t.date)}: ${x.s.txt}"><i style="height:${Math.max(6,Math.round(h*100))}%"></i><span class="num">${x.s.v}</span></div>`; }).join('')}</div>
+    <p class="small muted" style="margin:0">Deine letzten ${xs.length} Durchgänge, der neuste rechts.${g.kind==='strokes'?' Höherer Balken heisst weniger Schläge.':''}</p>`;
+}
+function viewTrain(){
+  const p=meProf(); if(!p) return '<div class="empty"><b>Kein Profil gewählt</b></div>';
+  const act=trainActive(), {tips, rounds}=trainTips();
+  return `<div class="stack">
+    <p class="muted" style="margin:0">Übungsspiele mit Wertung für Putten, kurzes Spiel und Range. Jedes Ergebnis wird gespeichert, so siehst du deinen Fortschritt.</p>
+    ${act?`<button class="card tr-resume" data-a="trainResume" data-v="${act.id}"><b>Laufendes Training: ${esc(trainGame(act.game).name)}</b><span class="small">${trainScore(act).txt} · antippen zum Weitermachen</span></button>`:''}
+    <div class="card stack"><h3>Vorschläge für dich</h3>
+      ${tips.length?tips.map(t=>{ const g=trainGame(t.game); return `<button class="tr-tip" data-a="trainOpen" data-v="${g.id}"><b>${esc(g.name)}</b><span>${esc(t.why)}</span></button>`; }).join('')
+        :`<p class="small" style="margin:0">${rounds?'In deinen letzten Runden sticht keine klare Schwäche heraus. Such dir ein Spiel aus, das dir Spass macht.':'Spiel ein paar Runden mit Putts und Fairways, dann schlägt die App hier passende Übungen vor.'}</p>`}
+    </div>
+    ${TRAIN_AREAS.map(([a,l])=>`<div class="section"><h3>${l}</h3><div class="list">${TRAIN_GAMES.filter(g=>g.area===a).map(g=>{ const b=trainBest(g.id), last=myTrain().find(t=>t.game===g.id && t.status==='done');
+      return `<button class="li" data-a="trainOpen" data-v="${g.id}"><div class="main"><div class="t">${esc(g.name)}</div><div class="s">${esc(g.short)}</div>
+        ${b||last?`<div class="s">${b?`<b>Bestwert ${b.v}</b>`:''}${b&&last?' · ':''}${last?`zuletzt ${trainScore(last).v}`:''}</div>`:''}</div><span class="chev">›</span></button>`; }).join('')}</div></div>`).join('')}
+  </div>`;
+}
+function viewTrainGame(id){
+  const g=trainGame(id); if(!g) return '<div class="empty"><b>Übung nicht gefunden</b></div>';
+  const list=myTrain().filter(t=>t.game===id), b=trainBest(id), act=trainActive();
+  S.trainSet ||= {}; const set=S.trainSet[id] ||= {club:'', d:['40','60','80']};
+  const bag=myBag(), clubs=allClubs(bag).filter(c=>bag.clubs[c.id]&&bag.clubs[c.id].in && c.id!=='PT' && (id!=='sml' || c.g==='wedge'));
+  if(g.club && !set.club) set.club = (id==='fir' ? (clubs.find(c=>c.id==='D')||clubs[0]) : (clubs.find(c=>c.g==='wedge')||clubs[0]))?.id || '';
+  return `<div class="stack">
+    <div class="row" style="gap:8px;flex-wrap:wrap"><span class="badge">${TRAIN_AREAS.find(a=>a[0]===g.area)[1]}</span><span class="badge">${g.dur}</span>${b?`<span class="badge">Bestwert ${b.v}</span>`:''}</div>
+    <div class="card stack"><div><div class="eyebrow">Aufbau</div><p style="margin:4px 0 0">${esc(g.setup)}</p></div>
+      <div><div class="eyebrow">So geht's und so wird gezählt</div><p style="margin:4px 0 0">${esc(g.rules)}</p></div></div>
+    ${g.club?`<label class="f">Schläger<select class="in" id="tr-club" data-f="trainSet.club">${clubs.length?clubs.map(c=>`<option value="${c.id}" ${set.club===c.id?'selected':''}>${esc(c.name)}${bag.clubs[c.id].model?' · '+esc(bag.clubs[c.id].model):''}</option>`).join(''):'<option value="">Kein passender Schläger im Bag</option>'}</select></label>`:''}
+    ${g.dists?`<div><div class="eyebrow" style="margin-bottom:6px">Distanzen in Metern</div><div class="grid3">${['Kurz','Mittel','Lang'].map((l,i)=>`<label class="f">${l}<input class="in num" type="number" inputmode="numeric" id="tr-d${i}" data-f="trainSet.d.${i}" value="${esc(set.d[i]||'')}"></label>`).join('')}</div></div>`:''}
+    ${act && act.game!==id?`<div class="warnbar">Es läuft noch «${esc(trainGame(act.game).name)}». Schliesse es zuerst ab.</div><button class="btn block" data-a="trainResume" data-v="${act.id}">Zum laufenden Training</button>`
+      :act?`<button class="btn primary block big" data-a="trainResume" data-v="${act.id}">Weitermachen</button>`
+      :`<button class="btn primary block big" data-a="trainStart" data-v="${id}">Starten</button>`}
+    ${list.some(t=>t.status==='done')?`<div class="section"><h3>Verlauf</h3>${trainBars(g, list)}
+      <div class="list">${list.filter(t=>t.status==='done').slice(0,20).map(t=>{ const s=trainScore(t), cf=S.confirm==='tdel-'+t.id;
+        return `<div class="li"><div class="main"><div class="t">${fmtDate(t.date)}${b&&b.t.id===t.id?' · Bestwert':''}</div><div class="s">${s.txt}${s.vs!=null?` · ${fmtPar(s.vs)} zu Par`:''}${s.tries?` · ${s.tries} Putts gespielt`:''}${s.L||s.R?` · links ${s.L}, rechts ${s.R}`:''}${t.setup&&t.setup.club?' · '+esc((allClubs(myBag()).find(c=>c.id===t.setup.club)||{}).name||''):''}</div></div>
+          ${cf?`<button class="btn small" data-a="cancelConfirm">Behalten</button><button class="btn danger solid small" data-a="trainDel" data-v="${t.id}">Löschen</button>`:`<button class="btn ghost small" data-a="trainAskDel" data-v="${t.id}" aria-label="Durchgang löschen">✕</button>`}</div>`; }).join('')}</div></div>`:''}
+  </div>`;
+}
+function viewTrainPlay(t){
+  const g=trainGame(t.game), s=trainScore(t), sh=t.shots||[];
+  let body='';
+  if(g.kind==='strokes'){
+    const i=Math.min(t.cur||0, g.n-1); if(sh[i]==null){ sh[i]=g.par; t.shots=sh; trainSave(t, 400); }
+    body=`<div class="tr-label">${esc(g.label(i, t.setup))}</div>
+      <div class="counter"><button data-a="trainStroke" data-v="-1" aria-label="Ein Schlag weniger">−</button><div class="val num">${sh[i]}<span class="rel">${fmtPar(sh[i]-g.par)}</span></div><button data-a="trainStroke" data-v="1" aria-label="Ein Schlag mehr">+</button></div>
+      <div class="strip">${Array.from({length:g.n},(_,k)=>`<button data-a="trainGo" data-v="${k}" aria-current="${k===i}"><span class="n">${k+1}</span><span class="v">${sh[k]!=null&&k!==i?sh[k]:'·'}</span></button>`).join('')}</div>
+      <div class="grid2"><button class="btn" data-a="trainGo" data-v="${i-1}" ${i?'':'disabled'}>‹ Zurück</button>${i<g.n-1?`<button class="btn primary" data-a="trainGo" data-v="${i+1}">Station ${i+2} ›</button>`:`<button class="btn primary" data-a="trainEnd">Abschliessen und speichern</button>`}</div>`;
+  } else {
+    const idx = g.kind==='streak' ? s.cur : sh.length;
+    const fin = g.kind==='streak' ? s.done : sh.length>=g.n;
+    body=`${fin?`<div class="tr-label">${g.kind==='streak'?'Geschafft!':`Alle ${g.n} Bälle gespielt`}</div>`:`<div class="tr-label">${esc(g.label(idx, t.setup))}</div>`}
+      ${fin?'':`<div class="tr-btns n${g.btns.length}">${g.btns.map(([k,l,pt])=>`<button class="btn ${pt?'primary':''} big" data-a="trainShot" data-v="${k}">${l}</button>`).join('')}</div>`}
+      <div class="tr-dots">${(g.kind==='streak'?sh.slice(-24):sh).map(x=>`<i class="${x==='ok'?'ok':x==='no'?'no':'side'}">${x==='L'?'L':x==='R'?'R':''}</i>`).join('')}</div>
+      <div class="grid2"><button class="btn" data-a="trainUndo" ${sh.length?'':'disabled'}>Letzten Ball zurück</button><button class="btn ${fin?'primary':''}" data-a="trainEnd">${fin?'Speichern':'Beenden und speichern'}</button></div>`;
+  }
+  return `<div class="stack">
+    <div class="tr-score"><div><span class="eyebrow">${g.kind==='streak'?'Längste Serie':g.kind==='strokes'?'Schläge bisher':g.unit}</span><b class="num">${g.kind==='strokes'?s.v:s.v}<small>${g.kind==='strokes'?` · ${fmtPar(s.vs)}`:` von ${g.n}`}</small></b></div>
+      ${g.kind==='streak'?`<div><span class="eyebrow">Aktuelle Serie</span><b class="num">${s.cur}</b></div>`:''}
+      ${s.L!=null?`<div><span class="eyebrow">Links / rechts</span><b class="num">${s.L} / ${s.R}</b></div>`:''}</div>
+    ${body}
+    <details class="acc"><summary>Regeln</summary><p>${esc(g.setup)} ${esc(g.rules)}</p></details>
+  </div>`;
+}
+function viewTrainDone(t){
+  const g=trainGame(t.game), s=trainScore(t), all=myTrain().filter(x=>x.game===t.game && x.status==='done' && x.id!==t.id);
+  const prev=all.map(x=>trainScore(x).v).filter(v=>v!=null); const rec=!prev.length || prev.every(v=>trainBetter(g,s.v,v));
+  return `<div class="stack">
+    <div class="card tr-done">${rec&&prev.length?CROWN:''}<div class="eyebrow">${esc(g.name)} · ${fmtDate(t.date)}</div><div class="tr-big num">${s.txt}</div>
+      <div class="small muted">${rec&&prev.length?'Neuer Bestwert!':prev.length?`Bestwert bisher ${g.kind==='strokes'?Math.min(...prev):Math.max(...prev)}`:'Dein erster Durchgang, ab jetzt siehst du den Fortschritt.'}${s.vs!=null?` · ${fmtPar(s.vs)} zu Par`:''}${s.L!=null?` · links ${s.L}, rechts ${s.R}`:''}</div></div>
+    <button class="btn primary block" data-a="trainStart" data-v="${g.id}">Nochmals spielen</button>
+    <button class="btn block" data-a="trainOpen" data-v="${g.id}">Verlauf ansehen</button>
+    <button class="btn block" data-a="trainHub">Zum Training</button>
+  </div>`;
 }
 
 /* ---------- Plätze ---------- */
@@ -1580,6 +1800,10 @@ function render(){
   else if(v && v.name==='round'){ const r=S.rounds[v.id]; title=r?esc(r.courseName):'Runde'; back='Zurück'; html=r?viewRound(r):'<div class="empty"><b>Runde nicht gefunden</b></div>'; }
   else if(v && v.name==='course'){ const c=courseById(v.id); title=c?esc(c.name):'Platz'; back='Plätze'; html=c?viewCourse(c):'<div class="empty"><b>Platz nicht gefunden</b></div>'; }
   else if(v && v.name==='courseForm'){ title=S.form.isNew?'Neuer Platz':'Platz bearbeiten'; back='Abbrechen'; html=viewCourseForm(); }
+  else if(v && v.name==='train'){ title='Training'; back='Zurück'; html=viewTrain(); }
+  else if(v && v.name==='trainGame'){ const g=trainGame(v.id); title=g?esc(g.name):'Training'; back='Training'; html=viewTrainGame(v.id); }
+  else if(v && v.name==='trainPlay'){ const t=(store.data.training||{})[v.id]; const g=t&&trainGame(t.game); title=g?esc(g.name):'Training'; back='Training'; html=t&&g?viewTrainPlay({...t, id:v.id}):'<div class="empty"><b>Training nicht gefunden</b></div>'; }
+  else if(v && v.name==='trainDone'){ const t=(store.data.training||{})[v.id]; title='Training'; back='Training'; html=t?viewTrainDone({...t, id:v.id}):'<div class="empty"><b>Training nicht gefunden</b></div>'; }
   else if(v && v.name==='bagRestore'){ title='Bag wiederherstellen'; back='Zurück'; html=viewBagRestore(); }
   else if(v && v.name==='best'){ title='Bestenliste'; back='Zurück'; html=viewBest(); }
   else if(v && v.name==='finish'){ title=(S.group||[]).some(r=>r.editing)?'Abschliessen und speichern':'Runde abschliessen'; back='Zurück'; html=viewFinish(); }
@@ -1778,6 +2002,26 @@ function viewHole(r){
   </div>`;
 }
 /* Flight: mehrere Spieler auf einem Handy, pro Loch ein Block je Spieler */
+/* halbe Punkte schreiben wie beim Ryder Cup: 4½ */
+const half = v => { const w=Math.floor(v+1e-9), h=v-w>0.25; return w===0&&h ? '½' : w+(h?'½':''); };
+const ptsWord = v => v===1 ? 'Punkt' : 'Punkte';
+const wonTxt = x => [x.wins?`${x.wins} gewonnen`:'', x.halves?`${x.halves} geteilt`:''].filter(Boolean).join(' · ') || 'noch kein Loch';
+/* Zwischenstand während der Runde, je nach Wertung anders: Schläge, Stableford-Punkte oder gewonnene Löcher */
+function flightTally(g){
+  const mode=rankModeOf(g), R=ranking(g, mode), eff=R.eff;
+  const by={}; R.rs.forEach(x=>{ by[x.r.id]=x; });
+  const anyPlayed=R.rs.some(x=>x.s.played);
+  const lead=x=>anyPlayed && x.win && R.rs.length>1 && R.rs.some(y=>!y.win);
+  const label = eff==='holes' ? 'Lochgewinne' : eff==='pts' ? 'Stableford' : 'Schläge';
+  const cell = x => eff==='holes'
+    ? `<b class="num">${half(x.won)}</b><span class="num">${ptsWord(x.won)}<br>${x.wins}&thinsp;G · ${x.halves}&thinsp;T</span>`
+    : eff==='pts'
+    ? `<b class="num">${x.s.pts}</b><span class="num">Punkte<br>${x.s.played?x.s.strokes+' Schl.':''}</span>`
+    : `<b class="num">${x.s.played?x.s.strokes:'–'}</b><span class="num">Schläge<br>${x.s.played?fmtPar(x.s.vs):''}</span>`;
+  const done=R.holeWin.filter(w=>w!=null).length, halved=R.holeWin.filter(w=>Array.isArray(w)).length;
+  return `<div class="tally-wrap"><div class="tally-head"><span class="eyebrow">Zwischenstand · ${label}</span>${eff==='holes'&&done?`<span class="small muted">${done} Löcher gespielt${halved?`, ${halved} geteilt`:''} · G gewonnen, T geteilt</span>`:''}</div>
+    <div class="flight-tally ${eff}">${g.map(r=>{ const x=by[r.id]; return `<div class="${lead(x)?'lead':''}">${avatarFor(r,'sm')}${cell(x)}${lead(x)?CROWN:''}</div>`; }).join('')}</div></div>`;
+}
 function viewFlight(g){
   const i=Math.min(S.hole, g[0].holes.length-1), h0=g[0].holes[i];
   g.forEach(r=>{ const h=r.holes[i]; if(h.s==null && !h.up){ h.s=h.par; saveRound(r); } });
@@ -1785,7 +2029,7 @@ function viewFlight(g){
   const lenTxt = lens.length===1 ? lens[0] : lens.length ? `${Math.min(...lens)}–${Math.max(...lens)}` : '–';
   const done = k => g.every(r=>r.holes[k].s!=null || r.holes[k].up);
   return `<div class="stack">${roundWarn(g[0])}
-    <div class="flight-tally">${g.map(r=>{ const st=rstats(r); return `<div>${avatarFor(r,'sm')}<b class="num">${st.played?fmtPar(st.vs):'–'}</b>${r.ch!=null?`<span class="num">${st.pts} P</span>`:''}</div>`; }).join('')}</div>
+    ${flightTally(g)}
     <div class="strip" role="tablist" aria-label="Löcher">${g[0].holes.map((x,k)=>`<button data-a="goHole" data-v="${k}" aria-current="${k===i}"><span class="n">${x.n}</span><span class="v">${k!==i && done(k)?'✓':'·'}</span></button>`).join('')}</div>
     <section class="hole" aria-label="Loch ${h0.n}">
       ${holeHead(h0, lenTxt)}
@@ -1871,8 +2115,8 @@ const BEER='<svg class="beer" viewBox="0 0 28 30" aria-hidden="true"><path d="M4
 const RANK_MODES=[['gross','Schläge'],['pts','Stableford'],['holes','Lochgewinne']];
 const rankModeOf = rounds => { const m=rounds[0]&&rounds[0].rank; return RANK_MODES.some(x=>x[0]===m) ? m : 'gross'; };
 function ranking(rounds, mode){
-  const rs=rounds.map(r=>({r, s:rstats(r), won:0}));
-  const holeWin=[];   // pro Loch: Index des Gewinners in rounds, -1 geteilt, null nicht fertig gespielt
+  const rs=rounds.map(r=>({r, s:rstats(r), won:0, wins:0, halves:0}));
+  const holeWin=[];   // pro Loch: Index des Gewinners in rounds, Liste der Indizes bei geteilt, null nicht fertig gespielt
   const allCh = rs.every(x=>x.r.ch!=null);
   const eff = mode==='pts' && !allCh ? 'gross' : mode;
   if(eff==='holes'){     // Lochgewinne ohne Handicap: zählt nur, wer am wenigsten Schläge braucht
@@ -1881,7 +2125,9 @@ function ranking(rounds, mode){
       const v=rs.map(x=>{ const h=x.r.holes[i]; if(!h) return null;
         if(h.up) return h.par+2; if(h.s==null) return null; return h.s; });
       if(v.some(x=>x==null)){ holeWin.push(null); continue; }
-      const best=Math.min(...v); if(v.filter(x=>x===best).length===1){ rs[v.indexOf(best)].won++; holeWin.push(v.indexOf(best)); } else holeWin.push(-1);
+      const best=Math.min(...v), tied=v.map((x,k)=>x===best?k:-1).filter(k=>k>=0);
+      if(tied.length===1){ rs[tied[0]].won+=1; rs[tied[0]].wins++; holeWin.push(tied[0]); }
+      else { tied.forEach(k=>{ rs[k].won+=0.5; rs[k].halves++; }); holeWin.push(tied); }   // geteilt: halber Punkt für alle mit dem besten Score
     }
   }
   rs.forEach(x=>{ x.score = eff==='pts' ? x.s.pts : eff==='holes' ? x.won : x.s.strokes; });
@@ -1901,11 +2147,11 @@ function rankingCard(rounds, big){
   const mode=rankModeOf(rounds), gid=rounds[0].groupId;
   const {rs, order, holeWin, eff, fallback}=ranking(rounds, mode);
   const winners=rs.filter(x=>x.win), losers=rs.filter(x=>x.beer);
-  const unit = v => eff==='pts' ? v+' Punkten' : eff==='holes' ? v+(v===1?' Punkt':' Punkten')+' ('+(v===1?'1 gewonnenes Loch':v+' gewonnene Löcher')+')' : v+' Schlägen';
-  const main = x => eff==='pts' ? x.s.pts+' P' : eff==='holes' ? x.won+(x.won===1?' Punkt':' Punkte') : x.s.strokes;
+  const unit = v => eff==='pts' ? v+' Punkten' : eff==='holes' ? `${half(v)} ${v===1?'Punkt':'Punkten'} (${wonTxt(winners[0])})` : v+' Schlägen';
+  const main = x => eff==='pts' ? x.s.pts+' P' : eff==='holes' ? `${half(x.won)}<small class="won-l">${ptsWord(x.won)}</small>` : x.s.strokes;
   const sub = x => eff==='gross' ? fmtPar(x.s.vs) : x.s.strokes+' Schläge';
   const note = eff==='pts' ? 'Punkte mit Handicap, höchste Zahl gewinnt.'
-    : eff==='holes' ? `Jedes Loch, das jemand alleine mit den wenigsten Schlägen spielt, gibt 1 Punkt. Bei Gleichstand bekommt niemand den Punkt. Haben zwei gleich viele Punkte, liegt vorne, wer weniger Schläge gespielt hat. Ohne Handicap.`
+    : eff==='holes' ? `Wie beim Ryder Cup: Wer ein Loch alleine mit den wenigsten Schlägen spielt, gewinnt es und bekommt 1 Punkt. Brauchen mehrere gleich wenige Schläge, ist das Loch geteilt und jeder von ihnen bekommt ½ Punkt. Bei gleich vielen Punkten liegt vorne, wer weniger Schläge gespielt hat. Ohne Handicap.`
     : 'Alle Schläge zusammengezählt, ohne Handicap. Wenigste Schläge gewinnen.';
   return `<div class="rank ${big?'big':''}">
     <div class="rank-head"><span class="eyebrow">Rangliste</span><span class="small muted">Wertung ${ht('wertung')}</span></div>
@@ -1916,7 +2162,7 @@ function rankingCard(rounds, big){
     <ol class="rank-list">${rs.map(x=>`<li class="${x.win?'win':''} ${x.beer?'beer':''}">
       <span class="rank-place num">${x.place}.</span>${avatarFor(x.r,'sm')}
       <span class="rank-name">${esc(x.r.playerName||'')}${x.win?CROWN:''}${x.beer?BEER:''}</span>
-      <span class="rank-score num"><b>${main(x)}</b><small>${sub(x)}</small></span></li>`).join('')}</ol>
+      <span class="rank-score num ${eff==='holes'?'holes':''}"><b>${main(x)}</b><small>${eff==='holes'?wonTxt(x)+' · '+x.s.strokes+' Schläge':sub(x)}</small></span></li>`).join('')}</ol>
     ${eff==='holes'?holeWinTable(order, holeWin):''}
     ${losers.length?`<div class="rank-beer">${BEER}<span><b>${losers.map(x=>esc(x.r.playerName||'')).join(' & ')}</b> ${losers.length>1?'geben':'gibt'} eine Runde Bier aus. Prost!</span></div>`:''}
   </div>`;
@@ -1924,14 +2170,15 @@ function rankingCard(rounds, big){
 /* Lochgewinne: Tabelle, wer welches Loch geholt hat (Schläge, gewonnenes Loch hervorgehoben) */
 function holeWinTable(order, holeWin){
   const nh=Math.max(...order.map(x=>x.r.holes.length));
-  const halved=holeWin.filter(w=>w===-1).length, open=holeWin.filter(w=>w==null).length;
-  const cell=(x,pi,i)=>{ const h=x.r.holes[i]; if(!h) return '<td></td>'; const v=h.up?'X':h.s==null?'':h.s; return `<td class="${holeWin[i]===pi?'hw-won':''}">${v}</td>`; };
+  const halved=holeWin.filter(w=>Array.isArray(w)).length, open=holeWin.filter(w=>w==null).length;
+  const cell=(x,pi,i)=>{ const h=x.r.holes[i]; if(!h) return '<td></td>'; const v=h.up?'X':h.s==null?'':h.s; const w=holeWin[i];
+    return `<td class="${w===pi?'hw-won':Array.isArray(w)&&w.includes(pi)?'hw-half':''}">${v}</td>`; };
   return `<div class="hw"><div class="eyebrow" style="margin-bottom:6px">Wer hat welches Loch geholt?</div>
     <div class="sc-wrap"><table class="sc hw-t"><thead><tr><th>Loch</th>${Array.from({length:nh},(_,i)=>`<th>${(order[0].r.holes[i]||{}).n||i+1}</th>`).join('')}<th>Punkte</th><th>Schläge</th></tr></thead><tbody>
-      ${order.map((x,pi)=>`<tr><td class="hw-name">${esc(String(x.r.playerName||'').slice(0,10))}</td>${Array.from({length:nh},(_,i)=>cell(x,pi,i)).join('')}<td class="tot"><b>${x.won}</b></td><td class="tot">${x.s.strokes}</td></tr>`).join('')}
-      <tr class="hw-foot"><td>Geteilt</td>${holeWin.map(w=>`<td>${w===-1?'=':''}</td>`).join('')}${Array.from({length:nh-holeWin.length},()=>'<td></td>').join('')}<td>${halved}</td><td></td></tr>
+      ${order.map((x,pi)=>`<tr><td class="hw-name">${esc(String(x.r.playerName||'').slice(0,10))}</td>${Array.from({length:nh},(_,i)=>cell(x,pi,i)).join('')}<td class="tot"><b>${half(x.won)}</b></td><td class="tot">${x.s.strokes}</td></tr>`).join('')}
+      <tr class="hw-foot"><td>Geteilt</td>${holeWin.map(w=>`<td>${Array.isArray(w)?'½':''}</td>`).join('')}${Array.from({length:nh-holeWin.length},()=>'<td></td>').join('')}<td>${halved}</td><td></td></tr>
     </tbody></table></div>
-    <p class="small muted" style="margin:6px 0 0">Hervorgehoben: Loch gewonnen, 1 Punkt. «=»: geteilt, niemand bekommt den Punkt.${open?` ${open} ${open===1?'Loch ist':'Löcher sind'} nicht von allen gespielt und zählen nicht.`:''}</p></div>`;
+    <p class="small muted" style="margin:6px 0 0">Gold: Loch gewonnen, 1 Punkt. Hellgold: Loch geteilt, ½ Punkt für jeden mit dem besten Score.${open?` ${open} ${open===1?'Loch ist':'Löcher sind'} nicht von allen gespielt und zählen nicht.`:''}</p></div>`;
 }
 function viewResult(groupId, list){
   let rs=roundList().filter(r=>r.groupId===groupId);
@@ -1977,6 +2224,7 @@ const BEST_CATS=[
   {g:'Über alle Runden', t:'Meiste Runden gespielt', kind:'player', low:false, v:rs=>rs.length||null, f:v=>v, unit:'Runden'},
   {g:'Im Flight', t:'Meiste Siege', d:'Runden mit mindestens zwei Spielern, nach der gewählten Wertung', kind:'flight', key:'win', low:false, f:v=>v, unit:'Siege', help:'wertung'},
   {g:'Im Flight', t:'Meiste Runden Bier bezahlt', d:'wer am Schluss Letzter war', kind:'flight', key:'beer', low:false, f:v=>v, unit:'Runden', beer:true},
+  ...TRAIN_GAMES.map(gm=>({g:'Training', t:gm.name, d:gm.kind==='streak'?`längste Serie von ${gm.n}`:gm.kind==='strokes'?'wenigste Schläge, Par 18':`Treffer von ${gm.n}`, kind:'train', game:gm.id, low:gm.kind==='strokes', f:v=>v, unit:gm.kind==='strokes'?'Schläge':''})),
   {g:'Handicap', t:'Tiefstes Handicap', d:'aktueller Handicap-Index im Profil', kind:'hcp', low:true, f:v=>dec(v), unit:'', help:'hcpindex'}
 ];
 function bestCompute(cat, rounds){
@@ -1994,6 +2242,8 @@ function bestCompute(cat, rounds){
     const cnt={};
     Object.values(groups).filter(g=>g.length>1).forEach(g=>{ ranking(g, rankModeOf(g)).rs.forEach(x=>{ if(x[cat.key] && x.r.profileId && S.profiles[x.r.profileId]) cnt[x.r.profileId]=(cnt[x.r.profileId]||0)+1; }); });
     rows=Object.entries(cnt).map(([pid,v])=>({pid, v}));
+  } else if(cat.kind==='train'){
+    profList().forEach(p=>{ const b=trainBest(cat.game, p.id); if(b) rows.push({pid:p.id, v:b.v, tr:b.t}); });
   } else if(cat.kind==='hcp'){
     rows=profList().filter(p=>p.hi!=null && p.hi!=='' && !isNaN(+p.hi)).map(p=>({pid:p.id, v:+p.hi}));
   }
@@ -2004,7 +2254,7 @@ function bestCompute(cat, rounds){
 }
 function viewBest(){
   const all=roundList().filter(r=>r.status==='done' && !r.mem && r.profileId && S.profiles[r.profileId]);
-  if(!all.length) return `<div class="empty"><b>Noch keine Runden</b>Sobald ihr Runden abschliesst, werden hier in verschiedenen Kategorien die Besten gekürt.</div>`;
+  if(!all.length && !trainList().some(t=>t.status==='done')) return `<div class="empty"><b>Noch keine Runden</b>Sobald ihr Runden abschliesst, werden hier in verschiedenen Kategorien die Besten gekürt.</div>`;
   const used=[...new Set(all.map(r=>r.courseId))];
   if(S.bestCourse && S.bestCourse!=='all' && !used.includes(S.bestCourse)) S.bestCourse='all';
   const rounds=bestRounds();
@@ -2015,7 +2265,7 @@ function viewBest(){
     return head + `<div class="best">
       <div class="best-head"><b>${cat.t}</b>${cat.help?' '+ht(cat.help):''}${cat.d?`<span class="small muted">${cat.d}</span>`:''}</div>
       ${rows.length?`<ol class="rank-list">${rows.map(x=>{ const p=S.profiles[x.pid]||{name:'?'};
-        const sub = x.r ? `${fmtDate(x.r.date)} · ${esc(String(x.r.courseName||'').replace(/^Golfpark\s+/,''))}${x.r.modeLabel&&x.r.modeLabel!=='Alle 18'?' '+esc(x.r.modeLabel):''}` : '';
+        const sub = x.r ? `${fmtDate(x.r.date)} · ${esc(String(x.r.courseName||'').replace(/^Golfpark\s+/,''))}${x.r.modeLabel&&x.r.modeLabel!=='Alle 18'?' '+esc(x.r.modeLabel):''}` : x.tr ? fmtDate(x.tr.date) : '';
         return `<li class="${x.place===1?(cat.beer?'beer':'win'):''}" ${x.r?`data-a="openRound" data-v="${x.r.id}" role="button" tabindex="0"`:''}>
           <span class="rank-place num">${x.place}.</span>${avatar({...p, id:x.pid},'sm')}
           <span class="rank-name">${esc(p.name)}${x.place===1?(cat.beer?BEER:CROWN):''}</span>
@@ -2069,6 +2319,7 @@ function viewRound(r){
 }
 
 const HUB_ICON={
+  train:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg>',
   cmp:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M17 4v16"/><path d="M3 8h8M13 14h8"/><path d="M3 16h8M13 6h8" opacity=".45"/></svg>',
   ana:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4l9 3.5L6 11"/><path d="M14 21v-6M18 21v-9M10 21v-3"/></svg>'
 };
@@ -2079,6 +2330,7 @@ function viewPlayHub(){
     <div class="hub-grid">
       <button class="hub-btn" data-a="cmpOpen" data-v="">${HUB_ICON.cmp}<b>Runden vergleichen</b><span>Zwei Runden nebeneinander</span></button>
       <button class="hub-btn" data-a="anaOpen" data-v="">${HUB_ICON.ana}<b>Lochanalyse</b><span>Jedes Loch im Rückblick</span></button>
+      <button class="hub-btn wide" data-a="trainHub">${HUB_ICON.train}<b>Training</b><span>Übungsspiele für Putten, kurzes Spiel und Range, mit Vorschlägen aus deiner Statistik</span></button>
     </div>
     <h3 style="margin-top:10px">Meine Runden</h3>
     ${viewRounds()}
@@ -2746,6 +2998,27 @@ document.addEventListener('click', e=>{
     case 'askDel': S.confirm='del-'+v; render(); break;
     case 'askDelCourse': S.confirm='delc-'+v; render(); break;
     case 'cancelConfirm': S.confirm=null; render(); break;
+    /* Training */
+    case 'trainHub': S.view={name:'train'}; S.confirm=null; render(); window.scrollTo(0,0); break;
+    case 'trainOpen': S.view={name:'trainGame', id:v, from:{name:'train'}}; S.confirm=null; render(); window.scrollTo(0,0); break;
+    case 'trainStart': { const g=trainGame(v); if(!g) break; const act=trainActive(); if(act){ S.view={name:'trainPlay', id:act.id, from:{name:'train'}}; render(); break; }
+      const set=(S.trainSet||{})[v]||{}; const id='t'+uid(), now=Date.now();
+      trainSave({id, profileId:S.me, game:v, date:today(), status:'active', shots:g.kind==='strokes'?[g.par]:[], cur:0, setup:{club:g.club?(set.club||''):'', d:g.dists?(set.d||[]).slice(0,3):[]}, createdAt:now});
+      S.view={name:'trainPlay', id, from:{name:'train'}}; render(); window.scrollTo(0,0); break; }
+    case 'trainResume': S.view={name:'trainPlay', id:v, from:{name:'train'}}; render(); window.scrollTo(0,0); break;
+    case 'trainShot': case 'trainUndo': case 'trainStroke': case 'trainGo': case 'trainEnd': {
+      const id=S.view&&S.view.id, t0=id&&(store.data.training||{})[id]; if(!t0) break;
+      const t={...clone(t0), id}, g=trainGame(t.game); t.shots ||= [];
+      if(a==='trainShot'){ const sc=trainScore(t); if(g.kind==='streak' ? sc.done : t.shots.length>=g.n) break; t.shots.push(v);
+        const s2=trainScore(t); if(g.kind==='streak' && s2.done) toast('Geschafft! Alle '+g.n+' hintereinander.'); }
+      if(a==='trainUndo') t.shots.pop();
+      if(a==='trainStroke'){ const i=t.cur||0; t.shots[i]=Math.max(1, Math.min(12, (+t.shots[i]||g.par)+(+v))); }
+      if(a==='trainGo'){ t.cur=Math.max(0, Math.min(g.n-1, +v)); if(t.shots[t.cur]==null) t.shots[t.cur]=g.par; }
+      if(a==='trainEnd'){ if(!t.shots.length){ delete store.data.training[id]; store.write('training/'+id, null); S.view={name:'trainGame', id:g.id, from:{name:'train'}}; toast('Leeres Training verworfen'); render(); break; }
+        t.status='done'; trainSave(t); S.view={name:'trainDone', id, from:{name:'train'}}; render(); window.scrollTo(0,0); break; }
+      trainSave(t); render(); break; }
+    case 'trainAskDel': S.confirm='tdel-'+v; render(); break;
+    case 'trainDel': store.write('training/'+v, null); S.confirm=null; toast('Durchgang gelöscht'); render(); break;
     case 'delRound': delete S.rounds[v]; store.save('rounds/'+v, null, 0); S.view=null; S.confirm=null; toast('Runde gelöscht'); render(); break;
     case 'delCourse': { const c=courseById(v); if(c.builtin) store.save('courses/'+v, {deleted:true, _t:Date.now()}, 0); else store.save('courses/'+v, null, 0);
       if(c.builtin) S.dbCourses[v]={id:v,deleted:true}; else delete S.dbCourses[v]; S.view=null; S.confirm=null; toast('Platz entfernt'); render(); break; }
@@ -2767,10 +3040,11 @@ function onField(e){
   if(f.startsWith('start.players.')){ setPath(S, f, val); const i=+f.split('.')[2]; const c=courseById(S.start.courseId); const box=document.getElementById('ph-'+i); if(box && c) box.innerHTML=phText(S.start.players[i], c); return; }
   if(f==='start.date'){ S.start.date=val; return; }
   if(f.startsWith('pform.')){ setPath(S, f, val); return; }
-  if(f.startsWith('bag.')){ const [,id,key]=f.split('.'); bagEdit(bag=>{ const c=bag.clubs[id] ||= {}; c[key]=val; if((key==='carry'||key==='total') && val!=='') c.in=true; }); return; }
-  if(f.startsWith('bagc.')){ const [,id]=f.split('.'); bagEdit(bag=>{ const c=bag.custom.find(x=>x.id===id); if(c) c.name=val||'Eigener Schläger'; }); return; }
+  if(f.startsWith('bag.')){ const [,id,key]=f.split('.'); bagEdit(bag=>{ const c=bag.clubs[id] ||= {}; c[key]=val; if((key==='carry'||key==='dmax') && val!=='') c.in=true; }); return; }
+  if(f.startsWith('bagc.')){ const [,id,key]=f.split('.'); bagEdit(bag=>{ const c=bag.custom.find(x=>x.id===id); if(!c) return; if(key==='group') c.group=GROUP_OK(val)?val:'custom'; else c.name=val||'Eigener Schläger'; }, key==='group'?0:600); if(key==='group') render(); return; }
   if(f==='askName'){ S.askName=val; const t=$('#ask-text'); if(t) t.textContent=askText(); return; }
   if(f==='statCourse'){ S.statCourse=val; render(); return; }
+  if(f.startsWith('trainSet.')){ const id=S.view&&S.view.id, set=((S.trainSet ||= {})[id] ||= {club:'', d:['40','60','80']}); const parts=f.split('.'); if(parts[1]==='club') set.club=val; else set.d[+parts[2]]=val; return; }
   if(f==='bestCourse'){ S.bestCourse=val; render(); return; }
   if(f==='statRange'){ S.statRange=val; render(); return; }
   if(f.startsWith('helpPv.')){ const k=f.split('.')[1]; S.helpPv ||= {}; if(k==='course'){ S.helpPv={course:val}; } else { S.helpPv.course=S.helpPv.course||document.getElementById('hp-course')?.value; S.helpPv[k]=val; } render(); return; }
