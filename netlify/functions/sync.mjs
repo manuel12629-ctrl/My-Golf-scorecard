@@ -32,6 +32,20 @@ export default async (req) => {
   let body; try { body = JSON.parse(text || '{}'); } catch { return reply({ error: 'bad_json' }, 400); }
 
   const store = getStore({ name: 'golf-scorecard', consistency: 'strong' });
+  // Nur lesen: aus den Tageskopien den Bag jedes Profils zurückgeben, damit verlorene Schlägerwerte wiederhergestellt werden können
+  if (body.action === 'bags') {
+    const { blobs } = await store.list({ prefix: 'backup/' });
+    const keys = blobs.map(b => b.key).filter(k => /^backup\/\d{4}-\d{2}-\d{2}$/.test(k)).sort().reverse().slice(0, 60);
+    const days = [];
+    for (const key of keys) {
+      let db = null; try { db = await store.get(key, { type: 'json' }); } catch {}
+      if (!db || !db.profiles) continue;
+      const profiles = {};
+      for (const [id, p] of Object.entries(db.profiles)) if (p && p.bag) profiles[id] = { name: p.name, bag: p.bag };
+      days.push({ day: key.slice(7), profiles });
+    }
+    return reply({ ok: true, days });
+  }
   for (let attempt = 0; attempt < 8; attempt++) {
     const cur = await store.getWithMetadata(KEY, { type: 'json' });
     const base = (cur && cur.data) || emptyDb();

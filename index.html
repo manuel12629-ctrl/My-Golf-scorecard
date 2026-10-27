@@ -286,6 +286,11 @@ details summary{cursor:pointer}
 .best-head{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
 .best-head .small{flex-basis:100%}
 .best .rank-list li[data-a]{cursor:pointer}
+.hw .sc-wrap{margin:0}
+.hw-t td.hw-won{background:rgba(224,177,58,.35);font-weight:800;border-radius:6px}
+.hw-t td.hw-name{text-align:left;font-weight:600;white-space:nowrap}
+.hw-t tr.hw-foot td{color:var(--muted);font-size:12px}
+.hw-t td.tot{font-weight:700}
 .editbar{display:flex;flex-direction:column;gap:10px;padding:12px;margin-bottom:12px;border-radius:14px;border:1px solid var(--warn);background:color-mix(in srgb,var(--warn) 10%,var(--surface));font-size:14px}
 .rank{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px}
 .rank-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
@@ -442,11 +447,35 @@ const BUILTIN = [
     tees:[
       {name:'08', len:[141,97,147,110,155,103], crM:27.1, slM:86, crW:28.4, slW:86},
       {name:'07', len:[141,97,137,97,127,88], crM:26.8, slM:85, crW:28.1, slW:85}
+    ]},
+  { id:'wylihofgb', name:'Golf Wylihof Gelb/Blau', place:'Luterbach SO', builtin:true,
+    holes:[4,4,3,5,3,4,4,5,4,4,5,4,3,5,4,3,5,4].map((par,i)=>({par,hcp:[7,1,17,15,13,3,9,11,5,2,16,4,12,6,10,18,14,8][i]})),
+    tees:[
+      {name:'Weiss', len:[369,390,149,489,170,439,348,534,369,355,499,352,193,514,345,149,523,408], crM:74.0, slM:134, crW:80.5, slW:145},
+      {name:'Gelb', len:[347,369,133,474,149,379,333,487,349,340,475,337,165,496,337,142,471,361], crM:71.9, slM:129, crW:77.7, slW:139},
+      {name:'Blau', len:[326,333,133,431,149,334,309,435,313,315,421,307,150,416,309,131,433,329], crM:69.0, slM:126, crW:74.5, slW:132},
+      {name:'Rot', len:[312,317,119,411,135,319,293,420,298,301,401,289,139,401,301,125,413,314], crM:67.7, slM:124, crW:72.8, slW:129}
+    ]},
+  { id:'wylihofrg', name:'Golf Wylihof Rot/Gelb', place:'Luterbach SO', builtin:true,
+    holes:[5,4,4,4,3,4,5,3,4,4,4,3,5,3,4,4,5,4].map((par,i)=>({par,hcp:[16,2,10,6,18,12,8,14,4,7,1,17,15,13,3,9,11,5][i]})),
+    tees:[
+      {name:'Weiss', len:[422,384,417,411,165,331,485,203,396,369,390,149,489,170,439,348,534,369], crM:74.0, slM:130, crW:80.7, slW:147},
+      {name:'Gelb', len:[415,364,361,392,157,316,475,194,374,347,369,133,474,149,379,333,487,349], crM:72.0, slM:126, crW:78.1, slW:142},
+      {name:'Blau', len:[381,324,330,374,137,293,433,148,366,326,333,133,431,149,334,309,435,313], crM:69.4, slM:122, crW:75.0, slW:136},
+      {name:'Rot', len:[371,314,320,365,130,281,421,141,343,312,317,119,411,135,319,293,420,298], crM:68.2, slM:120, crW:73.5, slW:133}
+    ]},
+  { id:'wylihofbr', name:'Golf Wylihof Blau/Rot', place:'Luterbach SO', builtin:true,
+    holes:[4,5,4,3,5,4,3,5,4,5,4,4,4,3,4,5,3,4].map((par,i)=>({par,hcp:[2,16,4,12,6,10,18,14,8,15,1,9,5,17,11,7,13,3][i]})),
+    tees:[
+      {name:'Weiss', len:[355,499,352,193,514,345,149,523,408,422,384,417,411,165,331,485,203,396], crM:74.2, slM:134, crW:81.0, slW:147},
+      {name:'Gelb', len:[340,475,337,165,496,337,142,471,361,415,364,361,392,157,316,475,194,374], crM:72.3, slM:130, crW:78.6, slW:142},
+      {name:'Blau', len:[315,421,307,150,416,309,131,433,329,381,324,330,374,137,293,433,148,366], crM:69.4, slM:126, crW:75.3, slW:134},
+      {name:'Rot', len:[301,401,289,139,401,301,125,413,314,371,314,320,365,130,281,421,141,343], crM:68.3, slM:124, crW:73.9, slW:132}
     ]}
 ];
 
 /* ---------- Version ---------- */
-const APP_VERSION = '3.14', APP_DATE = '22.10.2026';
+const APP_VERSION = '3.16', APP_DATE = '27.10.2026';
 
 /* ---------- Zustand ---------- */
 function ls(k,v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null; } }
@@ -500,6 +529,47 @@ const DATA0 = () => ({rounds:{},courses:{},profiles:{},holeimgs:{},profile:null,
 const tOf = o => (o && (o.updatedAt||o._t)) || 0;
 const SYNC_COLS = ['rounds','courses','profiles'];
 const localOnly = (col,o) => col==='rounds' && o && (o.mem || o.guest);
+/* Bag sicher zusammenführen: jeder Schläger einzeln nach seinem Zeitstempel (_t), nichts geht verloren,
+   was nicht ausdrücklich gelöscht wurde (del: Zeitpunkt des Löschens pro Schläger). Ein Profil ohne Bag löscht nie einen Bag. */
+const bagT = o => (o && +o._t) || 0;
+const bagHas = v => v!==undefined && v!==null && v!=='';
+function bagPick(a, b){
+  if(!a) return b; if(!b) return a;
+  const ta=bagT(a), tb=bagT(b);
+  if(ta!==tb) return ta>tb ? a : b;
+  const o={...a};   // gleicher Zeitstempel: Felder vereinen, bei Widerspruch fest nach Wert entscheiden (auf Handy und Server gleich)
+  Object.keys(b).forEach(k=>{ const x=o[k], y=b[k]; if(!bagHas(x)) o[k]=y; else if(bagHas(y) && String(y)>String(x)) o[k]=y; }); return o;
+}
+function mergeBag(a, b){
+  a = (a && typeof a==='object') ? a : null; b = (b && typeof b==='object') ? b : null;
+  if(!a && !b) return undefined;
+  a = a || {}; b = b || {};
+  const del = {...(a.del||{})};
+  Object.entries(b.del||{}).forEach(([k,t])=>{ if(typeof t==='number' && (!del[k] || t>del[k])) del[k]=t; });
+  const clubs = {};
+  new Set([...Object.keys(a.clubs||{}), ...Object.keys(b.clubs||{})]).forEach(id=>{
+    const c = bagPick((a.clubs||{})[id], (b.clubs||{})[id]);
+    if(c && !(del[id] && del[id] >= bagT(c))) clubs[id] = c;
+  });
+  const cm = {};
+  [...(a.custom||[]), ...(b.custom||[])].forEach(c=>{ if(c && c.id) cm[c.id] = bagPick(cm[c.id], c); });
+  const custom = Object.values(cm).filter(c=>!(del[c.id] && del[c.id] >= bagT(c))).sort((x,y)=>String(x.id)<String(y.id)?-1:1);
+  const out = {clubs, custom, del};
+  if(a.done || b.done) out.done = true;
+  return out;
+}
+function mergeProfile(cur, inc){
+  if(!cur) return inc; if(!inc) return cur;
+  const tc = (cur && (cur.updatedAt || cur._t)) || 0, ti = (inc && (inc.updatedAt || inc._t)) || 0;
+  const strip = o => { const {bag, ...r} = o; return JSON.stringify(Object.keys(r).sort().map(k=>[k, r[k]])); };
+  const newer = ti !== tc ? (ti > tc ? inc : cur) : (strip(inc) > strip(cur) ? inc : cur);
+  const out = {...newer};
+  const bag = mergeBag(cur.bag, inc.bag);
+  if(bag) out.bag = bag; else delete out.bag;
+  out._t = Math.max(tc, ti);
+  return out;
+}
+const canon = v => JSON.stringify(v, (k, x) => (x && typeof x==='object' && !Array.isArray(x)) ? Object.keys(x).sort().reduce((o,kk)=>(o[kk]=x[kk],o),{}) : x);
 const store = {
   data:DATA0(), pend:{}, t:null, err:null,
   async init(){
@@ -527,6 +597,7 @@ const store = {
     Object.entries(src.deleted||{}).forEach(([k,t])=>{ if(typeof t==='number' && (!del[k] || t>del[k])) del[k]=t; });
     SYNC_COLS.forEach(col=>{ const box=d[col] ||= {};
       Object.entries(src[col]||{}).forEach(([id,o])=>{ if(!o || typeof o!=='object') return; const kd=del[col+'/'+id]; if(kd && kd>=tOf(o)) return;
+        if(col==='profiles' && box[id]){ const m=mergeProfile(box[id], o); if(canon(m)!==canon(box[id])){ box[id]=m; n++; } if(canon(m)!==canon(o)) this.markDirty('profiles/'+id); return; }
         if(!box[id] || tOf(o)>tOf(box[id])){ box[id]=o; n++; } });
       Object.keys(box).forEach(id=>{ const kd=del[col+'/'+id]; if(kd && kd>=tOf(box[id])) delete box[id]; });
     });
@@ -768,7 +839,8 @@ function saveProf(){
   if(!name){ toast('Bitte einen Namen eingeben.'); document.getElementById('pf-name')?.focus(); return; }
   const first=!profList().length, now=Date.now();
   const hi = f.hi===''||f.hi==null||isNaN(+f.hi) ? null : Math.round(+f.hi*10)/10;
-  store.write('profiles/'+f.id, {name, hi, gender:f.gender||'m', color:f.color||PCOLORS[0], _t:now});
+  const cur=store.data.profiles[f.id]||{};   // Bag und alle übrigen Angaben bleiben erhalten
+  store.write('profiles/'+f.id, {...cur, name, hi, gender:f.gender||'m', color:f.color||PCOLORS[0], _t:now});
   if(first){ // bisherige Runden ohne Profil gehören dem ersten Profil
     Object.entries(store.data.rounds).forEach(([id,r])=>{ if(!r.profileId && !r.mem && !r.guest){ r.profileId=f.id; r.playerName=name; r.updatedAt=now; store.markDirty('rounds/'+id); } });
     store.emit(); store.flush(); sync.soon();
@@ -847,14 +919,67 @@ function allClubs(bag){ return CLUBS.concat((bag.custom||[]).map(c=>({...c, g:'c
 function bagEdit(fn, delay=600){
   const p=meProf(); if(!p) return;
   const id=p.id, cur=store.data.profiles[id]||{};
-  const bag=cur.bag?clone(cur.bag):{}; bag.clubs ||= {}; bag.custom ||= [];
+  const bag=cur.bag?clone(cur.bag):{}; bag.clubs ||= {}; bag.custom ||= []; bag.del ||= {};
+  const before=clone(bag), now=Date.now(), strip=o=>{ if(!o) return o; const {_t, ...r}=o; return canon(r); };
   fn(bag);
-  const doc={...cur, bag, _t:Date.now()};
+  Object.keys(bag.clubs).forEach(k=>{ if(strip(bag.clubs[k])!==strip(before.clubs[k])) bag.clubs[k]._t=now; });
+  Object.keys(before.clubs).forEach(k=>{ if(!bag.clubs[k]) bag.del[k]=now; });
+  const bc={}; before.custom.forEach(c=>{ bc[c.id]=c; });
+  bag.custom.forEach(c=>{ if(strip(c)!==strip(bc[c.id])) c._t=now; });
+  before.custom.forEach(c=>{ if(!bag.custom.some(x=>x.id===c.id)) bag.del[c.id]=now; });
+  const doc={...cur, bag, _t:now};
   store.data.profiles[id]=doc; S.profiles[id]={...clone(doc), id};
   store.save('profiles/'+id, doc, delay);
 }
 const num = v => v===''||v==null||isNaN(+v) ? null : Math.round(+v);
 /* Zwei Schritte: 1. Bag zusammenstellen (Häkchen, «Bag fertig»), 2. Mein Bag mit Infos und Feldern pro Schläger */
+/* Bag aus den Tageskopien der Online-Sicherung zurückholen. Übernimmt nur Werte, die jetzt fehlen, überschreibt nichts. */
+const clubVals = v => ['carry','total','model','note'].filter(k=>v && v[k]!==undefined && v[k]!==null && v[k]!=='');
+async function bagRestoreLoad(){
+  S.bagRestore={busy:true}; render();
+  try{
+    const res=await fetch('/api/sync', {method:'POST', cache:'no-store', headers:{'content-type':'application/json', 'authorization':'Bearer '+sync.pw}, body:JSON.stringify({action:'bags'})});
+    if(!res.ok) throw new Error('Antwort '+res.status);
+    const j=await res.json(); S.bagRestore={days:j.days||[]};
+  }catch(e){ S.bagRestore={err:String(e.message||e)}; }
+  if(S.view && S.view.name==='bagRestore') render();
+}
+function bagRestoreCandidates(){
+  const p=meProf(); if(!p || !S.bagRestore || !S.bagRestore.days) return [];
+  const cur=myBag();
+  return S.bagRestore.days.map(d=>{ const pb=(d.profiles[p.id]||{}).bag; if(!pb) return null;
+    const names={}; allClubs({custom:pb.custom||[]}).forEach(c=>{ names[c.id]=c.name; });
+    const withVals=Object.entries(pb.clubs||{}).filter(([id,v])=>clubVals(v).length);
+    const missing=withVals.filter(([id,v])=>clubVals(v).some(k=>!clubVals(cur.clubs[id]).includes(k)));
+    return {day:d.day, bag:pb, n:withVals.length, missing:missing.length, list:withVals.map(([id,v])=>`${names[id]||id}${num(v.carry)!=null?' '+num(v.carry)+' m':''}`)}; }).filter(Boolean);
+}
+function viewBagRestore(){
+  const p=meProf(); const st=S.bagRestore||{};
+  if(st.busy) return '<div class="empty"><b>Sicherungen werden geladen …</b></div>';
+  if(st.err) return `<div class="empty"><b>Das hat nicht geklappt</b>${esc(st.err)}<br><button class="btn" data-a="bagRestoreOpen">Nochmals versuchen</button></div>`;
+  const cs=bagRestoreCandidates();
+  return `<div class="stack">
+    <p class="muted" style="margin:0">Die Online-Sicherung legt jeden Tag eine Kopie ab. Hier siehst du, welche Schlägerwerte von <b>${esc(p?p.name:'')}</b> an welchem Tag gesichert waren. «Übernehmen» ergänzt nur Werte, die jetzt fehlen. Was du inzwischen eingetragen hast, bleibt.</p>
+    ${cs.length?`<div class="list">${cs.map(c=>`<div class="li" style="flex-wrap:wrap;gap:8px"><div class="main"><div class="t">${fmtDate(c.day)} · ${c.n} Schläger mit Werten</div>
+      <div class="s">${esc(c.list.slice(0,8).join(', '))}${c.list.length>8?' …':''}</div></div>
+      ${c.missing?`<button class="btn primary small" data-a="bagRestoreDo" data-v="${c.day}">${c.missing} übernehmen</button>`:'<span class="small muted">schon alles da</span>'}</div>`).join('')}</div>`
+      :'<div class="empty"><b>Keine Bag-Daten in den Sicherungen</b>Für dieses Profil wurde in den gespeicherten Tageskopien kein Bag gefunden.</div>'}
+  </div>`;
+}
+function bagRestoreDo(day){
+  const c=bagRestoreCandidates().find(x=>x.day===day); if(!c) return;
+  let n=0;
+  bagEdit(bag=>{
+    (c.bag.custom||[]).forEach(x=>{ if(!bag.custom.some(y=>y.id===x.id)){ bag.custom.push({id:x.id, name:x.name, loft:x.loft||''}); delete bag.del[x.id]; } });
+    Object.entries(c.bag.clubs||{}).forEach(([id,v])=>{ const ks=clubVals(v); if(!ks.length) return;
+      const cur=bag.clubs[id] ||= {in:!!v.in}; let ch=false;
+      ks.forEach(k=>{ if(cur[k]===undefined || cur[k]===null || cur[k]===''){ cur[k]=v[k]; ch=true; } });
+      if(ch){ n++; delete bag.del[id]; } });
+    bag.done=true;
+  }, 0);
+  toast(n?`${n} Schläger mit Werten vom ${fmtDate(day)} übernommen`:'Es fehlte nichts');
+  render();
+}
 function viewBag(){
   const p=meProf(); if(!p) return '<div class="empty"><b>Kein Profil gewählt</b></div>';
   const bag=myBag(), raw=(p.bag||{});
@@ -871,7 +996,7 @@ function viewBagSetup(p, bag){
           return `<div class="pick-row">
             <button class="pick" data-a="bagToggle" data-v="${c.id}" aria-pressed="${!!v.in}">
               <span class="club-toggle" aria-hidden="true">${v.in?'✓':''}</span>
-              <span class="main"><span class="t">${esc(c.name)}</span><span class="s">${c.loft?'Loft '+esc(c.loft):'Eigener Schläger'}</span></span>
+              <span class="main"><span class="t">${esc(c.name)}</span><span class="s">${c.loft?'Loft '+esc(c.loft):'Eigener Schläger'}${!v.in&&(num(v.carry)!=null||num(v.total)!=null||v.model||v.note)?` · <b>Werte gespeichert</b>${num(v.carry)!=null?' ('+num(v.carry)+' m)':''}`:''}</span></span>
             </button>
             ${c.custom?`<input class="in pick-name" id="cl-name-${c.id}" data-f="bagc.${c.id}.name" value="${esc(c.name)}" aria-label="Name des eigenen Schlägers"><button class="btn ghost small" data-a="bagDel" data-v="${c.id}" aria-label="Eigenen Schläger entfernen">✕</button>`:''}
           </div>`; }).join('')}</div>`:''}
@@ -880,6 +1005,8 @@ function viewBagSetup(p, bag){
       <span class="num"><b style="${over?'color:var(--birdie)':''}">${n}</b> von ${BAG_MAX} Schlägern ${ht('rule14')}${over?' · zu viele':''}</span>
       <button class="btn primary" data-a="bagDone" ${n?'':'disabled'}>Bag fertig</button>
     </div>
+    <p class="small muted" style="margin:0">Schläger, die du abwählst, behalten ihre Distanzen und Notizen.</p>
+    ${sync.on&&sync.pw?'<button class="btn ghost small" style="align-self:flex-start" data-a="bagRestoreOpen">Ältere Schlägerwerte aus der Online-Sicherung holen</button>':''}
   </div>`;
 }
 function viewBagMine(p, bag){
@@ -906,6 +1033,8 @@ function viewBagMine(p, bag){
       <p class="small muted" style="margin:0">Tippe einen Schläger an, um Infos zu sehen und Distanzen, Modell und Notiz einzutragen.</p>
     </div>
     <p class="small muted">Carry ist die Strecke, die der Ball in der Luft fliegt. Die Gesamtlänge zählt das Rollen dazu. Trag deinen durchschnittlichen, gut getroffenen Schlag ein, nicht den längsten.</p>
+    <p class="small muted" style="margin:0">Nimmst du einen Schläger aus dem Bag, bleiben seine Werte gespeichert und sind wieder da, wenn er zurückkommt.</p>
+    ${sync.on&&sync.pw?'<button class="btn ghost small" style="align-self:flex-start" data-a="bagRestoreOpen">Ältere Schlägerwerte aus der Online-Sicherung holen</button>':''}
   </div>`;
 }
 function bagRow(c, v){
@@ -1155,7 +1284,7 @@ const GLOSSARY=[
   {k:'scrambling', t:'Scrambling', c:'Statistik', d:'Wie oft du trotz verfehltem Green noch Par oder besser spielst. Zeigt, wie gut dein kurzes Spiel rund ums Green ist.'},
   {k:'sandsave', t:'Sand Save (Grünbunker)', c:'Statistik', d:'Ein Grünbunker liegt direkt neben dem Green. Ein Sand Save heisst: aus dem Grünbunker heraus und danach noch Par oder besser. Tippe «Grünbunker gespielt» nur bei Bunkern am Green an, nicht bei Fairwaybunkern.'},
   {k:'putt', t:'Putt, Ein-Putt, Drei-Putt', c:'Statistik', d:'Ein Putt ist ein Schlag auf dem Green, meist mit dem Putter. Schläge vom Vorgrün zählen nicht als Putt. Ein-Putt heisst: mit einem Putt eingelocht. Drei-Putts kosten unnötig Schläge, darum zeigt die Statistik sie extra.'},
-  {k:'wertung', t:'Wertung im Flight', c:'Ergebnis', d:'Legt fest, wer die Runde gewinnt. Schläge: Alle Schläge zusammengezählt, ohne Handicap. Wer am wenigsten braucht, gewinnt. Stableford: Punkte pro Loch mit Handicap, so haben auch Spieler mit hohem Handicap eine Chance. Lochgewinne: Wer ein Loch alleine am besten spielt, bekommt es. Spielen zwei oder mehr gleich gut, bekommt niemand das Loch. Das Handicap zählt dabei nicht. Am Schluss gewinnt, wer die meisten Löcher geholt hat.'},
+  {k:'wertung', t:'Wertung im Flight', c:'Ergebnis', d:'Legt fest, wer die Runde gewinnt. Schläge: Alle Schläge zusammengezählt, ohne Handicap. Wer am wenigsten braucht, gewinnt. Stableford: Punkte pro Loch mit Handicap, so haben auch Spieler mit hohem Handicap eine Chance. Lochgewinne: Wer ein Loch alleine mit den wenigsten Schlägen spielt, bekommt 1 Punkt. Spielen zwei oder mehr gleich gut, bekommt niemand den Punkt. Das Handicap zählt dabei nicht. Am Schluss gewinnt, wer die meisten Punkte hat, bei Gleichstand wer weniger Schläge gespielt hat.'},
   {k:'lostball', t:'Ballverlust', c:'Regeln', d:'Ein Ball ist verloren, wenn du ihn nach drei Minuten Suche nicht findest oder er im Aus liegt. Das kostet einen Strafschlag, und du spielst von der Stelle des letzten Schlags neu. Im Zähler «Bälle verloren» siehst du später, wo dich das am meisten kostet. Wenn du einen Ball als verloren einträgst, zählt die App automatisch mindestens gleich viele Strafschläge.'},
   {k:'penalty', t:'Strafschlag', c:'Regeln', d:'Ein zusätzlicher Schlag, den du zählen musst, zum Beispiel wenn der Ball im Wasser (Penalty Area) oder im Aus landet. Trag Strafschläge separat ein, sie gehören aber auch zur Gesamtzahl der Schläge.'},
   {k:'pickup', t:'Loch gestrichen', c:'Regeln', d:'Du hebst den Ball auf und spielst das Loch nicht fertig, etwa um das Spiel zu beschleunigen. Für Stableford gibt es 0 Punkte. Für das Handicap zählt die App das Loch als Netto-Doppelbogey.'},
@@ -1243,9 +1372,12 @@ function courses(){
   const m={};
   BUILTIN.forEach(c=>m[c.id]=c);
   Object.values(S.dbCourses).forEach(c=>{ if(c.deleted) delete m[c.id]; else m[c.id]={...c, builtin:BUILTIN.some(b=>b.id===c.id)}; });
-  return Object.values(m).sort((a,b)=>a.name.localeCompare(b.name,'de'));
+  // meistgespielte Plätze zuerst, sonst Moossee vor den übrigen, dann alphabetisch
+  const n={}; Object.values(S.rounds||{}).forEach(r=>{ if(r.status==='done') n[r.courseId]=(n[r.courseId]||0)+1; });
+  const home=c=>/^moossee/.test(c.id)?1:0;
+  return Object.values(m).sort((a,b)=>(n[b.id]||0)-(n[a.id]||0) || home(b)-home(a) || a.name.localeCompare(b.name,'de'));
 }
-const courseById = id => courses().find(c=>c.id===id);
+const courseById = id => { const d=S.dbCourses[id]; if(d) return d.deleted ? undefined : {...d, builtin:BUILTIN.some(b=>b.id===id)}; return BUILTIN.find(c=>c.id===id); };
 const coursePar = c => sum(c.holes.map(h=>h.par));
 const teeLen = t => sum(t.len||[]);
 
@@ -1371,6 +1503,7 @@ function render(){
   else if(v && v.name==='round'){ const r=S.rounds[v.id]; title=r?esc(r.courseName):'Runde'; back='Zurück'; html=r?viewRound(r):'<div class="empty"><b>Runde nicht gefunden</b></div>'; }
   else if(v && v.name==='course'){ const c=courseById(v.id); title=c?esc(c.name):'Platz'; back='Plätze'; html=c?viewCourse(c):'<div class="empty"><b>Platz nicht gefunden</b></div>'; }
   else if(v && v.name==='courseForm'){ title=S.form.isNew?'Neuer Platz':'Platz bearbeiten'; back='Abbrechen'; html=viewCourseForm(); }
+  else if(v && v.name==='bagRestore'){ title='Bag wiederherstellen'; back='Zurück'; html=viewBagRestore(); }
   else if(v && v.name==='best'){ title='Bestenliste'; back='Zurück'; html=viewBest(); }
   else if(v && v.name==='finish'){ title=(S.group||[]).some(r=>r.editing)?'Abschliessen und speichern':'Runde abschliessen'; back='Zurück'; html=viewFinish(); }
   else if(v && v.name==='data'){ title='Sicherung und Daten'; back='Zurück'; html=viewData(); }
@@ -1662,6 +1795,7 @@ const RANK_MODES=[['gross','Schläge'],['pts','Stableford'],['holes','Lochgewinn
 const rankModeOf = rounds => { const m=rounds[0]&&rounds[0].rank; return RANK_MODES.some(x=>x[0]===m) ? m : 'gross'; };
 function ranking(rounds, mode){
   const rs=rounds.map(r=>({r, s:rstats(r), won:0}));
+  const holeWin=[];   // pro Loch: Index des Gewinners in rounds, -1 geteilt, null nicht fertig gespielt
   const allCh = rs.every(x=>x.r.ch!=null);
   const eff = mode==='pts' && !allCh ? 'gross' : mode;
   if(eff==='holes'){     // Lochgewinne ohne Handicap: zählt nur, wer am wenigsten Schläge braucht
@@ -1669,29 +1803,32 @@ function ranking(rounds, mode){
     for(let i=0;i<nh;i++){
       const v=rs.map(x=>{ const h=x.r.holes[i]; if(!h) return null;
         if(h.up) return h.par+2; if(h.s==null) return null; return h.s; });
-      if(v.some(x=>x==null)) continue;
-      const best=Math.min(...v); if(v.filter(x=>x===best).length===1) rs[v.indexOf(best)].won++;
+      if(v.some(x=>x==null)){ holeWin.push(null); continue; }
+      const best=Math.min(...v); if(v.filter(x=>x===best).length===1){ rs[v.indexOf(best)].won++; holeWin.push(v.indexOf(best)); } else holeWin.push(-1);
     }
   }
   rs.forEach(x=>{ x.score = eff==='pts' ? x.s.pts : eff==='holes' ? x.won : x.s.strokes; });
   const hiGood = eff!=='gross';
-  rs.sort((a,b)=> hiGood ? (b.score-a.score) : (a.score-b.score));
+  // bei Lochgewinnen entscheiden bei gleich vielen Punkten die weniger gespielten Schläge
+  rs.forEach(x=>{ x.key = eff==='holes' ? x.score+'|'+x.s.strokes : String(x.score); });
+  const order = rs.slice();
+  rs.sort((a,b)=> (hiGood ? (b.score-a.score) : (a.score-b.score)) || (eff==='holes' ? a.s.strokes-b.s.strokes : 0));
   let place=0, prev=null;
-  rs.forEach((x,i)=>{ if(prev===null || x.score!==prev){ place=i+1; prev=x.score; } x.place=place; });
-  const top=rs[0]&&rs[0].score, bottom=rs[rs.length-1]&&rs[rs.length-1].score;
-  rs.forEach(x=>{ x.win = x.score===top; x.beer = rs.length>1 && x.score===bottom && top!==bottom; });
-  return {rs, mode, eff, fallback: eff!==mode};
+  rs.forEach((x,i)=>{ if(prev===null || x.key!==prev){ place=i+1; prev=x.key; } x.place=place; });
+  const top=rs[0]&&rs[0].key, bottom=rs[rs.length-1]&&rs[rs.length-1].key;
+  rs.forEach(x=>{ x.win = x.key===top; x.beer = rs.length>1 && x.key===bottom && top!==bottom; });
+  return {rs, order, holeWin, mode, eff, fallback: eff!==mode};
 }
 function rankingCard(rounds, big){
   if(rounds.length<2) return '';
   const mode=rankModeOf(rounds), gid=rounds[0].groupId;
-  const {rs, eff, fallback}=ranking(rounds, mode);
+  const {rs, order, holeWin, eff, fallback}=ranking(rounds, mode);
   const winners=rs.filter(x=>x.win), losers=rs.filter(x=>x.beer);
-  const unit = v => eff==='pts' ? v+' Punkten' : eff==='holes' ? v+(v===1?' Lochgewinn':' Lochgewinnen') : v+' Schlägen';
-  const main = x => eff==='pts' ? x.s.pts+' P' : eff==='holes' ? x.won+(x.won===1?' Loch':' Löcher') : x.s.strokes;
+  const unit = v => eff==='pts' ? v+' Punkten' : eff==='holes' ? v+(v===1?' Punkt':' Punkten')+' ('+(v===1?'1 gewonnenes Loch':v+' gewonnene Löcher')+')' : v+' Schlägen';
+  const main = x => eff==='pts' ? x.s.pts+' P' : eff==='holes' ? x.won+(x.won===1?' Punkt':' Punkte') : x.s.strokes;
   const sub = x => eff==='gross' ? fmtPar(x.s.vs) : x.s.strokes+' Schläge';
   const note = eff==='pts' ? 'Punkte mit Handicap, höchste Zahl gewinnt.'
-    : eff==='holes' ? `Wer ein Loch alleine am besten spielt, gewinnt es. Bei Gleichstand bekommt niemand das Loch. Ohne Handicap gerechnet.`
+    : eff==='holes' ? `Jedes Loch, das jemand alleine mit den wenigsten Schlägen spielt, gibt 1 Punkt. Bei Gleichstand bekommt niemand den Punkt. Haben zwei gleich viele Punkte, liegt vorne, wer weniger Schläge gespielt hat. Ohne Handicap.`
     : 'Alle Schläge zusammengezählt, ohne Handicap. Wenigste Schläge gewinnen.';
   return `<div class="rank ${big?'big':''}">
     <div class="rank-head"><span class="eyebrow">Rangliste</span><span class="small muted">Wertung ${ht('wertung')}</span></div>
@@ -1703,8 +1840,21 @@ function rankingCard(rounds, big){
       <span class="rank-place num">${x.place}.</span>${avatarFor(x.r,'sm')}
       <span class="rank-name">${esc(x.r.playerName||'')}${x.win?CROWN:''}${x.beer?BEER:''}</span>
       <span class="rank-score num"><b>${main(x)}</b><small>${sub(x)}</small></span></li>`).join('')}</ol>
+    ${eff==='holes'?holeWinTable(order, holeWin):''}
     ${losers.length?`<div class="rank-beer">${BEER}<span><b>${losers.map(x=>esc(x.r.playerName||'')).join(' & ')}</b> ${losers.length>1?'geben':'gibt'} eine Runde Bier aus. Prost!</span></div>`:''}
   </div>`;
+}
+/* Lochgewinne: Tabelle, wer welches Loch geholt hat (Schläge, gewonnenes Loch hervorgehoben) */
+function holeWinTable(order, holeWin){
+  const nh=Math.max(...order.map(x=>x.r.holes.length));
+  const halved=holeWin.filter(w=>w===-1).length, open=holeWin.filter(w=>w==null).length;
+  const cell=(x,pi,i)=>{ const h=x.r.holes[i]; if(!h) return '<td></td>'; const v=h.up?'X':h.s==null?'':h.s; return `<td class="${holeWin[i]===pi?'hw-won':''}">${v}</td>`; };
+  return `<div class="hw"><div class="eyebrow" style="margin-bottom:6px">Wer hat welches Loch geholt?</div>
+    <div class="sc-wrap"><table class="sc hw-t"><thead><tr><th>Loch</th>${Array.from({length:nh},(_,i)=>`<th>${(order[0].r.holes[i]||{}).n||i+1}</th>`).join('')}<th>Punkte</th><th>Schläge</th></tr></thead><tbody>
+      ${order.map((x,pi)=>`<tr><td class="hw-name">${esc(String(x.r.playerName||'').slice(0,10))}</td>${Array.from({length:nh},(_,i)=>cell(x,pi,i)).join('')}<td class="tot"><b>${x.won}</b></td><td class="tot">${x.s.strokes}</td></tr>`).join('')}
+      <tr class="hw-foot"><td>Geteilt</td>${holeWin.map(w=>`<td>${w===-1?'=':''}</td>`).join('')}${Array.from({length:nh-holeWin.length},()=>'<td></td>').join('')}<td>${halved}</td><td></td></tr>
+    </tbody></table></div>
+    <p class="small muted" style="margin:6px 0 0">Hervorgehoben: Loch gewonnen, 1 Punkt. «=»: geteilt, niemand bekommt den Punkt.${open?` ${open} ${open===1?'Loch ist':'Löcher sind'} nicht von allen gespielt und zählen nicht.`:''}</p></div>`;
 }
 function viewResult(groupId, list){
   let rs=roundList().filter(r=>r.groupId===groupId);
@@ -2170,7 +2320,7 @@ function viewCourses(){
       <button class="btn" data-a="copyAsk">Auftrag kopieren</button>
     </div>
     <button class="btn block" data-a="newCourse">Platz selbst erfassen</button>
-    <p class="small muted">Moossee-Daten: Scorekarte und Rating-Tabelle 2026 von migrosgolf.ch. Distanzen in Metern bis Grünmitte.</p>
+    <p class="small muted">Moossee-Daten: Scorekarte und Rating-Tabelle 2026 von migrosgolf.ch. Wylihof: Course-Rating-Tabellen von golfclub.ch, Distanzen aus der Scorekarte, umgerechnet in Meter. Distanzen in Metern bis Grünmitte.</p>
     <div class="list"><button class="li" data-a="openData"><div class="main"><div class="t">Sicherung, Profile und Daten</div><div class="s">Online-Sicherung, Profile verwalten, Export, Datenschutz</div></div><span class="chev">›</span></button></div>
   </div>`;
 }
@@ -2483,6 +2633,8 @@ document.addEventListener('click', e=>{
     case 'pdet': S.det[p]=!S.det[p]; render(); break;
     case 'zoomPic': openZoom(b.querySelector('img')); break;
     case 'introGo': closeIntro(); break;
+    case 'bagRestoreOpen': S.view={name:'bagRestore', from:S.view}; bagRestoreLoad(); window.scrollTo(0,0); break;
+    case 'bagRestoreDo': bagRestoreDo(v); break;
     case 'bagSetup': S.bagSetup=true; render(); window.scrollTo(0,0); break;
     case 'bagDone': { const bg=myBag(); const n=allClubs(bg).filter(c=>bg.clubs[c.id]&&bg.clubs[c.id].in).length;
       if(!n){ toast('Bitte mindestens einen Schläger wählen.'); break; }
