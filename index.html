@@ -293,6 +293,14 @@ details summary{cursor:pointer}
 .hw-t td.tot{font-weight:700}
 .club-model{font-weight:500;font-size:13px;color:var(--accent)}
 .dist-n small{display:block;font-size:11px;color:var(--muted);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calc{display:flex;flex-direction:column;gap:2px;background:var(--surface2);border-radius:10px;padding:8px 10px;font-size:14px}
+.calc>div{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.calc>div span{color:var(--muted)}
+.calc>div.f1 span{color:var(--ink)}
+.calc b.big{font-size:22px;font-family:var(--display)}
+.hcp-list{display:flex;flex-wrap:wrap;gap:6px}
+.hcp-list span{padding:3px 8px;border-radius:8px;background:var(--surface2);font-size:13px;color:var(--muted)}
+.hcp-list span.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
 .editbar{display:flex;flex-direction:column;gap:10px;padding:12px;margin-bottom:12px;border-radius:14px;border:1px solid var(--warn);background:color-mix(in srgb,var(--warn) 10%,var(--surface));font-size:14px}
 .rank{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px}
 .rank-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
@@ -477,7 +485,7 @@ const BUILTIN = [
 ];
 
 /* ---------- Version ---------- */
-const APP_VERSION = '3.17', APP_DATE = '27.10.2026';
+const APP_VERSION = '3.18', APP_DATE = '27.10.2026';
 
 /* ---------- Zustand ---------- */
 function ls(k,v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null; } }
@@ -1351,6 +1359,7 @@ function viewHelp(focus){
       <ol class="steps">${HELP_STEPS.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>
       <p class="small muted" style="margin:0">Überall, wo ein kleines <span class="ht ht-inline">?</span> steht, kannst du es antippen. Dann erscheint eine kurze Erklärung.</p>
     </div>
+    ${helpHcpCard()}
     <div class="section"><h3>Die Funktionen der App</h3>
       <div class="list">${HELP_FUNCS.map(([t,d])=>`<details class="acc"><summary>${esc(t)}</summary><p>${esc(d)}</p></details>`).join('')}</div>
     </div>
@@ -1359,6 +1368,67 @@ function viewHelp(focus){
       <div class="chips">${['Alle',...cats].map(c=>`<button class="chip" data-a="helpCat" data-v="${c}" aria-pressed="${(S.helpCat||'Alle')===c}">${esc(c)}</button>`).join('')}</div>
       <div class="list" id="gloss">${GLOSSARY.slice().sort((a,b)=>a.t.localeCompare(b.t,'de')).map(g=>`<details class="acc gl" id="g-${g.k}" data-cat="${esc(g.c)}" data-txt="${esc((g.t+' '+g.d).toLowerCase())}" ${focus===g.k?'open':''}><summary>${esc(g.t)} <span class="badge">${esc(g.c)}</span></summary><p>${esc(g.d)}</p></details>`).join('')}</div>
       <p class="small muted" id="gloss-none" hidden>Kein Begriff gefunden.</p>
+    </div>
+  </div>`;
+}
+/* Hilfe: Spielvorgabe und HCP-Schätzung des gewählten Profils Schritt für Schritt mit seinen eigenen Zahlen */
+const nf = (v,n=1) => v==null||isNaN(v) ? '–' : (+v).toFixed(n).replace('.',',');
+function helpHcpCard(){
+  const p=meProf(); if(!p) return '';
+  const hi = p.hi===''||p.hi==null||isNaN(+p.hi) ? null : +p.hi;
+  const g = p.gender==='w' ? 'w' : 'm';
+  const cs=courses(), last=myRounds().find(r=>r.status==='done');
+  S.helpPv ||= {};
+  let c = courseById(S.helpPv.course) || (last && courseById(last.courseId)) || cs[0];
+  if(!c) return '';
+  let ti = S.helpPv.course===c.id && S.helpPv.tee!=null ? +S.helpPv.tee : (last && last.courseId===c.id ? Math.max(0,c.tees.findIndex(t=>t.name===last.teeName)) : 0);
+  if(!c.tees[ti]) ti=0; const tee=c.tees[ti];
+  const mode = c.holes.length===18 && S.helpPv.mode && S.helpPv.course===c.id ? S.helpPv.mode : 'all';
+  const ph = playing(hi, c, tee, mode, g), idx=holeIdx(c, mode), n=idx.length;
+  const cr = ph.cr, sl = ph.slope, par = ph.par;
+  const hiEff = hi==null ? null : hi*n/18;
+  const raw = hi==null||!cr||!sl ? null : hiEff*sl/113 + (cr-par);
+  let alloc='';
+  if(ph.ch!=null && ph.ch>0){ const per=Math.floor(ph.ch/n), rest=ph.ch%n;
+    alloc = `Du bekommst ${ph.ch} Vorgabeschläge auf ${n} Löchern: ${per?`auf jedem Loch ${per}${rest?', dazu':''} `:''}${rest?`auf den ${rest} schwersten Löchern (die mit der kleinsten Hcp-Zahl) ${per?'einen weiteren':'je einen'}`:''}.`; }
+  else if(ph.ch!=null && ph.ch<0) alloc = `Mit einer Spielvorgabe unter null zählst du ${-ph.ch} Schl${ph.ch===-1?'ag':'äge'} dazu, auf den leichtesten Löchern.`;
+  else if(ph.ch===0) alloc = 'Spielvorgabe 0: du bekommst keine Vorgabeschläge.';
+  const est = hcpEstimate(myRounds());
+  const T = {3:[1,-2],4:[1,-1],5:[1,0],6:[2,-1],7:[2,0],8:[2,0],9:[3,0],10:[3,0],11:[3,0],12:[4,0],13:[4,0],14:[4,0],15:[5,0],16:[5,0],17:[6,0],18:[6,0],19:[7,0],20:[8,0]};
+  const lastFull = myRounds().filter(r=>r.status==='done').map(r=>({r, s:rstats(r)})).find(x=>x.s.diff!=null);
+  return `<div class="card stack hcp-help"><h3>So rechnet die App für ${esc(p.name)}</h3>
+    <p class="small muted" style="margin:0">Mit den Zahlen aus deinem Profil. Ändern kannst du den HCP-Index über den Profil-Kreis oben rechts.</p>
+    <div class="section" style="margin-top:4px"><span class="eyebrow">1. Dein HCP-Index ${ht('hcpindex')}</span>
+      <p style="margin:4px 0 0">${hi==null?'Im Profil ist noch kein HCP-Index eingetragen. Ohne ihn kann die App keine Spielvorgabe und keine Stableford-Punkte rechnen.':`Im Profil steht <b>${nf(hi)}</b>. Das ist dein offizieller Wert vom Club. Er gilt für jeden Platz gleich.`}</p></div>
+    <div class="section"><span class="eyebrow">2. Deine Spielvorgabe ${ht('spielvorgabe')}</span>
+      <div class="grid2">
+        <label class="f">Platz<select class="in" id="hp-course" data-f="helpPv.course">${cs.map(x=>`<option value="${x.id}" ${x.id===c.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select></label>
+        <label class="f">Abschlag<select class="in" id="hp-tee" data-f="helpPv.tee">${c.tees.map((t,i)=>`<option value="${i}" ${i===ti?'selected':''}>${esc(t.name)}</option>`).join('')}</select></label>
+      </div>
+      ${c.holes.length===18?`<div class="seg">${[['all','18 Loch'],['front','Front 9'],['back','Back 9']].map(([k,l])=>`<button data-a="helpPvMode" data-v="${k}" aria-pressed="${mode===k}">${l}</button>`).join('')}</div>`:''}
+      ${hi==null?'':!cr||!sl?'<p class="small muted" style="margin:0">Für diesen Abschlag fehlen Course Rating oder Slope.</p>':`
+      <div class="calc num">
+        <div><span>Course Rating ${g==='w'?'Damen':'Herren'}${n!==(+c.ratingHoles||c.holes.length)?` (auf ${n} Loch umgerechnet)`:''}</span><b>${nf(cr)}</b></div>
+        <div><span>Slope</span><b>${sl}</b></div>
+        <div><span>Par</span><b>${par}</b></div>
+        ${n!==18?`<div><span>HCP-Index für ${n} Loch: ${nf(hi)} × ${n} ÷ 18</span><b>${nf(hiEff,2)}</b></div>`:''}
+        <div class="f1"><span>${nf(hiEff, n!==18?2:1)} × ${sl} ÷ 113</span><b>${nf(hiEff*sl/113,2)}</b></div>
+        <div class="f1"><span>+ (${nf(cr)} − ${par})</span><b>${(cr-par)>=0?'+':'−'} ${nf(Math.abs(cr-par),1)}</b></div>
+        <div class="f1"><span>= ${nf(raw,2)}, gerundet</span><b class="big">${ph.ch}</b></div>
+      </div>
+      <p class="small" style="margin:0">Formel: Spielvorgabe = HCP-Index × Slope ÷ 113 + (Course Rating − Par). ${alloc}</p>`}
+    </div>
+    <div class="section"><span class="eyebrow">3. Deine HCP-Schätzung ${ht('hcpest')}</span>
+      <p class="small" style="margin:4px 0 0">Aus jeder vollständigen Runde rechnet die App ein Score-Differential ${ht('differential')}: 113 ÷ Slope × (bereinigte Schläge − Course Rating). Bereinigt heisst: pro Loch zählen höchstens Netto-Doppelbogey, also Par + 2 + deine Vorgabeschläge auf diesem Loch. Zwei 9-Loch-Runden werden zu einem Wert zusammengezählt.</p>
+      ${lastFull?(()=>{ const r=lastFull.r, st=lastFull.s; return `<div class="calc num">
+        <div><span>Letzte Runde: ${fmtDate(r.date)}, ${esc(String(r.courseName).replace(/^Golfpark\s+/,''))}, Tee ${esc(r.teeName)}</span><b></b></div>
+        <div><span>Schläge / davon bereinigt</span><b>${st.strokes} / ${st.ags}</b></div>
+        <div class="f1"><span>113 ÷ ${r.slope} × (${st.ags} − ${nf(r.cr)})</span><b class="big">${nf(st.diff)}</b></div></div>`; })():''}
+      ${est.n<3?`<p class="small" style="margin:0">Bis jetzt ${est.n===1?'1 Differential':est.n+' Differentials'}. Ab 3 Werten erscheint eine Schätzung.</p>`:`
+      <p class="small" style="margin:0">Aus den letzten ${est.n} Werten zählen die ${est.used} besten${T[est.n][1]?`, dazu eine Korrektur von ${T[est.n][1]}`:''}. Das ist die Tabelle des World Handicap System: bei 20 Werten die besten 8.</p>
+      <div class="hcp-list num">${est.list.slice().reverse().map(x=>`<span class="${x.counts?'on':''}" title="${esc(x.label)}">${nf(x.v)}</span>`).join('')}</div>
+      <div class="calc num"><div class="f1"><span>Durchschnitt der ${est.used} grün markierten Wert${est.used===1?'':'e'}${T[est.n][1]?', Korrektur '+T[est.n][1]:''}</span><b class="big">${nf(est.value)}</b></div></div>`}
+      <p class="small muted" style="margin:0">Die Schätzung ist nicht offiziell. Dein offizielles Handicap führt der Club, dort zählen auch Turniere und die Tagesbedingungen.</p>
     </div>
   </div>`;
 }
@@ -2582,6 +2652,7 @@ document.addEventListener('click', e=>{
     case 'helpAll': { closeHelp(); S.helpQ=''; S.helpCat='Alle'; S.view={name:'help', focus:v, from:S.view}; render(); const el=document.getElementById('g-'+v); if(el){ el.scrollIntoView({block:'center'}); el.classList.add('hl'); } else window.scrollTo(0,0); break; }
     case 'openBest': if(!(S.view&&S.view.name==='best')) S.view={name:'best', from:S.view}; render(); window.scrollTo(0,0); break;
     case 'openHelp': closeHelp(); if(!(S.view&&S.view.name==='help')){ S.view={name:'help', from:S.view}; } ls('golfsc-helpseen', 1); render(); window.scrollTo(0,0); break;
+    case 'helpPvMode': S.helpPv ||= {}; S.helpPv.course=S.helpPv.course||document.getElementById('hp-course')?.value; S.helpPv.tee=S.helpPv.tee??document.getElementById('hp-tee')?.value; S.helpPv.mode=v; render(); break;
     case 'helpCat': S.helpCat=v; document.querySelectorAll('[data-a="helpCat"]').forEach(x=>x.setAttribute('aria-pressed', x.dataset.v===v)); filterGlossary(); break;
     case 'helpSeen': ls('golfsc-helpseen', 1); render(); break;
     case 'askDelActive': S.confirm='delActive'; render(); break;
@@ -2702,6 +2773,7 @@ function onField(e){
   if(f==='statCourse'){ S.statCourse=val; render(); return; }
   if(f==='bestCourse'){ S.bestCourse=val; render(); return; }
   if(f==='statRange'){ S.statRange=val; render(); return; }
+  if(f.startsWith('helpPv.')){ const k=f.split('.')[1]; S.helpPv ||= {}; if(k==='course'){ S.helpPv={course:val}; } else { S.helpPv.course=S.helpPv.course||document.getElementById('hp-course')?.value; S.helpPv[k]=val; } render(); return; }
   if(f==='helpQ'){ S.helpQ=val; filterGlossary(); return; }
   if(f==='anaSel'){ S.anaCourse=val; S.view={...S.view, course:val}; render(); return; }
   if(f.startsWith('cmp.')){ S.cmp[f.split('.')[1]]=val; render(); return; }
