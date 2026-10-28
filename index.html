@@ -115,9 +115,12 @@ textarea.in{min-height:80px;resize:vertical}
 .mini{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:6px;width:150px}
 .mini button{height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);font-size:20px;font-weight:600}
 .mini .val{text-align:center;font-family:var(--display);font-size:26px;font-weight:700}
-.field-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.field-row .lab{font-weight:600}
-.gir{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:14px;padding:4px 10px;border-radius:999px;background:var(--surface2);color:var(--muted)}
+.field-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.field-row .lab{font-weight:600;flex:1 1 auto;min-width:0}
+.asbar{display:flex;align-items:center;gap:10px;background:var(--warn);color:#fff;border-radius:12px;padding:8px 10px;margin:0 0 12px;font-size:13px}
+.asbar span:not(.av){flex:1}
+.asbar .btn{flex:0 0 auto;background:#fff;color:#13231A;border-color:#fff}
+.gir{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:14px;padding:4px 10px;border-radius:999px;background:var(--surface2);color:var(--muted);white-space:nowrap;flex:0 0 auto}
 .gir.yes{background:var(--accent-soft);color:var(--accent)}
 .hole-nav{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .strip{position:relative;display:flex;gap:6px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:thin}
@@ -442,7 +445,9 @@ table.cmp-t td:first-child{white-space:normal;min-width:120px}
 .meas-a{fill:#fff;stroke:#13231A}
 .meas-b{fill:rgba(255,214,0,.25);stroke:#FFD600}
 .meas-bd{fill:#FFD600}
-.meas-c{fill:#fff;stroke:#13231A;stroke-width:1}
+.meas-cr{fill:rgba(255,255,255,.3);stroke:#fff}
+.meas-flag line{stroke:#fff}
+.meas-flag path{fill:#E53E3E}
 .meas-lbl rect{fill:rgba(19,35,26,.88)}
 .meas-lbl text{fill:#fff;font-weight:700;font-family:inherit}
 .meas-bar{flex:0 0 auto;background:var(--surface);color:var(--ink);padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px}
@@ -560,7 +565,7 @@ const BUILTIN = [
 ];
 
 /* ---------- Version ---------- */
-const APP_VERSION = '3.28', APP_DATE = '28.10.2026';
+const APP_VERSION = '3.31', APP_DATE = '28.10.2026';
 
 /* ---------- Zustand ---------- */
 function ls(k,v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null; } }
@@ -774,7 +779,10 @@ const sync = {
     try{ this.pw = localStorage.getItem('golfsc-token') || sessionStorage.getItem('golfsc-token'); }catch(e){}
     this.admin = ls('golfsc-admin')===true;
     if(!this.pw){ this.state='nopw'; render(); return; }
-    const pid=String(this.pw).split('.')[0]; if(pid && S.me!==pid){ S.me=pid; ls('golfsc-me', pid); }
+    const pid=String(this.pw).split('.')[0];
+    let as=null; try{ as=sessionStorage.getItem('golfsc-as'); }catch(e){}
+    if(this.admin && as && as!==pid) S.me=as;            // Admin schaut ein anderes Profil an (nur in diesem Tab)
+    else if(pid && S.me!==pid){ S.me=pid; ls('golfsc-me', pid); }
     S.picked=true;
     this.listen(); this.run();
   },
@@ -790,7 +798,7 @@ const sync = {
     try{ localStorage.removeItem('golfsc-token'); sessionStorage.removeItem('golfsc-token'); (remember?localStorage:sessionStorage).setItem('golfsc-token', j.token); }catch(e){}
     if(S.me && S.me!==j.pid){ store.wipeData(); }      // anderes Konto als zuletzt: nichts vom alten Konto übernehmen
     this.pw=j.token; this.admin=!!j.admin; ls('golfsc-admin', this.admin);
-    S.me=j.pid; ls('golfsc-me', j.pid); S.picked=true;
+    S.me=j.pid; ls('golfsc-me', j.pid); S.picked=true; try{ sessionStorage.removeItem('golfsc-as'); }catch(e){}
     Object.values(store.data.rounds||{}).forEach(r=>{ if(!r.by && r.status==='active') r.by=j.pid; });
     this.listen(); await this.run(); return j;
   },
@@ -930,6 +938,19 @@ const profList = () => Object.values(S.profiles).sort((a,b)=>{
   return String(a.name).localeCompare(String(b.name),'de');
 });
 const meProf = () => S.profiles[S.me] || null;
+/* Eigenes Konto laut Anmeldung; weicht von S.me ab, wenn der Admin ein anderes Profil geöffnet hat */
+const ownPid = () => sync.on && sync.pw ? String(sync.pw).split('.')[0] : S.me;
+const asMode = () => !!(sync.on && sync.pw && sync.admin && S.me && S.me!==ownPid());
+function openAs(id){
+  if(!sync.admin || !S.profiles[id]) return;
+  const own=ownPid();
+  try{ if(id===own) sessionStorage.removeItem('golfsc-as'); else sessionStorage.setItem('golfsc-as', id); }catch(e){}
+  S.me=id; S.pform=null; S.start=null; S.view=null; S.confirm=null; S.tab='home'; try{ sessionStorage.setItem('golfsc-tab','home'); }catch(e){}
+  toast(id===own ? 'Zurück in deinem Profil' : 'Profil von '+S.profiles[id].name+' geöffnet');
+  render(); window.scrollTo(0,0);
+}
+function asBar(){ if(!asMode()) return ''; const p=meProf()||{name:'?'};
+  return `<div class="asbar">${avatar(p,'sm')}<span>Admin-Ansicht: Du bist im Profil von <b>${esc(p.name)}</b>. Was du hier erfasst, gehört ${esc(p.name)}.</span><button class="btn small" data-a="asBack">Zurück zu mir</button></div>`; }
 const needWho = () => sync.on ? !sync.pw : (!S.picked || !S.profiles[S.me]);
 function avatar(p, cls=''){ const n=String((p&&p.name)||'?').trim(); return `<span class="av ${cls}" style="background:${esc((p&&p.color)||'#7A867E')}" aria-hidden="true">${esc((n[0]||'?').toUpperCase())}</span>`; }
 function avatarFor(r, cls=''){ return avatar(r.profileId && S.profiles[r.profileId] ? S.profiles[r.profileId] : {name:r.playerName||'Gast', color:'#7A867E'}, cls); }
@@ -1054,6 +1075,12 @@ function viewData(){
   return `<div class="stack">${demoCard()}${syncCard()}${profilesCard()}${dataCard()}${privacyCard()}</div>`;
 }
 function accountCard(){
+  if(asMode()){ const p=meProf(), o=S.profiles[ownPid()]||{name:'dir'};
+    return `<div class="card stack"><h3>Profil von ${esc(p?p.name:'')}</h3>
+      <div class="row">${p?avatar(p):''}<b style="flex:1">${esc(p?p.name:'')}</b><span class="badge">Admin-Ansicht</span></div>
+      ${S.pform && !S.pform.isNew && S.pform.id===S.me ? profForm() : `<button class="btn" data-a="editProf" data-v="${S.me}">Name, Handicap und Farbe ändern</button>`}
+      <p class="small muted" style="margin:0">Du bist als ${esc(o.name)} angemeldet. Ein Passwort braucht es dafür nicht, das Passwort von ${esc(p?p.name:'')} bleibt unverändert.</p>
+      <button class="btn primary" data-a="asBack">Zurück zu meinem Profil</button></div>`; }
   const p=meProf(), A=S.acct||{};
   return `<div class="card stack"><h3>Mein Konto</h3>
     <div class="row">${p?avatar(p):''}<b style="flex:1">${esc(p?p.name:'')}</b>${sync.admin?'<span class="badge live">Admin</span>':''}</div>
@@ -1083,13 +1110,14 @@ function usersCard(){
   const list=(U&&U.list)||[], f=S.newAcct;
   return `<div class="card stack"><h3>Konten</h3>
     ${!U?'<p class="small muted" style="margin:0">Wird geladen …</p>':U.err?`<div class="warnbar">${esc(U.err)}</div>`:`<div class="list">${list.map(u=>{ const pr=S.profiles[u.id]||u, rs=S.reset===u.id, cf=S.confirm==='rm-'+u.id;
-      return `<div class="li" style="flex-wrap:wrap;gap:6px">${avatar(pr,'sm')}<div class="main"><div class="t">${esc(u.name)}${u.id===S.me?' <span class="badge">Du</span>':''}${u.admin?' <span class="badge live">Admin</span>':''}</div>
+      return `<div class="li" style="flex-wrap:wrap;gap:6px">${avatar(pr,'sm')}<div class="main"><div class="t">${esc(u.name)}${u.id===ownPid()?' <span class="badge">Du</span>':''}${u.id===S.me&&asMode()?' <span class="badge">geöffnet</span>':''}${u.admin?' <span class="badge live">Admin</span>':''}</div>
         ${sync.admin?`<div class="s">${u.hasPw?(u.mustChange?'Startpasswort gesetzt, noch nicht geändert':'eigenes Passwort'):'noch nicht angemeldet, Erstanmeldung mit dem gemeinsamen Passwort'}</div>`:''}</div>
         ${sync.admin?`<div class="row" style="flex-basis:100%;gap:6px;flex-wrap:wrap">
           ${rs?`<input class="in" id="rs-pw" type="text" autocomplete="off" placeholder="Startpasswort, mind. 6 Zeichen" style="flex:1;min-width:150px"><button class="btn primary small" data-a="userReset" data-v="${u.id}">Setzen</button><button class="btn small" data-a="userResetCancel">Abbrechen</button>`
-            :`<button class="btn small" data-a="userResetOpen" data-v="${u.id}">Passwort zurücksetzen</button>
+            :`${S.profiles[u.id]&&u.id!==S.me?`<button class="btn primary small" data-a="openAs" data-v="${u.id}">${u.id===ownPid()?'Mein Profil öffnen':'Profil öffnen'}</button>`:''}
+              <button class="btn small" data-a="userResetOpen" data-v="${u.id}">Passwort zurücksetzen</button>
               ${u.hasPw?`<button class="btn small" data-a="userAdmin" data-v="${u.id}" data-g="${u.admin?'0':'1'}">${u.admin?'Admin entziehen':'Zum Admin machen'}</button>`:''}
-              ${u.id!==S.me?`<button class="btn danger small" data-a="userAskRemove" data-v="${u.id}">Löschen</button>`:''}`}</div>
+              ${u.id!==ownPid()&&u.id!==S.me?`<button class="btn danger small" data-a="userAskRemove" data-v="${u.id}">Löschen</button>`:''}`}</div>
           ${cf?`<div class="confirm" style="flex-basis:100%"><span>Konto «${esc(u.name)}» mit allen Runden und Trainings endgültig löschen? Das lässt sich nicht rückgängig machen.</span><button class="btn" data-a="cancelConfirm">Behalten</button><button class="btn danger solid" data-a="userRemove" data-v="${u.id}">Endgültig löschen</button></div>`:''}`:''}
       </div>`; }).join('')}</div>`}
     ${f?`<div class="stack"><h3 style="margin:6px 0 0">Neues Konto</h3>
@@ -1100,7 +1128,7 @@ function usersCard(){
       <p class="small muted" style="margin:0">Gib das Startpasswort der Person weiter. Beim ersten Anmelden legt sie ihr eigenes fest.</p>
       <div class="row"><button class="btn primary" data-a="newAcctSave">Konto anlegen</button><button class="btn" data-a="newAcctCancel">Abbrechen</button></div></div>`
       :`<button class="btn" data-a="newAcct">+ Konto hinzufügen</button>`}
-    ${sync.admin?'<p class="small muted" style="margin:0">Als Admin kannst du Passwörter zurücksetzen, Admin-Rechte vergeben, Konten löschen und alle Runden sehen.</p>':'<p class="small muted" style="margin:0">Passwort vergessen oder Konto löschen: Das macht der Admin.</p>'}
+    ${sync.admin?'<p class="small muted" style="margin:0">Als Admin kannst du Profile öffnen (ohne deren Passwort), Passwörter zurücksetzen, Admin-Rechte vergeben, Konten löschen und alle Runden sehen.</p>':'<p class="small muted" style="margin:0">Passwort vergessen oder Konto löschen: Das macht der Admin.</p>'}
   </div>`;
 }
 async function loadUsers(){
@@ -2007,7 +2035,7 @@ function render(){
   $('#hdr').innerHTML = (back?`<button class="back" data-a="back">‹ ${back}</button>`:'') + `<h1>${title}</h1>`
     + syncPill() + (who?'':`<button class="hdr-help hdr-best" data-a="openBest" aria-label="Bestenliste">${TROPHY}</button>`) + `<button class="hdr-help" data-a="openHelp" aria-label="Hilfe und Begriffe">?</button>` + (who||!mp ? '' : `<button class="hdr-who" data-a="who" aria-label="Profil wechseln, aktuell ${esc(mp.name)}">${avatar(mp)}</button>`);
   const y = window.scrollY;
-  $('#app').innerHTML = html + `<p class="ver">Golf Scorecard · Version ${APP_VERSION} vom ${APP_DATE}</p>`;
+  $('#app').innerHTML = (who?'':asBar()) + html + `<p class="ver">Golf Scorecard · Version ${APP_VERSION} vom ${APP_DATE}</p>`;
   window.scrollTo(0, y);   // Seite bleibt, wo sie war
   startHero();
   const strip = document.querySelector('.strip'), cur = strip && strip.querySelector('[aria-current="true"]');
@@ -2139,7 +2167,7 @@ function holeFields(h, p, gir){
     <div class="field-row"><span class="lab">Bälle verloren ${ht('lostball')}</span>
       <div class="mini"><button data-a="lost-" data-p="${p}" aria-label="Ein verlorener Ball weniger">−</button><div class="val num">${h.lost||0}</div><button data-a="lost+" data-p="${p}" aria-label="Ein verlorener Ball mehr">+</button></div></div>
     <div class="field-row"><span class="lab">Grünbunker gespielt ${ht('sandsave')}</span>
-      <div class="seg" style="width:150px">${[[false,'Nein'],[true,'Ja']].map(([k,l])=>`<button data-a="sand" data-p="${p}" data-v="${k}" aria-pressed="${!!h.sand===k}">${l}</button>`).join('')}</div></div>`;
+      <div class="seg" style="width:130px;flex:0 0 auto">${[[false,'Nein'],[true,'Ja']].map(([k,l])=>`<button data-a="sand" data-p="${p}" data-v="${k}" aria-pressed="${!!h.sand===k}">${l}</button>`).join('')}</div></div>`;
 }
 function anaLink(courseId, n){
   const list=(holeHistory(courseId).by[n])||[]; if(!list.length) return '';
@@ -3107,7 +3135,7 @@ function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; cle
 /* --- Distanzen messen auf dem Lochbild (wie Hole19) ---
    HOLEGEO pro Loch: [Grünanfang x,y, Grünmitte x,y, Pixel pro Meter, {Abschlag:[x,y]}] in Pixeln des eingebauten Bildes.
    Kalibriert aus den Distanzangaben im Lochplan (Strokesaver), daher ca.-Werte. Moossee 6 Loch hat keinen massstäblichen Plan. */
-const HOLEGEO={"moossee18":[[367,254,430,184,2.721,[["63",472,1053],["59",449,989],["54",399,896],["52",395,861]]],[363,204,413,184,2.662,[["63",444,1082],["59",481,1032],["54",376,937],["52",373,907]]],[209,186,196,147,2.252,[["63",172,1092],["59",235,1048],["54",312,992],["52",327,958]]],[375,302,357,226,4.582,[["63",257,1040],["59",326,976],["54",326,976],["52",430,916]]],[288,190,298,158,2.066,[["63",271,1071],["59",316,1008],["54",340,914],["52",340,903]]],[317,199,312,147,2.462,[["63",322,1082],["59",317,1040],["54",374,961],["52",374,932]]],[460,216,452,200,2.435,[["63",472,1064],["59",472,987],["54",352,945],["52",331,919]]],[317,187,313,152,2.449,[["63",316,1071],["59",313,1010],["54",334,945],["52",334,911]]],[363,336,374,262,5.175,[["63",374,1045],["59",385,961],["54",385,961],["52",332,877]]],[303,163,278,136,2.37,[["63",275,1092],["59",268,1050],["54",268,1018],["52",352,945]]],[144,237,130,178,2.959,[["63",130,1087],["59",172,1034],["54",240,1013],["52",287,982]]],[373,336,364,242,5.238,[["63",343,1066],["59",280,976],["54",285,924],["52",201,835]]],[296,237,284,184,2.944,[["63",278,1071],["59",262,1008],["54",262,1008],["52",315,929]]],[348,180,345,136,1.965,[["63",334,1071],["59",345,1011],["54",360,922],["52",360,890]]],[279,212,206,189,2.83,[["63",112,1087],["59",102,1024],["54",196,961],["52",222,924]]],[526,247,536,226,1.915,[["63",378,1040],["59",326,987],["54",262,892],["52",242,866]]],[364,276,371,210,4.238,[["63",444,1079],["59",345,950],["54",256,903],["52",256,866]]],[297,202,290,152,2.303,[["63",322,1071],["59",322,1034],["54",343,964],["52",343,934]]]],"moossee9":[[366,170,368,147,2.012,[["28",404,1079],["26",401,1054],["24",357,945],["23",355,917],["BE",301,728]]],[336,199,324,142,2.983,[["28",234,1092],["26",282,976],["24",245,976],["23",360,950],["BE",357,746]]],[323,348,332,231,4.642,[["28",301,1029],["26",385,924],["24",385,924],["23",427,830],["BE",420,633]]],[403,224,430,173,2.818,[["28",430,1045],["26",430,1016],["24",336,945],["23",336,905],["BE",268,711]]],[298,280,298,210,5.025,[["28",298,1034],["26",424,924],["24",424,924],["23",250,872],["BE",232,659]]],[301,207,270,158,3.066,[["28",290,1034],["26",306,994],["24",364,898],["23",364,863],["BE",350,730]]],[520,227,567,158,2.534,[["28",567,1034],["26",514,966],["24",457,914],["23",404,845],["BE",186,665]]],[317,256,329,184,4.316,[["28",334,1024],["26",334,976],["24",413,892],["23",413,861],["BE",324,730]]],[317,176,290,142,2.6,[["28",301,1087],["26",301,1050],["24",290,945],["23",290,919],["BE",319,730]]]],"wyG":[[315,210,305,180,2.184,[["Weiss",316,993],["Gelb",321,945],["Blau",291,890],["Rot",293,848]]],[280,196,275,160,2.113,[["Weiss",296,988],["Gelb",310,932],["Blau",338,860],["Rot",335,820]]],[286,307,300,230,5.05,[["Weiss",256,957],["Gelb",257,920],["Blau",248,920],["Rot",283,808]]],[314,165,310,145,1.744,[["Weiss",310,997],["Gelb",303,968],["Blau",322,897],["Rot",316,860]]],[290,273,290,215,4.315,[["Weiss",298,941],["Gelb",306,855],["Blau",308,846],["Rot",306,791]]],[310,186,310,150,1.946,[["Weiss",318,1010],["Gelb",329,872],["Blau",332,803],["Rot",332,776]]],[226,254,222,225,2.34,[["Weiss",218,940],["Gelb",232,908],["Blau",230,845],["Rot",233,805]]],[284,178,280,150,1.566,[["Weiss",293,992],["Gelb",300,915],["Blau",333,840],["Rot",335,810]]],[310,214,320,180,2.142,[["Weiss",328,972],["Gelb",328,933],["Blau",330,848],["Rot",332,825]]]],"wyB":[[300,220,290,180,2.293,[["Weiss",310,987],["Gelb",316,947],["Blau",298,892],["Rot",306,853]]],[343,167,355,148,1.684,[["Weiss",350,970],["Gelb",345,925],["Blau",297,847],["Rot",295,818]]],[368,226,380,190,2.239,[["Weiss",388,982],["Gelb",380,943],["Blau",356,876],["Rot",352,835]]],[319,304,330,250,3.581,[["Weiss",328,940],["Gelb",352,850],["Blau",305,800],["Rot",345,752]]],[317,162,320,135,1.605,[["Weiss",308,960],["Gelb",305,928],["Blau",310,797],["Rot",315,775]]],[267,170,255,135,2.384,[["Weiss",268,953],["Gelb",270,935],["Blau",303,868],["Rot",303,855]]],[320,291,330,215,4.986,[["Weiss",296,947],["Gelb",300,907],["Blau",292,907],["Rot",297,850]]],[226,183,215,160,1.601,[["Weiss",250,925],["Gelb",322,857],["Blau",355,800],["Rot",365,770]]],[324,202,325,165,2.03,[["Weiss",334,990],["Gelb",350,896],["Blau",337,836],["Rot",335,803]]]],"wyR":[[399,192,420,165,1.971,[["Weiss",338,958],["Gelb",334,943],["Blau",287,882],["Rot",284,862]]],[272,240,272,195,2.062,[["Weiss",247,947],["Gelb",260,910],["Blau",285,833],["Rot",290,815]]],[320,215,320,175,1.862,[["Weiss",352,952],["Gelb",343,850],["Blau",342,790],["Rot",340,775]]],[328,209,330,175,1.852,[["Weiss",328,938],["Gelb",367,905],["Blau",410,860],["Rot",406,842]]],[300,325,290,240,3.605,[["Weiss",289,857],["Gelb",291,825],["Blau",302,752],["Rot",300,727]]],[282,235,280,205,2.248,[["Weiss",273,945],["Gelb",280,902],["Blau",287,858],["Rot",295,828]]],[288,172,275,150,1.76,[["Weiss",263,955],["Gelb",266,940],["Blau",296,862],["Rot",300,842]]],[357,291,350,215,3.553,[["Weiss",229,938],["Gelb",236,903],["Blau",416,752],["Rot",413,718]]],[275,232,270,210,1.852,[["Weiss",210,903],["Gelb",248,872],["Blau",252,857],["Rot",275,826]]]]};
+const HOLEGEO={"moossee18":[[366,258,430,184,2.67,[["63",430,1050],["59",410,990],["54",363,895],["52",363,861]]],[364,205,413,184,2.651,[["63",420,1084],["59",456,1032],["54",357,937],["52",357,907]]],[207,181,196,147,2.284,[["63",148,1084],["59",211,1045],["54",290,994],["52",302,966]]],[375,302,357,226,4.582,[["63",257,1040],["59",326,976],["54",326,976],["52",430,916]]],[288,190,298,158,2.066,[["63",271,1071],["59",316,1008],["54",340,914],["52",340,903]]],[317,199,312,147,2.462,[["63",322,1082],["59",317,1040],["54",374,961],["52",374,932]]],[460,216,452,200,2.435,[["63",472,1064],["59",472,987],["54",352,945],["52",331,919]]],[317,187,313,152,2.449,[["63",316,1071],["59",313,1010],["54",334,945],["52",334,911]]],[363,336,374,262,5.175,[["63",374,1045],["59",385,961],["54",385,961],["52",332,877]]],[303,163,278,136,2.37,[["63",275,1092],["59",268,1050],["54",268,1018],["52",352,945]]],[144,237,130,178,2.959,[["63",130,1087],["59",172,1034],["54",240,1013],["52",287,982]]],[373,336,364,242,5.238,[["63",343,1066],["59",280,976],["54",285,924],["52",201,835]]],[296,237,284,184,2.944,[["63",278,1071],["59",262,1008],["54",262,1008],["52",315,929]]],[348,180,345,136,1.965,[["63",334,1071],["59",345,1011],["54",360,922],["52",360,890]]],[279,212,206,189,2.83,[["63",112,1087],["59",102,1024],["54",196,961],["52",222,924]]],[526,247,536,226,1.915,[["63",378,1040],["59",326,987],["54",262,892],["52",242,866]]],[364,276,371,210,4.238,[["63",444,1079],["59",345,950],["54",256,903],["52",256,866]]],[297,202,290,152,2.303,[["63",322,1071],["59",322,1034],["54",343,964],["52",343,934]]]],"moossee9":[[368,173,368,147,1.995,[["28",372,1077],["26",372,1052],["24",332,943],["23",332,916],["BE",301,728]]],[336,198,324,142,2.994,[["28",209,1089],["26",222,976],["24",222,976],["23",339,951],["BE",357,746]]],[323,348,332,231,4.642,[["28",301,1029],["26",385,924],["24",385,924],["23",427,830],["BE",420,633]]],[403,224,430,173,2.818,[["28",430,1045],["26",430,1016],["24",336,945],["23",336,905],["BE",268,711]]],[298,280,298,210,5.025,[["28",298,1034],["26",424,924],["24",424,924],["23",250,872],["BE",232,659]]],[301,207,270,158,3.066,[["28",290,1034],["26",306,994],["24",364,898],["23",364,863],["BE",350,730]]],[520,227,567,158,2.534,[["28",567,1034],["26",514,966],["24",457,914],["23",404,845],["BE",186,665]]],[317,256,329,184,4.316,[["28",334,1024],["26",334,976],["24",413,892],["23",413,861],["BE",324,730]]],[317,176,290,142,2.6,[["28",301,1087],["26",301,1050],["24",290,945],["23",290,919],["BE",319,730]]]],"wyG":[[315,210,305,180,2.184,[["Weiss",316,993],["Gelb",321,945],["Blau",291,890],["Rot",293,848]]],[280,196,275,160,2.113,[["Weiss",296,988],["Gelb",310,932],["Blau",338,860],["Rot",335,820]]],[286,307,300,230,5.05,[["Weiss",256,957],["Gelb",257,920],["Blau",248,920],["Rot",283,808]]],[314,165,310,145,1.744,[["Weiss",310,997],["Gelb",303,968],["Blau",322,897],["Rot",316,860]]],[290,273,290,215,4.315,[["Weiss",298,941],["Gelb",306,855],["Blau",308,846],["Rot",306,791]]],[310,186,310,150,1.946,[["Weiss",318,1010],["Gelb",329,872],["Blau",332,803],["Rot",332,776]]],[226,254,222,225,2.34,[["Weiss",218,940],["Gelb",232,908],["Blau",230,845],["Rot",233,805]]],[284,178,280,150,1.566,[["Weiss",293,992],["Gelb",300,915],["Blau",333,840],["Rot",335,810]]],[310,214,320,180,2.142,[["Weiss",328,972],["Gelb",328,933],["Blau",330,848],["Rot",332,825]]]],"wyB":[[300,220,290,180,2.293,[["Weiss",310,987],["Gelb",316,947],["Blau",298,892],["Rot",306,853]]],[343,167,355,148,1.684,[["Weiss",350,970],["Gelb",345,925],["Blau",297,847],["Rot",295,818]]],[368,226,380,190,2.239,[["Weiss",388,982],["Gelb",380,943],["Blau",356,876],["Rot",352,835]]],[319,304,330,250,3.581,[["Weiss",328,940],["Gelb",352,850],["Blau",305,800],["Rot",345,752]]],[317,162,320,135,1.605,[["Weiss",308,960],["Gelb",305,928],["Blau",310,797],["Rot",315,775]]],[267,170,255,135,2.384,[["Weiss",268,953],["Gelb",270,935],["Blau",303,868],["Rot",303,855]]],[320,291,330,215,4.986,[["Weiss",296,947],["Gelb",300,907],["Blau",292,907],["Rot",297,850]]],[226,183,215,160,1.601,[["Weiss",250,925],["Gelb",322,857],["Blau",355,800],["Rot",365,770]]],[324,202,325,165,2.03,[["Weiss",334,990],["Gelb",350,896],["Blau",337,836],["Rot",335,803]]]],"wyR":[[399,192,420,165,1.971,[["Weiss",338,958],["Gelb",334,943],["Blau",287,882],["Rot",284,862]]],[272,240,272,195,2.062,[["Weiss",247,947],["Gelb",260,910],["Blau",285,833],["Rot",290,815]]],[320,215,320,175,1.862,[["Weiss",352,952],["Gelb",343,850],["Blau",342,790],["Rot",340,775]]],[328,209,330,175,1.852,[["Weiss",328,938],["Gelb",367,905],["Blau",410,860],["Rot",406,842]]],[300,325,290,240,3.605,[["Weiss",289,857],["Gelb",291,825],["Blau",302,752],["Rot",300,727]]],[282,235,280,205,2.248,[["Weiss",273,945],["Gelb",280,902],["Blau",287,858],["Rot",295,828]]],[288,172,275,150,1.76,[["Weiss",263,955],["Gelb",266,940],["Blau",296,862],["Rot",300,842]]],[357,291,350,215,3.553,[["Weiss",229,938],["Gelb",236,903],["Blau",416,752],["Rot",413,718]]],[275,232,270,210,1.852,[["Weiss",210,903],["Gelb",248,872],["Blau",252,857],["Rot",275,826]]]]};
 function holeGeo(courseId, n){
   const L={moossee18:['moossee18'], moossee9:['moossee9'], wylihofgb:['wyG','wyB'], wylihofrg:['wyR','wyG'], wylihofbr:['wyB','wyR']}[courseId];
   if(!L) return null;
@@ -3127,10 +3155,10 @@ function openZoom(img, courseId, n, teeName){
   const co=courseById(courseId), par=co&&co.holes[n-1]?co.holes[n-1].par:4;
   const names=co ? co.tees.map(t=>t.name).filter(t=>geo.tees[t]) : geo.order;
   let tee = names.includes(teeName) ? teeName : (()=>{ try{ const t=localStorage.getItem('golfsc-meas-tee-'+courseId); return names.includes(t)?t:names[0]; }catch(e){ return names[0]; } })();
-  const M={a:geo.tees[tee].slice(), b:null, drag:null};
+  const M={a:geo.tees[tee].slice(), b:null, c:geo.C.slice(), drag:null};
   const m = p=>gd(p, M.a)/geo.s;
   const setDefault=()=>{ const T=M.a, d=gd(T,geo.F)/geo.s;
-    if(par===3 || d<=200) M.b=geo.C.slice();
+    if(par===3 || d<=200) M.b=[T[0]+(geo.F[0]-T[0])*0.92, T[1]+(geo.F[1]-T[1])*0.92];   // kurz vor dem Grün, damit Ziel und Fahne nicht aufeinander liegen
     else { const k=Math.min(0.85, 220/d); M.b=[T[0]+(geo.F[0]-T[0])*k, T[1]+(geo.F[1]-T[1])*k]; } };
   setDefault();
   z.classList.add('meas');
@@ -3139,7 +3167,7 @@ function openZoom(img, courseId, n, teeName){
     <div class="meas-bar">
       <div class="meas-read" aria-live="polite"></div>
       <div class="chips meas-tees">${names.map(t=>`<button class="chip" data-tee="${esc(t)}">${/^\d+$/.test(t)?'Tee ':''}${esc(t)}</button>`).join('')}</div>
-      <p class="small">Tippe oder ziehe, um das Ziel (gelb) zu setzen. Den weissen Punkt kannst du zu deinem Ball schieben. Berechnet aus dem Lochplan, genau auf etwa ±5 m.</p>
+      <p class="small">Tippe oder ziehe, um das Ziel (gelb) zu setzen. Den weissen Punkt kannst du zu deinem Ball schieben, die Fahne an die Lochposition des Tages. Berechnet aus dem Lochplan, genau auf etwa ±5 m.</p>
     </div>`;
   const svg=z.querySelector('svg'), im=z.querySelector('img'), read=z.querySelector('.meas-read');
   const close=()=>{ z.remove(); document.removeEventListener('keydown', onKey); window.removeEventListener('resize', draw); };
@@ -3153,25 +3181,25 @@ function openZoom(img, courseId, n, teeName){
     const wrap=im.parentNode; im.style.maxHeight=Math.max(200, wrap.clientHeight)+'px';
     svg.style.width=im.clientWidth+'px'; svg.style.height=im.clientHeight+'px';
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    const k=(im.clientWidth||W)/W, A=M.a, B=M.b, C=geo.C, lw=2.5/k;
+    const k=(im.clientWidth||W)/W, A=M.a, B=M.b, C=M.c, lw=2.5/k, pin=gd(C,geo.C)>2;
     const d1=Math.round(gd(A,B)/geo.s), d2=Math.round(gd(B,C)/geo.s), dF=Math.round(gd(B,geo.F)/geo.s);
     svg.innerHTML=`<line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" class="meas-ln" stroke-width="${lw}"/>
       <line x1="${B[0]}" y1="${B[1]}" x2="${C[0]}" y2="${C[1]}" class="meas-ln" stroke-width="${lw}" stroke-dasharray="${6/k} ${5/k}"/>
-      <circle cx="${C[0]}" cy="${C[1]}" r="${5/k}" class="meas-c"/>
+      <g class="meas-flag"><circle cx="${C[0]}" cy="${C[1]}" r="${12/k}" class="meas-cr" stroke-width="${2/k}"/><line x1="${C[0]}" y1="${C[1]}" x2="${C[0]}" y2="${C[1]-26/k}" stroke-width="${2.2/k}"/><path d="M${C[0]} ${C[1]-26/k}l${13/k} ${5/k}l-${13/k} ${5/k}z"/></g>
       <circle cx="${A[0]}" cy="${A[1]}" r="${8/k}" class="meas-a" stroke-width="${lw}"/>
       <circle cx="${B[0]}" cy="${B[1]}" r="${13/k}" class="meas-b" stroke-width="${3/k}"/><circle cx="${B[0]}" cy="${B[1]}" r="${2.5/k}" class="meas-bd"/>
       ${gd(A,B)*k>50?label(A,B,d1+' m',k):''}${gd(B,C)*k>50?label(B,C,d2+' m',k):''}`;
     const fromTee = gd(A, geo.tees[tee])<2;
     read.innerHTML=`<div><span>${fromTee?'Vom Abschlag '+esc(tee):'Vom Ball'}</span><b class="num">${d1} m</b></div>
-      <div><span>Ziel bis Grünanfang</span><b class="num">${dF} m</b></div><div><span>Ziel bis Grünmitte</span><b class="num">${d2} m</b></div>`;
+      <div><span>Ziel bis Grünanfang</span><b class="num">${dF} m</b></div><div><span>Ziel bis ${pin?'Fahne':'Grünmitte'}</span><b class="num">${d2} m</b></div>`;
     z.querySelectorAll('[data-tee]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.tee===tee && fromTee)));
     if(!draw.again && Math.abs(wrap.clientHeight-parseFloat(im.style.maxHeight))>1){ draw.again=true; draw(); draw.again=false; }
   }
   const pt=e=>{ const r=svg.getBoundingClientRect(), W=im.naturalWidth, H=im.naturalHeight;
     return [Math.max(0,Math.min(W,(e.clientX-r.left)/r.width*W)), Math.max(0,Math.min(H,(e.clientY-r.top)/r.height*H))]; };
   svg.addEventListener('pointerdown', e=>{ e.preventDefault(); const p=pt(e), k=(im.clientWidth||1)/im.naturalWidth;
-    const da=gd(p,M.a)*k, db=gd(p,M.b)*k;
-    M.drag = da<30 && da<db ? 'a' : 'b'; if(M.drag==='b') M.b=p; else M.a=p;
+    const da=gd(p,M.a)*k, db=gd(p,M.b)*k, dc=gd(p,M.c)*k, near=Math.min(da,db,dc);
+    M.drag = near<30 ? (near===dc ? 'c' : near===da ? 'a' : 'b') : 'b'; M[M.drag]=p;
     try{ svg.setPointerCapture(e.pointerId); }catch(_){} draw(); });
   svg.addEventListener('pointermove', e=>{ if(!M.drag) return; e.preventDefault(); M[M.drag]=pt(e); draw(); });
   const up=()=>{ M.drag=null; }; svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', up);
@@ -3241,7 +3269,9 @@ document.addEventListener('click', e=>{
       if(a.length<6){ toast('Das Passwort braucht mindestens 6 Zeichen.'); break; } if(a!==c){ toast('Die beiden Passwörter sind nicht gleich.'); break; }
       acctAction('setpw', {old:o, newPw:a}).then(j=>{ if(j.ok){ sync.pw=j.token; try{ (localStorage.getItem('golfsc-token')?localStorage:sessionStorage).setItem('golfsc-token', j.token); }catch(e){} S.acct={}; toast('Passwort geändert. Andere Geräte musst du neu anmelden.'); render(); } }); break; }
     case 'askLogout': S.confirm='logout'; render(); break;
-    case 'logout': sync.forget(); store.wipeData(); S.me=null; ls('golfsc-me', null); ls('golfsc-admin', null); sync.admin=false; S.confirm=null; S.view=null; S.users=null; S.login={}; toast('Abgemeldet'); render(); break;
+    case 'openAs': openAs(v); break;
+    case 'asBack': openAs(ownPid()); break;
+    case 'logout': try{ sessionStorage.removeItem('golfsc-as'); }catch(e){} sync.forget(); store.wipeData(); S.me=null; ls('golfsc-me', null); ls('golfsc-admin', null); sync.admin=false; S.confirm=null; S.view=null; S.users=null; S.login={}; toast('Abgemeldet'); render(); break;
     case 'shareToggle': { const p=store.data.profiles[S.me]; if(!p) break; const set=new Set(p.share||[]); if(b.checked) set.add(v); else set.delete(v);
       store.write('profiles/'+S.me, {...p, share:[...set], _t:Date.now()}); toast(b.checked?'Freigegeben':'Freigabe entfernt'); break; }
     case 'newAcct': S.newAcct={gender:'m'}; render(); $('#na-name')?.focus(); break;
