@@ -531,7 +531,7 @@ const BUILTIN = [
 ];
 
 /* ---------- Version ---------- */
-const APP_VERSION = '3.22', APP_DATE = '27.10.2026';
+const APP_VERSION = '3.23', APP_DATE = '28.10.2026';
 
 /* ---------- Zustand ---------- */
 function ls(k,v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null; } }
@@ -663,6 +663,24 @@ const store = {
     Object.values(d.rounds).forEach(r=>{ if(!r.groupId) r.groupId=r.id||uid(); });
     return n;
   },
+  /* Website mit Konten: Der Server schickt genau das, was dieses Konto sehen darf. Lokal bleibt zusätzlich nur, was noch nicht
+     hochgeladen ist (dirty) oder nur auf dem Gerät lebt (Gäste, Übungsrunden). Abgelehnte Änderungen werden verworfen. */
+  adopt(src, rejected){
+    const d=this.data, dirty=d.dirty ||= {}, del=d.deleted ||= {};
+    Object.entries(src.deleted||{}).forEach(([k,t])=>{ if(typeof t==='number' && (!del[k] || t>del[k])) del[k]=t; });
+    (rejected||[]).forEach(k=>{ delete dirty[k]; });
+    SYNC_COLS.forEach(col=>{
+      const srv=src[col]||{}, loc=d[col]||{}, out={};
+      Object.entries(srv).forEach(([id,o])=>{ const l=loc[id];
+        if(l && dirty[col+'/'+id]){ out[id] = col==='profiles' ? mergeProfile(o.min?{...l}:o, l) : (tOf(l)>=tOf(o) ? l : o); }
+        else out[id]=o; });
+      Object.entries(loc).forEach(([id,o])=>{ if(out[id]) return; const kd=del[col+'/'+id];
+        if(localOnly(col,o) || (dirty[col+'/'+id] && !(kd && kd>=tOf(o)))) out[id]=o; });
+      d[col]=out;
+    });
+    Object.values(d.rounds).forEach(r=>{ if(!r.groupId) r.groupId=r.id||uid(); });
+  },
+  wipeData(){ const keep={profile:this.data.profile}; this.data={...DATA0(), ...keep}; this.emit(); this.flush(); },
   emit(){
     S.rounds={}; Object.entries(this.data.rounds||{}).forEach(([id,r])=>{ if(id!=='undefined') S.rounds[id]={...clone(r), id}; });
     S.dbCourses={}; Object.entries(this.data.courses||{}).forEach(([id,c])=>{ S.dbCourses[id]={...clone(c), id}; }); S.holeImgs=clone(this.data.holeimgs);
@@ -720,12 +738,34 @@ document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState=
 const sync = {
   pw:null, state:'idle', msg:'', busy:false, again:false, t:null, iv:null, listening:false,
   get on(){ return location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1'; },
+  /* Website: jedes Konto meldet sich mit eigenem Passwort an. sync.pw enthält das Anmelde-Token (nicht das Passwort). */
   init(){
     if(!this.on){ this.state='file'; return; }
-    try{ this.pw = localStorage.getItem('golfsc-pw'); }catch(e){}
-    if(!this.pw){ this.state='nopw'; paintSync(); return; }
+    try{ localStorage.removeItem('golfsc-pw'); }catch(e){}      // altes gemeinsames Passwort nicht mehr speichern
+    try{ this.pw = localStorage.getItem('golfsc-token') || sessionStorage.getItem('golfsc-token'); }catch(e){}
+    this.admin = ls('golfsc-admin')===true;
+    if(!this.pw){ this.state='nopw'; render(); return; }
+    const pid=String(this.pw).split('.')[0]; if(pid && S.me!==pid){ S.me=pid; ls('golfsc-me', pid); }
+    S.picked=true;
     this.listen(); this.run();
   },
+  async call(action, data){
+    const res=await fetch('/api/sync', {method:'POST', cache:'no-store', headers:{'content-type':'application/json', ...(this.pw?{'authorization':'Bearer '+this.pw}:{})}, body:JSON.stringify({action, ...data})});
+    let j={}; try{ j=await res.json(); }catch(e){}
+    if(res.status===401 && action!=='login'){ this.expired(); }
+    return {status:res.status, ...j};
+  },
+  async login(name, pw, newPw, remember){
+    const j=await this.call('login', {name, pw, newPw: newPw||undefined});
+    if(!j.ok) return j;
+    try{ localStorage.removeItem('golfsc-token'); sessionStorage.removeItem('golfsc-token'); (remember?localStorage:sessionStorage).setItem('golfsc-token', j.token); }catch(e){}
+    if(S.me && S.me!==j.pid){ store.wipeData(); }      // anderes Konto als zuletzt: nichts vom alten Konto übernehmen
+    this.pw=j.token; this.admin=!!j.admin; ls('golfsc-admin', this.admin);
+    S.me=j.pid; ls('golfsc-me', j.pid); S.picked=true;
+    Object.values(store.data.rounds||{}).forEach(r=>{ if(!r.by && r.status==='active') r.by=j.pid; });
+    this.listen(); await this.run(); return j;
+  },
+  expired(){ this.pw=null; try{ localStorage.removeItem('golfsc-token'); sessionStorage.removeItem('golfsc-token'); }catch(e){} this.state='nopw'; S.login={msg:'Bitte melde dich neu an.'}; render(); },
   listen(){
     if(this.listening) return; this.listening=true;
     addEventListener('online', ()=>this.run());
@@ -746,13 +786,14 @@ const sync = {
       const res=await fetch('/api/sync', {method:'POST', cache:'no-store', signal:ctl.signal,
         headers:{'content-type':'application/json', 'authorization':'Bearer '+this.pw}, body:JSON.stringify({changes})});
       clearTimeout(to);
-      if(res.status===401){ this.state='auth'; }
+      if(res.status===401){ this.state='auth'; this.busy=false; this.expired(); return; }
       else if(res.status===503){ this.state='setup'; }
       else if(res.status===404){ this.state='nofn'; }
       else if(!res.ok){ this.state='error'; this.msg='Antwort '+res.status; }
       else {
         const j=await res.json();
-        store.merge(j.db||{});
+        if(j.me){ this.admin=!!j.me.admin; ls('golfsc-admin', this.admin); }
+        store.adopt(j.db||{}, j.rejected||[]);
         keys.forEach(k=>{ const [col,id]=k.split('/'); const o=(d[col]||{})[id]; if((o?tOf(o):'gone')===sent[k]) delete d.dirty[k]; });
         d.syncAt=Date.now(); this.state='ok'; this.msg='';
         store.flush(); store.emit(); refreshGroup(); softRender();
@@ -766,14 +807,14 @@ const sync = {
     this.pw=pw; try{ if(remember) localStorage.setItem('golfsc-pw',pw); else localStorage.removeItem('golfsc-pw'); }catch(e){}
     this.listen(); this.run();
   },
-  forget(){ this.pw=null; try{ localStorage.removeItem('golfsc-pw'); }catch(e){} this.state='nopw'; render(); }
+  forget(){ this.pw=null; try{ localStorage.removeItem('golfsc-pw'); localStorage.removeItem('golfsc-token'); sessionStorage.removeItem('golfsc-token'); }catch(e){} this.state='nopw'; render(); }
 };
 const CLOUD='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18h10a4 4 0 0 0 .6-7.96A6 6 0 0 0 6.1 9.2 4.5 4.5 0 0 0 7 18z"/></svg>';
 function syncInfo(){
   const n=sync.pending(), s=sync.state;
   if(s==='file') return {cls:'', short:'', long:'Die Online-Sicherung funktioniert nur auf der Website, nicht in der lokalen Datei.'};
-  if(s==='nopw') return {cls:'warn', short:'Aus', long:'Nicht verbunden. Gib das Passwort ein, damit deine Runden zusätzlich online gesichert werden.'};
-  if(s==='auth') return {cls:'warn', short:'Passwort', long:'Das Passwort stimmt nicht. Gib das Passwort ein, das in Netlify als GOLF_PASSWORD hinterlegt ist.'};
+  if(s==='nopw') return {cls:'warn', short:'Aus', long:'Nicht angemeldet. Melde dich mit deinem Namen und Passwort an.'};
+  if(s==='auth') return {cls:'warn', short:'Anmelden', long:'Die Anmeldung ist abgelaufen. Bitte neu anmelden.'};
   if(s==='setup') return {cls:'warn', short:'Einrichten', long:'Auf Netlify fehlt noch das Passwort (Umgebungsvariable GOLF_PASSWORD).'};
   if(s==='nofn') return {cls:'warn', short:'Fehlt', long:'Die Sicherungsfunktion ist auf Netlify noch nicht vorhanden. Wurden alle Dateien hochgeladen?'};
   if(s==='busy') return {cls:'', short:'…', long:'Wird gerade abgeglichen.'};
@@ -841,8 +882,8 @@ function privacyCard(){
     <ul class="info-list small">
       <li>Die App verbindet sich nur mit ihrer eigenen Adresse. Eine Content-Security-Policy sperrt alle anderen Seiten und Dienste.</li>
       <li>Auf diesem Gerät (localStorage): Runden, Profile, eigene Plätze.${storageKB()!=null?` Belegt: ${storageKB()} KB.`:''}</li>
-      <li>Online-Sicherung: Runden, Profile und eigene Plätze liegen zusätzlich in deinem Netlify-Konto (Netlify Blobs). Zugriff nur mit eurem Passwort. Gäste werden nicht online gespeichert.</li>
-      <li>Nur im Arbeitsspeicher: Übungsrunden, Formulareingaben, Filter. Das Passwort nur, wenn «Auf diesem Gerät merken» aus ist.</li>
+      <li>Online-Sicherung: Runden, Profile und eigene Plätze liegen zusätzlich in deinem Netlify-Konto (Netlify Blobs). Jedes Konto hat ein eigenes Passwort, gespeichert nur als verschlüsselter Hash. Andere sehen deine Runden nur mit deiner Freigabe, der Admin sieht alle. Gäste werden nicht online gespeichert.</li>
+      <li>Nur im Arbeitsspeicher: Übungsrunden, Formulareingaben, Filter. Die Anmeldung nur, wenn «Auf diesem Gerät angemeldet bleiben» aus ist. Das Passwort selbst wird nie gespeichert.</li>
       <li>Die Lochbilder der Moossee-Plätze sind in der Datei eingebaut. Es wird nichts nachgeladen.</li>
     </ul>
     <button class="btn danger" data-a="askWipe">Alle Daten auf diesem Gerät löschen</button>
@@ -860,7 +901,7 @@ const profList = () => Object.values(S.profiles).sort((a,b)=>{
   return String(a.name).localeCompare(String(b.name),'de');
 });
 const meProf = () => S.profiles[S.me] || null;
-const needWho = () => !S.picked || !S.profiles[S.me];
+const needWho = () => sync.on ? !sync.pw : (!S.picked || !S.profiles[S.me]);
 function avatar(p, cls=''){ const n=String((p&&p.name)||'?').trim(); return `<span class="av ${cls}" style="background:${esc((p&&p.color)||'#7A867E')}" aria-hidden="true">${esc((n[0]||'?').toUpperCase())}</span>`; }
 function avatarFor(r, cls=''){ return avatar(r.profileId && S.profiles[r.profileId] ? S.profiles[r.profileId] : {name:r.playerName||'Gast', color:'#7A867E'}, cls); }
 function pickProfile(id){
@@ -881,7 +922,7 @@ function profForm(){
     <div class="f">Farbe<div class="row">${PCOLORS.map(c=>`<button class="swatch" data-a="pformColor" data-v="${c}" aria-pressed="${f.color===c}" style="background:${c}" aria-label="Farbe ${c}"></button>`).join('')}</div></div>
     ${orphans?`<p class="small muted" style="margin:0">Deine ${orphans} bisherigen Runden werden diesem ersten Profil zugeordnet.</p>`:''}
     <div class="row"><button class="btn primary" data-a="saveProf">Speichern</button>${profList().length?'<button class="btn" data-a="cancelProf">Abbrechen</button>':''}
-      ${!f.isNew?'<span class="spacer"></span><button class="btn danger" data-a="askDelProf">Löschen</button>':''}</div>
+      ${!f.isNew && !sync.on?'<span class="spacer"></span><button class="btn danger" data-a="askDelProf">Löschen</button>':''}</div>
     ${cf?`<div class="confirm"><span style="flex:1">Profil «${esc(f.name)}» löschen? Seine Runden bleiben gespeichert, erscheinen aber unter keinem Profil mehr.</span><button class="btn" data-a="cancelConfirm">Behalten</button><button class="btn danger solid" data-a="delProf">Löschen</button></div>`:''}
   </div>`;
 }
@@ -904,7 +945,47 @@ function saveProf(){
   const wasNew=f.isNew; S.pform=null; S.confirm=null;
   if(wasNew && (first || needWho())) pickProfile(f.id); else { toast('Profil gespeichert'); render(); }
 }
+function viewLogin(){
+  const L=S.login ||= {};
+  return `<div class="stack who">
+    <div><h2>Anmelden</h2><p class="muted" style="margin:0">Jedes Konto hat sein eigenes Passwort. Deine Runden siehst nur du und wer von dir eine Freigabe bekommt.</p></div>
+    ${L.msg?`<div class="warnbar">${esc(L.msg)}</div>`:''}
+    <div class="card stack">
+      <label class="f">Name<input class="in" id="lg-name" value="${esc(L.name||'')}" autocomplete="username" placeholder="z. B. Manuel"></label>
+      ${L.need?`<p class="small" style="margin:0">${L.first?'Willkommen! Lege jetzt dein eigenes Passwort fest. Ab dann brauchst du das gemeinsame Passwort nicht mehr.':'Bitte lege ein neues, eigenes Passwort fest.'}</p>
+        <label class="f">Neues Passwort<input class="in" id="lg-new" type="password" autocomplete="new-password" placeholder="mindestens 6 Zeichen"></label>
+        <label class="f">Neues Passwort wiederholen<input class="in" id="lg-new2" type="password" autocomplete="new-password"></label>`
+      :`<label class="f">Passwort<input class="in" id="lg-pw" type="password" autocomplete="current-password"></label>`}
+      <label class="switch"><input type="checkbox" id="lg-rem" ${L.rem===false?'':'checked'}><span class="small" style="font-weight:600">Auf diesem Gerät angemeldet bleiben</span></label>
+      <button class="btn primary block" data-a="login" ${L.busy?'disabled':''}>${L.busy?'Moment …':L.need?'Passwort festlegen und anmelden':'Anmelden'}</button>
+      ${L.need?'<button class="btn ghost small" data-a="loginBack">Zurück</button>':''}
+    </div>
+    <details class="small"><summary class="muted">Zum ersten Mal hier?</summary><p class="muted">Gib deinen Namen ein, wie er bisher in der App stand, und das bisherige gemeinsame Passwort der Online-Sicherung. Danach legst du dein eigenes Passwort fest. Ein neues Konto kann jeder Spieler, der schon angemeldet ist, für dich anlegen. Passwort vergessen? Manuel kann es zurücksetzen.</p></details>
+  </div>`;
+}
+async function doLogin(){
+  const L=S.login ||= {}; if(L.busy) return;
+  const name=($('#lg-name')||{}).value||L.name||'', rem=!!($('#lg-rem')||{}).checked;
+  L.name=name; L.rem=rem;
+  if(!name.trim()){ toast('Bitte deinen Namen eingeben.'); return; }
+  let newPw;
+  if(L.need){ const a=($('#lg-new')||{}).value||'', b=($('#lg-new2')||{}).value||'';
+    if(a.length<6){ toast('Das Passwort braucht mindestens 6 Zeichen.'); return; }
+    if(a!==b){ toast('Die beiden Passwörter sind nicht gleich.'); return; }
+    newPw=a; }
+  else L.pw=($('#lg-pw')||{}).value||'';
+  if(!L.pw){ toast('Bitte das Passwort eingeben.'); return; }
+  L.busy=true; L.msg=''; render();
+  let j; try{ j=await sync.login(name, L.pw, newPw, rem); }catch(e){ j={error:'offline'}; }
+  L.busy=false;
+  if(j.ok){ S.login=null; S.tab='home'; S.view=null; toast('Angemeldet als '+(j.name||name)); render(); window.scrollTo(0,0); return; }
+  if(j.need){ L.need=j.need; L.first=!!j.first; render(); $('#lg-new')?.focus(); return; }
+  L.msg = j.error==='login' ? 'Name oder Passwort stimmt nicht.' : j.error==='weak' ? 'Das neue Passwort braucht mindestens 6 Zeichen.' : j.error==='same' ? 'Bitte ein anderes Passwort als das bisherige wählen.' : j.error==='offline' ? 'Keine Verbindung. Zum Anmelden braucht es Internet.' : 'Anmelden hat nicht geklappt ('+esc(j.error||j.status||'?')+').';
+  if(j.error==='login'){ L.need=null; L.pw=''; }
+  render();
+}
 function viewWho(){
+  if(sync.on) return viewLogin();
   const ps=profList();
   if(!ps.length && !S.pform) newProfForm();
   const pw = sync.on && !sync.pw;
@@ -925,11 +1006,11 @@ function pwForm(){
 function syncCard(){
   const i=syncInfo(), d=store.data, n=sync.pending();
   return `<div class="card stack"><h3>Online-Sicherung</h3>
-    <p class="small" style="margin:0">Jede Eingabe wird sofort auf diesem Gerät gespeichert und zusätzlich in deinem eigenen Netlify-Konto gesichert. So geht keine Runde verloren, und alle Handys mit dem gleichen Passwort sehen dieselben Profile und Runden.</p>
+    <p class="small" style="margin:0">Jede Eingabe wird sofort auf diesem Gerät gespeichert und zusätzlich in deinem eigenen Netlify-Konto gesichert. So geht keine Runde verloren, und du siehst deine Runden auf jedem Gerät, auf dem du angemeldet bist.</p>
     <div class="warnbar" style="background:${i.cls==='ok'?'var(--accent)':i.cls==='warn'?'var(--warn)':'var(--muted)'}" id="sync-status">${i.long}</div>
     ${sync.on?`<div class="small muted">Zuletzt abgeglichen: ${fmtStamp(d.syncAt)}${n?` · ${n} Änderungen noch nicht online`:''}</div>`:''}
     ${sync.on && (!sync.pw || sync.state==='auth') ? pwForm() : ''}
-    ${sync.on && sync.pw && sync.state!=='auth' ? `<div class="row"><button class="btn" data-a="syncNow">Jetzt abgleichen</button><button class="btn ghost" data-a="syncForget">Passwort auf diesem Gerät vergessen</button></div>`:''}
+    ${sync.on && sync.pw && sync.state!=='auth' ? `<div class="row"><button class="btn" data-a="syncNow">Jetzt abgleichen</button></div>`:''}
   </div>`;
 }
 function profilesCard(){
@@ -940,7 +1021,70 @@ function profilesCard(){
   </div>`;
 }
 function viewData(){
+  if(sync.on && sync.pw) return `<div class="stack">${accountCard()}${shareCard()}${usersCard()}${syncCard()}${dataCard()}${privacyCard()}</div>`;
   return `<div class="stack">${demoCard()}${syncCard()}${profilesCard()}${dataCard()}${privacyCard()}</div>`;
+}
+function accountCard(){
+  const p=meProf(), A=S.acct||{};
+  return `<div class="card stack"><h3>Mein Konto</h3>
+    <div class="row">${p?avatar(p):''}<b style="flex:1">${esc(p?p.name:'')}</b>${sync.admin?'<span class="badge live">Admin</span>':''}</div>
+    ${S.pform && !S.pform.isNew && S.pform.id===S.me ? profForm() : `<button class="btn" data-a="editProf" data-v="${S.me}">Name, Handicap und Farbe ändern</button>`}
+    ${A.pw?`<div class="stack"><label class="f">Bisheriges Passwort<input class="in" id="ac-old" type="password" autocomplete="current-password"></label>
+      <label class="f">Neues Passwort<input class="in" id="ac-new" type="password" autocomplete="new-password" placeholder="mindestens 6 Zeichen"></label>
+      <label class="f">Neues Passwort wiederholen<input class="in" id="ac-new2" type="password" autocomplete="new-password"></label>
+      <div class="row"><button class="btn primary" data-a="acctPw">Passwort ändern</button><button class="btn" data-a="acctPwCancel">Abbrechen</button></div></div>`
+      :`<button class="btn" data-a="acctPwOpen">Passwort ändern</button>`}
+    ${S.confirm==='logout'?`<div class="confirm"><span>${sync.pending()?`${sync.pending()} Änderungen sind noch nicht online gesichert. Erst verbinden, sonst gehen sie verloren. `:''}Auf diesem Gerät abmelden? Deine Daten bleiben online gespeichert.</span><button class="btn" data-a="cancelConfirm">Angemeldet bleiben</button><button class="btn danger solid" data-a="logout">Abmelden</button></div>`
+      :`<button class="btn ghost" data-a="askLogout">Abmelden</button>`}
+  </div>`;
+}
+function shareCard(){
+  const p=meProf(); if(!p) return '';
+  const others=profList().filter(x=>x.id!==S.me), share=new Set(p.share||[]);
+  const toMe=others.filter(x=>(x.share||[]).includes(S.me));
+  return `<div class="card stack"><h3>Freigaben</h3>
+    <p class="small" style="margin:0">Wem du freigibst, der sieht alle deine Runden, deine Statistik und dein Training, aber er kann nichts ändern. Dein Bag bleibt privat. Runden aus einem gemeinsamen Flight sehen alle Spieler dieses Flights.</p>
+    ${others.length?`<div class="list">${others.map(x=>`<label class="li switch">${avatar(x,'sm')}<span class="main"><span class="t">${esc(x.name)}</span>${(x.share||[]).includes(S.me)?'<span class="s">hat für dich freigegeben</span>':''}</span><input type="checkbox" data-a="shareToggle" data-v="${x.id}" ${share.has(x.id)?'checked':''} aria-label="Freigabe für ${esc(x.name)}"></label>`).join('')}</div>`:'<p class="small muted" style="margin:0">Noch keine anderen Konten.</p>'}
+    ${toMe.length?`<p class="small muted" style="margin:0">Für dich freigegeben: ${toMe.map(x=>esc(x.name)).join(', ')}. Du findest ihre Werte in der Statistik und in der Bestenliste.</p>`:''}
+  </div>`;
+}
+function usersCard(){
+  const U=S.users;
+  if(!U || U.stale) loadUsers();
+  const list=(U&&U.list)||[], f=S.newAcct;
+  return `<div class="card stack"><h3>Konten</h3>
+    ${!U?'<p class="small muted" style="margin:0">Wird geladen …</p>':U.err?`<div class="warnbar">${esc(U.err)}</div>`:`<div class="list">${list.map(u=>{ const pr=S.profiles[u.id]||u, rs=S.reset===u.id, cf=S.confirm==='rm-'+u.id;
+      return `<div class="li" style="flex-wrap:wrap;gap:6px">${avatar(pr,'sm')}<div class="main"><div class="t">${esc(u.name)}${u.id===S.me?' <span class="badge">Du</span>':''}${u.admin?' <span class="badge live">Admin</span>':''}</div>
+        ${sync.admin?`<div class="s">${u.hasPw?(u.mustChange?'Startpasswort gesetzt, noch nicht geändert':'eigenes Passwort'):'noch nicht angemeldet, Erstanmeldung mit dem gemeinsamen Passwort'}</div>`:''}</div>
+        ${sync.admin?`<div class="row" style="flex-basis:100%;gap:6px;flex-wrap:wrap">
+          ${rs?`<input class="in" id="rs-pw" type="text" autocomplete="off" placeholder="Startpasswort, mind. 6 Zeichen" style="flex:1;min-width:150px"><button class="btn primary small" data-a="userReset" data-v="${u.id}">Setzen</button><button class="btn small" data-a="userResetCancel">Abbrechen</button>`
+            :`<button class="btn small" data-a="userResetOpen" data-v="${u.id}">Passwort zurücksetzen</button>
+              ${u.hasPw?`<button class="btn small" data-a="userAdmin" data-v="${u.id}" data-g="${u.admin?'0':'1'}">${u.admin?'Admin entziehen':'Zum Admin machen'}</button>`:''}
+              ${u.id!==S.me?`<button class="btn danger small" data-a="userAskRemove" data-v="${u.id}">Löschen</button>`:''}`}</div>
+          ${cf?`<div class="confirm" style="flex-basis:100%"><span>Konto «${esc(u.name)}» mit allen Runden und Trainings endgültig löschen? Das lässt sich nicht rückgängig machen.</span><button class="btn" data-a="cancelConfirm">Behalten</button><button class="btn danger solid" data-a="userRemove" data-v="${u.id}">Endgültig löschen</button></div>`:''}`:''}
+      </div>`; }).join('')}</div>`}
+    ${f?`<div class="stack"><h3 style="margin:6px 0 0">Neues Konto</h3>
+      <label class="f">Name<input class="in" id="na-name" value="${esc(f.name||'')}" autocomplete="off" placeholder="z. B. Anna"></label>
+      <div class="grid2"><label class="f">Handicap-Index<input class="in num" id="na-hi" type="number" inputmode="decimal" step="0.1" value="${esc(f.hi||'')}"></label>
+        <div class="f">Abschläge<div class="seg">${[['m','Herren'],['w','Damen']].map(([k,l])=>`<button data-a="newAcctGender" data-v="${k}" aria-pressed="${(f.gender||'m')===k}">${l}</button>`).join('')}</div></div></div>
+      <label class="f">Startpasswort<input class="in" id="na-pw" type="text" autocomplete="off" placeholder="mindestens 6 Zeichen"></label>
+      <p class="small muted" style="margin:0">Gib das Startpasswort der Person weiter. Beim ersten Anmelden legt sie ihr eigenes fest.</p>
+      <div class="row"><button class="btn primary" data-a="newAcctSave">Konto anlegen</button><button class="btn" data-a="newAcctCancel">Abbrechen</button></div></div>`
+      :`<button class="btn" data-a="newAcct">+ Konto hinzufügen</button>`}
+    ${sync.admin?'<p class="small muted" style="margin:0">Als Admin kannst du Passwörter zurücksetzen, Admin-Rechte vergeben, Konten löschen und alle Runden sehen.</p>':'<p class="small muted" style="margin:0">Passwort vergessen oder Konto löschen: Das macht der Admin.</p>'}
+  </div>`;
+}
+async function loadUsers(){
+  if(S.usersBusy) return; S.usersBusy=true;
+  try{ const j=await sync.call('users'); S.users = j.ok ? {list:j.users} : {err:'Konten konnten nicht geladen werden.'}; }
+  catch(e){ S.users={err:'Keine Verbindung.'}; }
+  S.usersBusy=false; if(S.view && S.view.name==='data') render();
+}
+async function acctAction(action, data, okMsg){
+  let j; try{ j=await sync.call(action, data); }catch(e){ j={error:'offline'}; }
+  if(j.ok){ if(okMsg) toast(okMsg); S.users={...(S.users||{}), stale:true}; sync.run(); render(); return j; }
+  toast({weak:'Das Passwort braucht mindestens 6 Zeichen.', exists:'Diesen Namen gibt es schon.', lastadmin:'Es braucht mindestens einen Admin.', forbidden:'Das darf nur der Admin.', nopw:'Die Person muss sich zuerst einmal anmelden.', old:'Das bisherige Passwort stimmt nicht.', offline:'Keine Verbindung.', self:'Das eigene Konto kann nicht gelöscht werden.'}[j.error] || 'Das hat nicht geklappt.');
+  return j;
 }
 
 /* ---------- Schläger: Beschreibung der gängigen Schläger und eigene Distanzen pro Profil ----------
@@ -1382,6 +1526,7 @@ const GLOSSARY=[
 const HELP_FUNCS=[
   ['Profil wählen', 'Beim Öffnen fragt die App «Wer spielt?». Jeder Spieler hat sein eigenes Profil mit eigenen Runden, eigener Statistik und eigenem Bag. Der farbige Kreis oben rechts zeigt, wer gerade gewählt ist. Antippen wechselt das Profil.'],
   ['Training', 'Unter «Spielen» findest du die Kachel «Training» mit Übungsspielen: Clock und Speed Control fürs Putten, Par 18 und 15 Chips fürs kurze Spiel, Fairways in Regulation und Kurz, mittel, lang für die Range. Jedes Spiel erklärt Aufbau und Wertung. Du tippst nach jedem Ball an, was passiert ist, das Ergebnis wird gespeichert. Oben stehen Vorschläge, welche Übung zu deinen Schwächen aus den letzten Runden passt. Die Bestwerte erscheinen auch in der Bestenliste.'],
+  ['Konten und Freigaben', 'Auf der Website meldest du dich mit deinem Namen und deinem eigenen Passwort an. Unter dem Profil-Kreis oben rechts findest du «Mein Konto»: Passwort ändern, Name und Handicap, Abmelden. Bei «Freigaben» wählst du, wer deine Runden, Statistik und dein Training sehen darf. Was andere für dich freigeben, findest du in der Statistik und in der Bestenliste. Jeder kann ein neues Konto mit einem Startpasswort anlegen. Der Admin kann Passwörter zurücksetzen, Admin-Rechte vergeben und Konten löschen.'],
   ['Bestenliste', 'Der Pokal oben im Kopf öffnet die Bestenliste. Dort werden in verschiedenen Kategorien die Besten aller Profile gekürt: tiefste Runde, meiste Stableford-Punkte, wenigste Putts, beste Fairway-Quote, meiste Siege im Flight und mehr. Mit dem Platz-Filter siehst du die Rekorde pro Platz.'],
   ['Runde starten', 'Unter «Spielen» auf «+ Neue Runde starten». Platz wählen, bei 18 Loch auch nur Front 9 oder Back 9 möglich. Dann die Spieler: du bist schon dabei, weitere Profile oder Gäste kannst du antippen (bis 4). Für jeden HCP-Index und Abschlag wählen, die Spielvorgabe rechnet die App selbst.'],
   ['Während der Runde', 'Das Par ist schon eingetragen, du tippst nur noch + oder −. Dann die Putts antippen. Fairway, Strafschläge und Bunker sind freiwillig, machen die Statistik aber viel genauer. Green in Regulation rechnet die App selbst aus. Lochbild antippen zum Vergrössern. Jede Eingabe ist sofort gespeichert, auch wenn du die App schliesst.'],
@@ -1392,7 +1537,7 @@ const HELP_FUNCS=[
   ['Runden vergleichen', 'Zwei Runden nebeneinander, auch von anderen Spielern. Die Tabelle markiert den besseren Wert grün, darunter folgt der Vergleich Loch für Loch.'],
   ['Bag', 'Erst stellst du deinen Bag zusammen (welche Schläger du dabei hast), dann trägst du pro Schläger ein, wie weit du ihn schlägst und wann du ihn nimmst. Die Übersicht zeigt Lücken zwischen deinen Schlägern.'],
   ['Plätze', 'Alle Plätze mit Par, Hcp und Längen pro Abschlag, dazu Course Rating und Slope. Lochbilder lassen sich vergrössern. Einen neuen Platz kannst du selbst erfassen.'],
-  ['Speichern und Sicherung', 'Jede Eingabe wird sofort auf dem Handy gespeichert. Auf der Website wird zusätzlich alles in der Online-Sicherung abgelegt, geschützt mit eurem Passwort. Die Wolke oben zeigt den Stand: ✓ heisst gesichert, «offen» heisst, es wird nachgeholt, sobald du wieder Empfang hast.'],
+  ['Speichern und Sicherung', 'Jede Eingabe wird sofort auf dem Handy gespeichert. Auf der Website wird zusätzlich alles in der Online-Sicherung abgelegt, geschützt mit deinem eigenen Passwort. Die Wolke oben zeigt den Stand: ✓ heisst gesichert, «offen» heisst, es wird nachgeholt, sobald du wieder Empfang hast.'],
   ['App aufs Handy', 'Öffne die Website auf dem Handy und wähle im Browser-Menü «Zum Home-Bildschirm» (iPhone: Teilen-Symbol). Dann startet die App wie jede andere und funktioniert auf dem Platz auch ohne Empfang.']
 ];
 const HELP_STEPS=[
@@ -1890,7 +2035,7 @@ function startRound(){
     const tee=c.tees[pl.tee]||c.tees[0], prof=pl.pid && S.profiles[pl.pid];
     const hi = pl.hi===''||pl.hi==null||isNaN(+pl.hi) ? null : Math.round(+pl.hi*10)/10;
     const ph = playing(hi, c, tee, st.mode, pl.gender);
-    const r = { id:'r'+uid()+k, groupId:gid, order:k, profileId:pl.pid||null, playerName: prof?prof.name:String(pl.name).trim(), guest:!pl.pid,
+    const r = { id:'r'+uid()+k, groupId:gid, order:k, by:S.me||null, profileId:pl.pid||null, playerName: prof?prof.name:String(pl.name).trim(), guest:!pl.pid,
       courseId:c.id, courseName:c.name, teeName:tee.name, date:st.date||today(), mem:!!st.mem, mode:st.mode, modeLabel,
       hi, gender:pl.gender, ch:ph.ch, cr:ph.cr, slope:ph.slope, status:'active', notes:'', createdAt:now, rank:st.rank||ls('golfsc-rank')||'gross',
       holes: idx.map(i=>({n:i+1, par:+c.holes[i].par, hcp:+c.holes[i].hcp, len:+(tee.len?.[i])||null, s:null, p:null, fw:null, miss:null, pen:0, lost:0, sand:false, up:false})) };
@@ -2203,7 +2348,7 @@ function viewResult(groupId, list){
 const BEST_MIN=3;
 const BEST_ONE={Siege:'Sieg', Birdies:'Birdie', Runden:'Runde', Putts:'Putt', 'Löcher':'Loch', Punkte:'Punkt', 'Schläge':'Schlag'};   // so viele Runden braucht es für Durchschnitts-Kategorien
 function bestRounds(){
-  return roundList().filter(r=>r.status==='done' && !r.mem && r.profileId && S.profiles[r.profileId]
+  return roundList().filter(r=>r.status==='done' && !r.mem && r.profileId && S.profiles[r.profileId] && !S.profiles[r.profileId].min
     && (!S.bestCourse || S.bestCourse==='all' || r.courseId===S.bestCourse));
 }
 const ratio=(a,b)=>b?a/b:null;
@@ -2244,12 +2389,12 @@ function bestCompute(cat, rounds){
   } else if(cat.kind==='flight'){
     const groups={}; roundList().filter(r=>r.status==='done' && !r.mem && (!S.bestCourse||S.bestCourse==='all'||r.courseId===S.bestCourse)).forEach(r=>{ (groups[r.groupId] ||= []).push(r); });
     const cnt={};
-    Object.values(groups).filter(g=>g.length>1).forEach(g=>{ ranking(g, rankModeOf(g)).rs.forEach(x=>{ if(x[cat.key] && x.r.profileId && S.profiles[x.r.profileId]) cnt[x.r.profileId]=(cnt[x.r.profileId]||0)+1; }); });
+    Object.values(groups).filter(g=>g.length>1).forEach(g=>{ ranking(g, rankModeOf(g)).rs.forEach(x=>{ if(x[cat.key] && x.r.profileId && S.profiles[x.r.profileId] && !S.profiles[x.r.profileId].min) cnt[x.r.profileId]=(cnt[x.r.profileId]||0)+1; }); });
     rows=Object.entries(cnt).map(([pid,v])=>({pid, v}));
   } else if(cat.kind==='train'){
-    profList().forEach(p=>{ const b=trainBest(cat.game, p.id); if(b) rows.push({pid:p.id, v:b.v, tr:b.t}); });
+    profList().filter(p=>!p.min).forEach(p=>{ const b=trainBest(cat.game, p.id); if(b) rows.push({pid:p.id, v:b.v, tr:b.t}); });
   } else if(cat.kind==='hcp'){
-    rows=profList().filter(p=>p.hi!=null && p.hi!=='' && !isNaN(+p.hi)).map(p=>({pid:p.id, v:+p.hi}));
+    rows=profList().filter(p=>!p.min && p.hi!=null && p.hi!=='' && !isNaN(+p.hi)).map(p=>({pid:p.id, v:+p.hi}));
   }
   rows.sort((a,b)=> cat.low ? a.v-b.v : b.v-a.v);
   let place=0, prev=null;
@@ -2257,7 +2402,7 @@ function bestCompute(cat, rounds){
   return rows.filter(x=>x.place<=3);
 }
 function viewBest(){
-  const all=roundList().filter(r=>r.status==='done' && !r.mem && r.profileId && S.profiles[r.profileId]);
+  const all=roundList().filter(r=>r.status==='done' && !r.mem && r.profileId && S.profiles[r.profileId] && !S.profiles[r.profileId].min);
   if(!all.length && !trainList().some(t=>t.status==='done')) return `<div class="empty"><b>Noch keine Runden</b>Sobald ihr Runden abschliesst, werden hier in verschiedenen Kategorien die Besten gekürt.</div>`;
   const used=[...new Set(all.map(r=>r.courseId))];
   if(S.bestCourse && S.bestCourse!=='all' && !used.includes(S.bestCourse)) S.bestCourse='all';
@@ -2278,7 +2423,7 @@ function viewBest(){
     </div>`;
   }).join('');
   return `<div class="stack">
-    <p class="muted" style="margin:0">Wer ist in welcher Disziplin vorne? Gezählt werden alle abgeschlossenen Runden der Profile, Gäste und Übungsrunden nicht. Tippe auf einen Rekord, um die Runde zu sehen.</p>
+    <p class="muted" style="margin:0">Wer ist in welcher Disziplin vorne? Gezählt werden alle abgeschlossenen Runden der Profile, Gäste und Übungsrunden nicht.${sync.on?' Andere Konten erscheinen hier, wenn sie für dich freigegeben haben.':''} Tippe auf einen Rekord, um die Runde zu sehen.</p>
     ${used.length>1?`<label class="f">Platz<select class="in" id="best-course" data-f="bestCourse"><option value="all">Alle Plätze</option>${used.map(id=>{ const r=all.find(x=>x.courseId===id); return `<option value="${id}" ${S.bestCourse===id?'selected':''}>${esc(r.courseName)}</option>`; }).join('')}</select></label>`:''}
     ${cards}
   </div>`;
@@ -2436,10 +2581,18 @@ function viewRounds(){
 
 /* --- Statistik --- */
 function viewStats(){
-  const all = myRounds().filter(r=>r.status==='done' && !r.mem);
+  const vis=profList().filter(p=>!p.min && p.id!==S.me);
+  if(S.statWho && !vis.some(p=>p.id===S.statWho)) S.statWho=null;
+  const who=S.statWho||S.me;
+  const pick = vis.length ? `<div class="chips" style="margin-bottom:10px">${[meProf(),...vis].filter(Boolean).map(p=>`<button class="chip" data-a="statWho" data-v="${p.id}" aria-pressed="${p.id===who}">${avatar(p,'sm')} ${p.id===S.me?'Ich':esc(p.name)}</button>`).join('')}</div>` : '';
+  const all = roundList().filter(r=>r.profileId===who && r.status==='done' && !r.mem);
+  if(who!==S.me) return pick + `<p class="small muted" style="margin:0 0 10px">Statistik von ${esc((S.profiles[who]||{}).name||'')}, nur ansehen.</p>` + viewStatsBody(all);
+  if(pick && !all.length) return pick + viewStatsBody(all);
+  if(pick) return pick + viewStatsInner(all);
   if(all.length) return `<div class="list" style="margin-bottom:12px"><button class="li" data-a="anaOpen" data-v=""><div class="main"><div class="t">Lochanalyse</div><div class="s">So hast du jedes Loch in deinen bisherigen Runden gespielt</div></div><span class="chev">›</span></button></div>` + viewStatsBody(all);
   return viewStatsBody(all);
 }
+function viewStatsInner(all){ return `<div class="list" style="margin-bottom:12px"><button class="li" data-a="anaOpen" data-v=""><div class="main"><div class="t">Lochanalyse</div><div class="s">So hast du jedes Loch in deinen bisherigen Runden gespielt</div></div><span class="chev">›</span></button></div>` + viewStatsBody(all); }
 function viewStatsBody(all){
   if(!all.length) return `<div class="empty"><b>Noch keine Auswertung</b>Sobald du eine Runde abgeschlossen hast, siehst du hier Durchschnitt, Fairways, Greens, Putts, Trend und Handicap-Schätzung.</div>`;
   const usedCourses = [...new Set(all.map(r=>r.courseId))];
@@ -2918,7 +3071,32 @@ document.addEventListener('click', e=>{
     case 'clubOpen': S.clubOpen = S.clubOpen===v ? null : v; render(); break;
     /* Profile */
     case 'pick': pickProfile(v); break;
-    case 'who': S.picked=false; try{ sessionStorage.removeItem('golfsc-who'); }catch(e){} S.pform=null; S.confirm=null; render(); window.scrollTo(0,0); break;
+    case 'login': doLogin(); break;
+    case 'loginBack': S.login={name:(S.login||{}).name}; render(); break;
+    case 'acctPwOpen': S.acct={pw:true}; render(); break;
+    case 'acctPwCancel': S.acct={}; render(); break;
+    case 'acctPw': { const o=($('#ac-old')||{}).value||'', a=($('#ac-new')||{}).value||'', c=($('#ac-new2')||{}).value||'';
+      if(a.length<6){ toast('Das Passwort braucht mindestens 6 Zeichen.'); break; } if(a!==c){ toast('Die beiden Passwörter sind nicht gleich.'); break; }
+      acctAction('setpw', {old:o, newPw:a}).then(j=>{ if(j.ok){ sync.pw=j.token; try{ (localStorage.getItem('golfsc-token')?localStorage:sessionStorage).setItem('golfsc-token', j.token); }catch(e){} S.acct={}; toast('Passwort geändert. Andere Geräte musst du neu anmelden.'); render(); } }); break; }
+    case 'askLogout': S.confirm='logout'; render(); break;
+    case 'logout': sync.forget(); store.wipeData(); S.me=null; ls('golfsc-me', null); ls('golfsc-admin', null); sync.admin=false; S.confirm=null; S.view=null; S.users=null; S.login={}; toast('Abgemeldet'); render(); break;
+    case 'shareToggle': { const p=store.data.profiles[S.me]; if(!p) break; const set=new Set(p.share||[]); if(b.checked) set.add(v); else set.delete(v);
+      store.write('profiles/'+S.me, {...p, share:[...set], _t:Date.now()}); toast(b.checked?'Freigegeben':'Freigabe entfernt'); break; }
+    case 'newAcct': S.newAcct={gender:'m'}; render(); $('#na-name')?.focus(); break;
+    case 'newAcctCancel': S.newAcct=null; render(); break;
+    case 'newAcctGender': S.newAcct.name=($('#na-name')||{}).value; S.newAcct.hi=($('#na-hi')||{}).value; S.newAcct.gender=v; render(); break;
+    case 'newAcctSave': { const name=(($('#na-name')||{}).value||'').trim(), pw=($('#na-pw')||{}).value||'', hi=($('#na-hi')||{}).value||'';
+      if(!name){ toast('Bitte einen Namen eingeben.'); break; } if(pw.length<6){ toast('Das Startpasswort braucht mindestens 6 Zeichen.'); break; }
+      acctAction('create', {name, pw, hi, gender:S.newAcct.gender||'m'}, `Konto «${name}» angelegt`).then(j=>{ if(j.ok){ S.newAcct=null; render(); } }); break; }
+    case 'userResetOpen': S.reset=v; render(); $('#rs-pw')?.focus(); break;
+    case 'userResetCancel': S.reset=null; render(); break;
+    case 'userReset': { const pw=($('#rs-pw')||{}).value||''; if(pw.length<6){ toast('Das Startpasswort braucht mindestens 6 Zeichen.'); break; }
+      acctAction('reset', {pid:v, pw}, 'Startpasswort gesetzt. Beim nächsten Anmelden muss es geändert werden.').then(j=>{ if(j.ok){ S.reset=null; render(); } }); break; }
+    case 'userAdmin': acctAction('setadmin', {pid:v, admin:b.dataset.g==='1'}, b.dataset.g==='1'?'Admin-Recht vergeben':'Admin-Recht entzogen'); break;
+    case 'userAskRemove': S.confirm='rm-'+v; render(); break;
+    case 'userRemove': S.confirm=null; acctAction('remove', {pid:v}, 'Konto gelöscht'); break;
+    case 'statWho': S.statWho=v===S.me?null:v; render(); break;
+    case 'who': if(sync.on){ S.view={name:'data'}; S.confirm=null; render(); window.scrollTo(0,0); break; } S.picked=false; try{ sessionStorage.removeItem('golfsc-who'); }catch(e){} S.pform=null; S.confirm=null; render(); window.scrollTo(0,0); break;
     case 'newProf': newProfForm(); render(); document.getElementById('pf-name')?.focus(); break;
     case 'editProf': { const pr=S.profiles[v]; if(!pr) break; S.pform={isNew:false, id:v, name:pr.name, hi:pr.hi??'', gender:pr.gender||'m', color:pr.color||PCOLORS[0]}; S.confirm=null; render(); break; }
     case 'pformGender': S.pform.gender=v; render(); break;
@@ -3062,7 +3240,7 @@ function onField(e){
 }
 document.addEventListener('input', onField);
 document.addEventListener('change', e=>{ const imp=e.target.closest('[data-imp]'); if(imp){ importFile(imp.files&&imp.files[0]); imp.value=''; return; } const el=e.target.closest('[data-f]'); if(el && el.tagName==='SELECT') onField(e); });
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeHelp(); if(e.key==='Enter' && e.target && e.target.id==='sync-pw'){ e.preventDefault(); document.querySelector('[data-a="syncConnect"]')?.click(); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeHelp(); if(e.key==='Enter' && e.target && /^lg-(pw|new2|name)$/.test(e.target.id)){ e.preventDefault(); doLogin(); return; } if(e.key==='Enter' && e.target && e.target.id==='sync-pw'){ e.preventDefault(); document.querySelector('[data-a="syncConnect"]')?.click(); } });
 document.addEventListener('focusout', ()=>{ setTimeout(()=>{ if(S.dirty){ const a=document.activeElement; if(!(a && a.closest && a.closest('#app') && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) render(); } }, 50); });
 
 function saveCourse(){
