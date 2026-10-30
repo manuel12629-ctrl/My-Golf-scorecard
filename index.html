@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob: 'self'; font-src 'none'; connect-src 'self'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob: 'self'; font-src 'none'; connect-src 'self'; media-src blob:; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1D6842">
@@ -18,18 +18,18 @@ html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
 :root{
   --bg:#EDF1EB; --surface:#FFFFFF; --surface2:#E2E8DF; --ink:#13231A; --muted:#5A6C60; --line:#C9D3C6;
   --accent:#1D6842; --accent-ink:#FFFFFF; --accent-soft:#D4E6DA; --flag:#E0B13A;
-  --birdie:#BF3F2B; --bogey:#2D5A88; --warn:#A66A14;
+  --birdie:#BF3F2B; --bogey:#2D5A88; --warn:#A66A14; --fig:#1F4D36; --figback:#7FA892;
   --display:'Bahnschrift','DIN Alternate','Roboto Condensed','Arial Narrow','Helvetica Neue',Arial,sans-serif;
   --body:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0E1712; --surface:#16221B; --surface2:#1F2D25; --ink:#E5EDE7; --muted:#93A598; --line:#2B3B31;
   --accent:#43A670; --accent-ink:#04110A; --accent-soft:#1E3A2A; --flag:#E6C057;
-  --birdie:#E36A50; --bogey:#73A1D6; --warn:#E0A34A; color-scheme:dark}}
+  --birdie:#E36A50; --bogey:#73A1D6; --warn:#E0A34A; --fig:#CFE3D6; --figback:#6F8F7C; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0E1712; --surface:#16221B; --surface2:#1F2D25; --ink:#E5EDE7; --muted:#93A598; --line:#2B3B31;
   --accent:#43A670; --accent-ink:#04110A; --accent-soft:#1E3A2A; --flag:#E6C057;
-  --birdie:#E36A50; --bogey:#73A1D6; --warn:#E0A34A; color-scheme:dark}
+  --birdie:#E36A50; --bogey:#73A1D6; --warn:#E0A34A; --fig:#CFE3D6; --figback:#6F8F7C; color-scheme:dark}
 
 *{box-sizing:border-box}
 html,body{background:var(--bg);color:var(--ink)}
@@ -458,6 +458,25 @@ table.cmp-t td:first-child{white-space:normal;min-width:120px}
 .meas-read b{font-size:20px}
 .meas-tees{flex-wrap:nowrap;overflow-x:auto}
 .pic-btn{position:relative}
+.sw-steps{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}.sw-steps .chip{flex:0 0 auto;white-space:nowrap}
+.sw-title{font-size:19px}
+.sw-figs,.sw-cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start}
+.sw-box{background:var(--surface2);border-radius:12px;padding:6px 6px 2px;text-align:center}
+.sw-box small{display:block;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.sw-wrap.lefty svg{transform:scaleX(-1)}
+.sw-fig{width:100%;display:block}
+.sw-b{stroke:var(--fig);stroke-linecap:round;stroke-linejoin:round}.sw-back{stroke:var(--figback)}
+.sw-halo{stroke:var(--surface2);stroke-linecap:round;stroke-linejoin:round}
+.sw-torso{fill:var(--fig);stroke:var(--fig);stroke-linejoin:round}.sw-head{fill:var(--fig)}
+.sw-shoe{stroke:var(--ink);stroke-linecap:round}.sw-club{stroke:#6B6B6B;stroke-linecap:round}.sw-clubhead{fill:#3A3A3A}
+.sw-hand{fill:#E8C9A0}.sw-ball{fill:#fff;stroke:#999}.sw-ground{stroke:#9DB59F;stroke-width:2}
+.sw-help{stroke:#D9502B;stroke-dasharray:5 4}.sw-help2{stroke:#2B6CB0;stroke-dasharray:5 4}.sw-help3{stroke:#C98A1C;stroke-dasharray:3 4}
+.sw-legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted)}
+.sw-legend i{display:inline-block;width:18px;border-top:2px dashed;vertical-align:middle;margin-right:5px}
+.sw-list{margin:0;padding-left:20px}.sw-list li{margin:3px 0}
+.sw-vid{background:#000;border-radius:12px;overflow:hidden;aspect-ratio:9/16;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:13px;text-align:center;padding:8px}
+.sw-vid video{width:100%;height:100%;object-fit:contain}
+#sw-range{width:100%}
 .par-edit{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:14px;font-weight:600}
 .par-edit span{flex:1}
 .par-edit .seg{width:180px}
@@ -565,7 +584,7 @@ const BUILTIN = [
 ];
 
 /* ---------- Version ---------- */
-const APP_VERSION = '3.31', APP_DATE = '28.10.2026';
+const APP_VERSION = '3.32', APP_DATE = '30.10.2026';
 
 /* ---------- Zustand ---------- */
 function ls(k,v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null; } }
@@ -1587,6 +1606,7 @@ const HELP_FUNCS=[
   ['Bestenliste', 'Der Pokal oben im Kopf öffnet die Bestenliste. Dort werden in verschiedenen Kategorien die Besten aller Profile gekürt: tiefste Runde, meiste Stableford-Punkte, wenigste Putts, beste Fairway-Quote, meiste Siege im Flight und mehr. Mit dem Platz-Filter siehst du die Rekorde pro Platz.'],
   ['Runde starten', 'Unter «Spielen» auf «+ Neue Runde starten». Platz wählen, bei 18 Loch auch nur Front 9 oder Back 9 möglich. Dann die Spieler: du bist schon dabei, weitere Profile oder Gäste kannst du antippen (bis 4). Für jeden HCP-Index und Abschlag wählen, die Spielvorgabe rechnet die App selbst.'],
   ['Während der Runde', 'Das Par ist schon eingetragen, du tippst nur noch + oder −. Dann die Putts antippen. Fairway, Strafschläge und Bunker sind freiwillig, machen die Statistik aber viel genauer. Green in Regulation rechnet die App selbst aus. Lochbild antippen zum Vergrössern. Jede Eingabe ist sofort gespeichert, auch wenn du die App schliesst.'],
+  ['Schwung-Vergleich', 'Unter Spielen findest du die acht Phasen des Eisenschwungs als Zeichnung, von vorne und von hinten, mit Merkpunkten und typischen Fehlern. Für Linkshänder lassen sich die Bilder spiegeln. Du kannst ein eigenes Video wählen, zu jeder Phase die passende Stelle merken und beides nebeneinander ansehen. Das Video bleibt auf dem Handy und wird nicht hochgeladen.'],
   ['Mehrere Spieler (Flight)', 'Spielen mehrere Spieler auf einem Handy, hat jeder pro Loch einen eigenen Block mit + und − und den Putts. Darunter stehen für jeden Spieler Fairway, Green, Bunker, Strafen und Ballverlust. Jeder Spieler hat eine eigene Farbe am Rand, so siehst du, was zu wem gehört.'],
   ['Runde abschliessen oder löschen', 'Nach dem letzten Loch «Runde abschliessen», dann siehst du die Scorekarte aller Spieler. Mit «Diese Runde löschen» unten bei jedem Loch verwirfst du eine laufende Runde, nach einer Sicherheitsabfrage.'],
   ['Statistik', 'Durchschnitt, Trend, Fairways, Greens, Putts, Score-Verteilung und eine Handicap-Schätzung. Oben kannst du nach Platz und Zeitraum filtern.'],
@@ -2019,6 +2039,7 @@ function render(){
   else if(v && v.name==='course'){ const c=courseById(v.id); title=c?esc(c.name):'Platz'; back='Plätze'; html=c?viewCourse(c):'<div class="empty"><b>Platz nicht gefunden</b></div>'; }
   else if(v && v.name==='courseForm'){ title=S.form.isNew?'Neuer Platz':'Platz bearbeiten'; back='Abbrechen'; html=viewCourseForm(); }
   else if(v && v.name==='train'){ title='Training'; back='Zurück'; html=viewTrain(); }
+  else if(v && v.name==='swing'){ title='Schwung-Vergleich'; back='Zurück'; html=viewSwing(); }
   else if(v && v.name==='trainGame'){ const g=trainGame(v.id); title=g?esc(g.name):'Training'; back='Training'; html=viewTrainGame(v.id); }
   else if(v && v.name==='trainPlay'){ const t=(store.data.training||{})[v.id]; const g=t&&trainGame(t.game); title=g?esc(g.name):'Training'; back='Training'; html=t&&g?viewTrainPlay({...t, id:v.id}):'<div class="empty"><b>Training nicht gefunden</b></div>'; }
   else if(v && v.name==='trainDone'){ const t=(store.data.training||{})[v.id]; title='Training'; back='Training'; html=t?viewTrainDone({...t, id:v.id}):'<div class="empty"><b>Training nicht gefunden</b></div>'; }
@@ -2041,6 +2062,7 @@ function render(){
   const strip = document.querySelector('.strip'), cur = strip && strip.querySelector('[aria-current="true"]');
   if(cur) strip.scrollLeft = cur.offsetLeft - strip.clientWidth/2 + cur.offsetWidth/2;   // nur seitlich, nie hoch
   if(v && v.name==='help') filterGlossary();
+  if(v && v.name==='swing') swAfterRender();
 }
 
 /* --- Start einer Runde: Platz, Löcher, Spieler (eigenes Profil, weitere Profile, Gäste) --- */
@@ -2581,10 +2603,178 @@ function viewRound(r){
 }
 
 const HUB_ICON={
+  swing:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2"/><path d="M12 7v7l-3 7M12 14l3 7M12 9l-5-4"/><path d="M7 5l-3-2" opacity=".6"/></svg>',
   train:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg>',
   cmp:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M17 4v16"/><path d="M3 8h8M13 14h8"/><path d="M3 16h8M13 6h8" opacity=".45"/></svg>',
   ana:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4l9 3.5L6 11"/><path d="M14 21v-6M18 21v-9M10 21v-3"/></svg>'
 };
+
+/* ---------- Schwung-Vergleich (Eisen): eigene Zeichnungen der acht Phasen, Vergleich mit eigenem Video ----------
+   Figuren sind für Rechtshänder gezeichnet; für Linkshänder wird gespiegelt und in den Texten links/rechts getauscht.
+   Das Video bleibt im Arbeitsspeicher (blob-URL), es wird weder gespeichert noch hochgeladen. */
+/* Schwungfiguren: eigene Zeichnungen, Rechtshänder.
+   Ansicht 'fo' = von vorne (Ziel rechts im Bild), 'dl' = von hinten auf der Ziellinie (Ball rechts, Ziel ins Bild).
+   Punkte: hd Kopf, nk Hals, sL/sR Schultern, eL/eR Ellbogen, h Hände, pL/pR Hüfte, kL/kR Knie, aL/aR Knöchel, tL/tR Fussspitze, c Schlägerkopf. L = linke Seite (Ziel). */
+const SW_POSES = {
+fo: [
+ /* 1 Ansprechen */ {hd:[97,92], nk:[100,107], sL:[121,113], sR:[82,119], eL:[116,143], eR:[93,146], h:[106,173], pL:[113,160], pR:[88,161], kL:[117,199], kR:[83,199], aL:[121,236], aR:[78,236], tL:[131,239], tR:[68,239], c:[99,236]},
+ /* 2 Schaft waagrecht zurück */ {hd:[96,92], nk:[99,107], sL:[114,115], sR:[84,114], eL:[103,143], eR:[83,148], h:[84,170], pL:[112,160], pR:[88,159], kL:[115,199], kR:[83,199], aL:[121,236], aR:[78,236], tL:[131,239], tR:[68,239], c:[22,166]},
+ /* 3 Linker Arm waagrecht */ {hd:[95,92], nk:[98,107], sL:[108,117], sR:[86,111], eL:[86,122], eR:[73,138], h:[64,125], pL:[110,160], pR:[89,158], kL:[112,200], kR:[84,199], aL:[121,236], aR:[78,236], tL:[131,239], tR:[68,239], c:[46,48]},
+ /* 4 Oberster Punkt */ {hd:[95,92], nk:[97,107], sL:[103,118], sR:[89,110], eL:[90,98], eR:[70,103], h:[76,77], pL:[109,160], pR:[90,157], kL:[108,200], kR:[84,199], aL:[121,236], aR:[78,236], tL:[131,239], tR:[68,239], c:[146,88]},
+ /* 5 Abschwung */ {hd:[95,94], nk:[98,109], sL:[110,117], sR:[86,115], eL:[90,128], eR:[84,146], h:[72,136], pL:[118,158], pR:[95,161], kL:[121,199], kR:[92,201], aL:[121,236], aR:[78,236], tL:[131,239], tR:[68,239], c:[60,55]},
+ /* 6 Treffmoment */ {hd:[94,95], nk:[98,110], sL:[121,114], sR:[85,124], eL:[120,144], eR:[96,152], h:[111,173], pL:[121,157], pR:[98,162], kL:[121,198], kR:[93,201], aL:[121,236], aR:[80,233], tL:[131,239], tR:[70,239], c:[100,236]},
+ /* 7 Schaft waagrecht durch */ {hd:[99,95], nk:[103,110], sL:[120,114], sR:[94,120], eL:[133,140], eR:[118,146], h:[140,160], pL:[122,156], pR:[104,160], kL:[121,198], kR:[101,202], aL:[121,236], aR:[86,228], tL:[131,239], tR:[78,239], c:[214,152]},
+ /* 8 Finish */ {hd:[111,90], nk:[110,105], sL:[117,110], sR:[102,108], eL:[104,84], eR:[124,92], h:[96,76], pL:[118,152], pR:[106,154], kL:[120,195], kR:[106,200], aL:[121,236], aR:[94,226], tL:[131,239], tR:[88,239], c:[52,124]}
+],
+dl: [
+ /* 1 */ {hd:[105,99], nk:[96,111], sL:[97,114], sR:[92,116], eL:[100,142], eR:[96,144], h:[103,172], pL:[63,156], pR:[58,158], kL:[83,197], kR:[79,198], aL:[73,236], aR:[68,236], tL:[85,239], tR:[80,239], c:[152,236]},
+ /* 2 */ {hd:[105,99], nk:[96,111], sL:[98,115], sR:[90,116], eL:[95,141], eR:[86,146], h:[86,168], pL:[64,156], pR:[58,157], kL:[84,197], kR:[79,198], aL:[73,236], aR:[68,236], tL:[85,239], tR:[80,239], c:[104,146]},
+ /* 3 */ {hd:[104,99], nk:[95,111], sL:[98,117], sR:[88,114], eL:[88,128], eR:[74,128], h:[72,136], pL:[64,156], pR:[57,156], kL:[86,197], kR:[79,198], aL:[73,236], aR:[68,236], tL:[85,239], tR:[80,239], c:[38,92]},
+ /* 4 */ {hd:[103,99], nk:[94,111], sL:[96,118], sR:[86,113], eL:[86,100], eR:[70,112], h:[78,82], pL:[64,155], pR:[57,155], kL:[87,197], kR:[79,198], aL:[73,236], aR:[68,236], tL:[85,239], tR:[80,239], c:[58,96]},
+ /* 5 */ {hd:[103,100], nk:[94,112], sL:[96,118], sR:[87,116], eL:[86,130], eR:[80,148], h:[78,138], pL:[65,155], pR:[59,157], kL:[87,197], kR:[83,199], aL:[73,236], aR:[68,236], tL:[85,239], tR:[80,239], c:[52,97]},
+ /* 6 */ {hd:[104,100], nk:[96,112], sL:[96,115], sR:[94,119], eL:[100,142], eR:[98,148], h:[104,168], pL:[66,153], pR:[63,158], kL:[83,197], kR:[88,201], aL:[73,236], aR:[71,231], tL:[85,239], tR:[82,239], c:[152,236]},
+ /* 7 */ {hd:[101,99], nk:[93,111], sL:[92,114], sR:[98,118], eL:[106,136], eR:[108,140], h:[114,150], pL:[66,152], pR:[67,157], kL:[81,196], kR:[88,203], aL:[73,236], aR:[74,226], tL:[85,239], tR:[86,239], c:[122,132]},
+ /* 8 */ {hd:[84,89], nk:[80,103], sL:[76,106], sR:[85,108], eL:[94,90], eR:[98,96], h:[96,70], pL:[68,150], pR:[73,153], kL:[72,194], kR:[84,201], aL:[70,236], aR:[78,225], tL:[82,239], tR:[89,239], c:[52,108]}
+]};
+const SW_NAMES=['Ansprechen','Rückschwung, Schaft waagrecht','Linker Arm waagrecht','Oberster Punkt','Abschwung','Treffmoment','Durchschwung, Schaft waagrecht','Finish'];
+
+function swFigure(view, i, opt={}){
+  const P=SW_POSES[view][i], f=n=>n.toFixed(1), pt=a=>`${f(a[0])},${f(a[1])}`;
+  const line=(a,b,w,cls)=>`<line x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}" stroke-width="${w}" class="${cls}"/>`;
+  const limb=(pts,w,cls)=>`<polyline points="${pts.map(pt).join(' ')}" stroke-width="${w}" class="${cls}" fill="none"/>`;
+  const mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];
+  const pc=mid(P.pL,P.pR), sc=mid(P.sL,P.sR);
+  // hinten liegende Seite heller: von vorne die rechte Seite, von hinten die linke
+  const back = view==='fo' ? 'R' : 'L', front = back==='R' ? 'L' : 'R';
+  // jede Gliedmasse mit hellem Rand, damit sie sich vom Körper abhebt
+  const halo=(pts,w)=>`<polyline points="${pts.map(pt).join(' ')}" stroke-width="${w+3.5}" class="sw-halo" fill="none"/>`;
+  const leg=s=>halo([P['p'+s],P['k'+s],P['a'+s]],12)+limb([P['p'+s],P['k'+s],P['a'+s]],12,'sw-b '+(s===back?'sw-back':'')) + line(P['a'+s],P['t'+s],7,'sw-shoe');
+  const arm=s=>halo([P['s'+s],P['e'+s],P.h],9)+limb([P['s'+s],P['e'+s],P.h],9,'sw-b '+(s===back?'sw-back':''));
+  const torso = view==='fo'
+    ? `<polygon points="${[P.sL,P.sR,P.pR,P.pL].map(pt).join(' ')}" class="sw-torso" stroke-width="9"/>`
+    : halo([pc,sc],24)+limb([pc,sc],24,'sw-b')+`<circle cx="${f(pc[0]-3)}" cy="${f(pc[1]+1)}" r="12" class="sw-torso"/>`;
+  const butt=[P.h[0]+(P.h[0]-P.c[0])*0.09, P.h[1]+(P.h[1]-P.c[1])*0.09];
+  const dir=[P.c[0]-P.h[0],P.c[1]-P.h[1]], L=Math.hypot(...dir)||1, u=[dir[0]/L,dir[1]/L];
+  const head=[P.c[0]+u[0]*1,P.c[1]+u[1]*1];
+  let help='';
+  if(opt.help!==false){
+    if(view==='dl'){
+      // Schaftebene beim Ansprechen und Rücken-Linie
+      const A=SW_POSES.dl[0], d=[A.h[0]-A.c[0],A.h[1]-A.c[1]], k=1.9;
+      help+=line(A.c,[A.c[0]+d[0]*k,A.c[1]+d[1]*k],1.4,'sw-help');
+      help+=line([pc[0]-6,pc[1]+2],[pc[0]-6+(sc[0]-pc[0])*1.25,pc[1]+2+(sc[1]-pc[1])*1.25],1.4,'sw-help2');
+      help+=line([pc[0]-9,120],[pc[0]-9,210],1.2,'sw-help3');   // Gesäss-Linie
+    } else {
+      const A=SW_POSES.fo[0];
+      help+=line([A.hd[0]-13,60],[A.hd[0]-13,236],1.2,'sw-help3');   // Kopf hinten
+      help+=line([A.pL[0]+8,130],[A.pL[0]+8,236],1.2,'sw-help3');    // linke Hüfte
+    }
+  }
+  const ball = view==='fo' ? [100,236] : [152,236];
+  return `<svg viewBox="${view==='fo'?'12 38 210 208':'24 46 156 200'}" class="sw-fig" role="img" aria-label="${SW_NAMES[i]}, ${view==='fo'?'von vorne':'von hinten'}">
+    <line x1="0" y1="240" x2="230" y2="240" class="sw-ground"/>
+    ${leg(back)}${view==='dl'?arm(back):''}
+    ${torso}
+    ${line(P.nk,sc,10,'sw-b')}
+    ${leg(front)}
+    ${view==='fo'?arm(back):''}
+    <circle cx="${f(P.hd[0])}" cy="${f(P.hd[1])}" r="11.5" class="sw-head"/>
+    ${line(butt,head,2.6,'sw-club')}
+    <circle cx="${f(head[0])}" cy="${f(head[1])}" r="4" class="sw-clubhead"/>
+    ${arm(front)}
+    <circle cx="${f(P.h[0])}" cy="${f(P.h[1])}" r="5" class="sw-hand"/>
+    <g class="sw-helps">${help}</g>
+    ${i<6?`<circle cx="${ball[0]}" cy="${ball[1]+1}" r="2.6" class="sw-ball"/>`:''}
+  </svg>`;
+}
+
+
+const SW_PH=[
+ {t:'Ansprechen', s:'Die Grundlage für alles danach',
+  fo:['Füsse etwa schulterbreit, beim 7er Eisen Ball in der Mitte oder 2 bis 3 cm {links} davon','Hände leicht vor dem Ball, Schaft neigt sich etwas zum Ziel','Gewicht 50:50 bis 60:40 auf dem {linken} Fuss','{Rechte} Schulter tiefer, Oberkörper etwa 15° vom Ziel weg geneigt'],
+  dl:['Vorneigung aus der Hüfte, Rücken gerade, Knie leicht gebeugt','Arme hängen locker unter den Schultern','Füsse, Hüfte und Schultern parallel zur Ziellinie','Rote Linie: Schaftebene vom Ball durch die Hände'],
+  fx:['Ball zu weit {links}, Gewicht hinten: dünne Treffer','Runder Rücken oder zu weit weg vom Ball']},
+ {t:'Rückschwung', s:'Schaft waagrecht',
+  fo:['Schaft parallel zum Boden, Hände vor dem {rechten} Oberschenkel','Dreieck aus Armen und Schultern noch intakt','Kopf bleibt an seinem Platz'],
+  dl:['Schaft parallel zur Ziellinie, Schlägerkopf über den Händen','Schlagfläche etwa parallel zur Vorneigung','{Rechter} Arm über dem {linken}'],
+  fx:['Schläger mit den Händen nach innen gezogen','Schlagfläche schon weit offen']},
+ {t:'{Linker} Arm waagrecht', s:'Halber Rückschwung',
+  fo:['{Linker} Arm gestreckt und waagrecht','Handgelenke etwa 90° abgewinkelt, Schläger zeigt nach oben','Kein Ausweichen nach {rechts} (gelbe Linie hinter dem Kopf)'],
+  dl:['Schaftende zeigt ungefähr auf die Ziellinie','Arme bleiben vor der Brust','Gesäss bleibt auf der gelben Linie'],
+  fx:['Hüfte schiebt nach {rechts} statt zu drehen (Sway)','{Linker} Arm knickt stark ein']},
+ {t:'Oberster Punkt', s:'Volle Drehung, beim Eisen eher kompakt',
+  fo:['Schultern rund 90° gedreht, Hüfte rund 45°','{Linkes} Handgelenk flach, nicht nach hinten geknickt','Gewicht auf der Innenseite des {rechten} Fusses'],
+  dl:['Schaft parallel zur Ziellinie oder kürzer','{Rechtes} Knie behält seine Beugung','Gesäss noch auf der gelben Linie'],
+  fx:['Oberkörper kippt zum Ziel (umgekehrte Gewichtsverlagerung)','{Rechtes} Knie streckt sich','Zu langer Schwung über waagrecht hinaus']},
+ {t:'Abschwung', s:'Beginnt von unten',
+  fo:['Erst Druck auf den {linken} Fuss, dann drehen Becken, Brust, Arme','Handgelenkwinkel bleibt erhalten','Hüfte bewegt sich zum Ziel, Kopf bleibt hinten'],
+  dl:['Schläger kommt von innen, nicht über die rote Linie','{Rechter} Ellbogen vor der {rechten} Hüfte','Gesäss bleibt auf der gelben Linie'],
+  fx:['Schultern beginnen den Abschwung: Schläger kommt von aussen','Handgelenke lösen sich zu früh (Auswerfen)']},
+ {t:'Treffmoment', s:'Erst Ball, dann Rasen',
+  fo:['Hände vor dem Ball, Schaft neigt sich zum Ziel','Becken etwa 35 bis 40° offen, Gewicht klar {links}','Hüfte rund 4 cm weiter {links} als beim Ansprechen','Kopf hinter dem Ball'],
+  dl:['Gesäss noch auf der gelben Linie, keine Bewegung zum Ball','Hände etwas höher als beim Ansprechen','{Rechte} Ferse beginnt sich zu lösen'],
+  fx:['Hüfte schiebt zum Ball (Early Extension)','Hände hinter dem Ball, Schläger schaufelt','Gewicht bleibt hinten']},
+ {t:'Durchschwung', s:'Schaft wieder waagrecht',
+  fo:['Beide Arme gestreckt','{Rechter} Unterarm über dem {linken}','Brust dreht weiter zum Ziel'],
+  dl:['Schaft parallel zur Ziellinie, Spitze zeigt nach oben','Körper dreht durch, {rechtes} Knie zum {linken}'],
+  fx:['{Linker} Ellbogen knickt (Chicken Wing)','Körper bleibt stehen, nur die Arme schwingen']},
+ {t:'Finish', s:'Stabil stehen, bis der Ball landet',
+  fo:['Gewicht fast ganz auf dem {linken} Fuss','Hände auf Höhe der {linken} Schulter oder hinter dem Kopf','Gerade aufgerichtet, {linkes} Bein gestreckt'],
+  dl:['Brust zeigt zum Ziel','{Rechte} Ferse oben, nur die Schuhspitze am Boden'],
+  fx:['Gewicht fällt zurück auf den {rechten} Fuss','Wackeliges Finish: Schwung war zu schnell']}
+];
+const SW={cur:0, view:'fo', help:true, video:null, url:null, marks:{}};
+const swLefty = () => ls('golfsc-hand')==='l';
+function swSide(t){ const L=swLefty(); return String(t).replace(/\{([^}]+)\}/g,(m,w)=>{ if(!L) return w;
+  const sw={link:'recht', Link:'Recht', recht:'link', Recht:'Link'}; return w.replace(/^(link|Link|recht|Recht)/, x=>sw[x]); }); }
+function swFig(view, i){ return `<div class="sw-wrap ${swLefty()?'lefty':''}">${swFigure(view,i,{help:SW.help})}</div>`; }
+function viewSwing(){
+  const p=SW_PH[SW.cur], i=SW.cur, L=swLefty();
+  const li=a=>a.map(x=>`<li>${esc(swSide(x))}</li>`).join('');
+  return `<div class="stack swing">
+    <div class="seg">${[['r','Rechtshänder'],['l','Linkshänder']].map(([k,l])=>`<button data-a="swHand" data-v="${k}" aria-pressed="${(L?'l':'r')===k}">${l}</button>`).join('')}</div>
+    <div class="chips sw-steps">${SW_PH.map((x,k)=>`<button class="chip" data-a="swPhase" data-v="${k}" aria-pressed="${k===i}">${k+1} ${esc(swSide(x.t))}</button>`).join('')}</div>
+    <div class="card stack" style="gap:10px">
+      <div><b class="sw-title">${i+1}. ${esc(swSide(p.t))}</b><div class="small muted">${esc(swSide(p.s))}</div></div>
+      <div class="sw-figs"><div class="sw-box"><small>Von vorne</small>${swFig('fo',i)}</div><div class="sw-box"><small>Von hinten</small>${swFig('dl',i)}</div></div>
+      ${SW.help?`<div class="sw-legend"><span><i style="border-color:#C98A1C"></i>Kopf, Hüfte, Gesäss am Start</span><span><i style="border-color:#D9502B"></i>Schaftebene</span><span><i style="border-color:#2B6CB0"></i>Rücken</span></div>`:''}
+      <label class="switch"><input type="checkbox" data-a="swHelp" ${SW.help?'checked':''}><span>Hilfslinien zeigen</span></label>
+      <div><h3 style="margin:0 0 4px">Von vorne</h3><ul class="sw-list">${li(p.fo)}</ul></div>
+      <div><h3 style="margin:0 0 4px">Von hinten</h3><ul class="sw-list">${li(p.dl)}</ul></div>
+      <div><h3 style="margin:0 0 4px">Typische Fehler</h3><ul class="sw-list muted">${li(p.fx)}</ul></div>
+      <div class="grid2"><button class="btn" data-a="swPhase" data-v="${i-1}" ${i?'':'disabled'}>‹ Zurück</button><button class="btn" data-a="swPhase" data-v="${i+1}" ${i<7?'':'disabled'}>Weiter ›</button></div>
+    </div>
+    <div class="card stack" style="gap:10px">
+      <h3 style="margin:0">Mit deinem Schwung vergleichen</h3>
+      <p class="small muted" style="margin:0">Wähle ein Video von deinem Handy. Es bleibt auf dem Gerät und wird weder gespeichert noch hochgeladen. Spule zur passenden Stelle und tippe auf «Phase merken». Danach springt das Video bei jeder Phase an deine Stelle. Am besten filmst du auf Hüfthöhe, einmal von vorne und einmal von hinten auf der Ziellinie.</p>
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <label class="btn primary" style="margin:0">${SW.video?'Anderes Video':'Video wählen'}<input type="file" accept="video/*" data-sw-file hidden></label>
+        <div class="seg" style="flex:1;min-width:180px">${[['fo','Vorne'],['dl','Hinten']].map(([k,l])=>`<button data-a="swView" data-v="${k}" aria-pressed="${SW.view===k}">${l}</button>`).join('')}</div>
+      </div>
+      <div class="sw-cmp"><div class="sw-vid" id="sw-vid">${SW.video?'':'Noch kein Video gewählt'}</div><div class="sw-box"><small>${i+1}. ${esc(swSide(p.t))}</small>${swFig(SW.view,i)}</div></div>
+      ${SW.video?`<input type="range" id="sw-range" min="0" max="1000" step="1" value="0" aria-label="Stelle im Video">
+      <div class="row" style="gap:6px;flex-wrap:wrap"><button class="btn small" data-a="swStep" data-v="-1">‹ Bild</button><button class="btn small" data-a="swPlay">${SW.video.paused?'Zeitlupe':'Pause'}</button><button class="btn small" data-a="swStep" data-v="1">Bild ›</button>
+        <button class="btn primary small" style="margin-left:auto" data-a="swMark">Phase ${i+1} merken</button></div>
+      <p class="small muted" style="margin:0">${Object.keys(SW.marks).length?'Gemerkt: Phase '+Object.keys(SW.marks).map(k=>+k+1).sort((a,b)=>a-b).join(', '):'Noch keine Phase gemerkt.'}</p>`:''}
+    </div>
+  </div>`;
+}
+/* nach jedem Zeichnen das (gleiche) Video-Element wieder einsetzen, damit Stelle und Wiedergabe erhalten bleiben */
+function swAfterRender(){
+  const box=document.getElementById('sw-vid'); if(!box || !SW.video) return;
+  if(SW.video.parentNode!==box){ box.textContent=''; box.appendChild(SW.video); }
+  const r=document.getElementById('sw-range'); if(r && SW.video.duration) r.value=Math.round(SW.video.currentTime/SW.video.duration*1000);
+}
+function swLoad(file){
+  if(!file) return;
+  if(SW.url){ try{ URL.revokeObjectURL(SW.url); }catch(e){} }
+  const v=document.createElement('video'); SW.url=URL.createObjectURL(file); v.src=SW.url; v.playsInline=true; v.muted=true; v.preload='auto'; v.setAttribute('playsinline','');
+  v.addEventListener('timeupdate',()=>{ const r=document.getElementById('sw-range'); if(r && v.duration) r.value=Math.round(v.currentTime/v.duration*1000); });
+  v.addEventListener('pause',()=>render()); v.addEventListener('play',()=>render());
+  SW.video=v; SW.marks={}; render();
+}
+function swGoto(i){ SW.cur=Math.max(0,Math.min(7,i)); if(SW.video && SW.marks[SW.cur]!=null){ SW.video.pause(); SW.video.currentTime=SW.marks[SW.cur]; } render(); }
+
 /* --- Spielen: neue Runde starten und alle bisherigen Runden --- */
 function viewPlayHub(){
   return `<div class="stack">
@@ -2593,6 +2783,7 @@ function viewPlayHub(){
       <button class="hub-btn" data-a="cmpOpen" data-v="">${HUB_ICON.cmp}<b>Runden vergleichen</b><span>Zwei Runden nebeneinander</span></button>
       <button class="hub-btn" data-a="anaOpen" data-v="">${HUB_ICON.ana}<b>Lochanalyse</b><span>Jedes Loch im Rückblick</span></button>
       <button class="hub-btn wide" data-a="trainHub">${HUB_ICON.train}<b>Training</b><span>Übungsspiele für Putten, kurzes Spiel und Range, mit Vorschlägen aus deiner Statistik</span></button>
+      <button class="hub-btn wide" data-a="swingOpen">${HUB_ICON.swing}<b>Schwung-Vergleich</b><span>Die acht Phasen des Eisenschwungs, von vorne und von hinten, mit deinem eigenen Video daneben</span></button>
     </div>
     <h3 style="margin-top:10px">Meine Runden</h3>
     ${viewRounds()}
@@ -3379,6 +3570,14 @@ document.addEventListener('click', e=>{
     case 'askDelCourse': S.confirm='delc-'+v; render(); break;
     case 'cancelConfirm': S.confirm=null; render(); break;
     /* Training */
+    case 'swingOpen': S.view={name:'swing'}; S.confirm=null; render(); window.scrollTo(0,0); break;
+    case 'swHand': ls('golfsc-hand', v); render(); break;
+    case 'swPhase': swGoto(+v); break;
+    case 'swView': SW.view=v; render(); break;
+    case 'swHelp': SW.help=b.checked; render(); break;
+    case 'swStep': if(SW.video){ SW.video.pause(); SW.video.currentTime=Math.max(0,Math.min(SW.video.duration||0, SW.video.currentTime+(+v)/30)); swAfterRender(); } break;
+    case 'swPlay': if(SW.video){ if(SW.video.paused){ if(SW.video.ended) SW.video.currentTime=0; SW.video.playbackRate=0.25; SW.video.play().catch(()=>{}); } else SW.video.pause(); } break;
+    case 'swMark': if(SW.video){ SW.video.pause(); SW.marks[SW.cur]=SW.video.currentTime; toast('Phase '+(SW.cur+1)+' gemerkt'); if(SW.cur<7) SW.cur++; if(SW.marks[SW.cur]!=null) SW.video.currentTime=SW.marks[SW.cur]; render(); } break;
     case 'trainHub': S.view={name:'train'}; S.confirm=null; render(); window.scrollTo(0,0); break;
     case 'trainOpen': S.view={name:'trainGame', id:v, from:{name:'train'}}; S.confirm=null; render(); window.scrollTo(0,0); break;
     case 'trainStart': { const g=trainGame(v); if(!g) break; const act=trainActive(); if(act){ S.view={name:'trainPlay', id:act.id, from:{name:'train'}}; render(); break; }
@@ -3444,7 +3643,8 @@ function onField(e){
   if(f.startsWith('form.')){ setPath(S, f, val); return; }
 }
 document.addEventListener('input', onField);
-document.addEventListener('change', e=>{ const imp=e.target.closest('[data-imp]'); if(imp){ importFile(imp.files&&imp.files[0]); imp.value=''; return; } const el=e.target.closest('[data-f]'); if(el && el.tagName==='SELECT') onField(e); });
+document.addEventListener('input', e=>{ if(e.target.id==='sw-range' && SW.video && SW.video.duration){ SW.video.pause(); SW.video.currentTime=e.target.value/1000*SW.video.duration; } });
+document.addEventListener('change', e=>{ const swf=e.target.closest('[data-sw-file]'); if(swf){ swLoad(swf.files&&swf.files[0]); swf.value=''; return; } const imp=e.target.closest('[data-imp]'); if(imp){ importFile(imp.files&&imp.files[0]); imp.value=''; return; } const el=e.target.closest('[data-f]'); if(el && el.tagName==='SELECT') onField(e); });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeHelp(); if(e.key==='Enter' && e.target && /^lg-(pw|new2|name)$/.test(e.target.id)){ e.preventDefault(); doLogin(); return; } if(e.key==='Enter' && e.target && e.target.id==='sync-pw'){ e.preventDefault(); document.querySelector('[data-a="syncConnect"]')?.click(); } });
 document.addEventListener('focusout', ()=>{ setTimeout(()=>{ if(S.dirty){ const a=document.activeElement; if(!(a && a.closest && a.closest('#app') && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) render(); } }, 50); });
 
