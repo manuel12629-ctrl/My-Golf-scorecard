@@ -156,7 +156,7 @@ export default async (req) => {
       const r = await update(store, 'db', emptyDb, (db) => {
         if (!db.profiles[pid]) return { out: { ok: true } };
         delete db.profiles[pid]; db.deleted['profiles/' + pid] = now;
-        for (const col of ['rounds', 'training']) for (const [id, o] of Object.entries(db[col] || {})) if (o && o.profileId === pid) { delete db[col][id]; db.deleted[col + '/' + id] = now; }
+        for (const col of ['rounds', 'training', 'swings']) for (const [id, o] of Object.entries(db[col] || {})) if (o && o.profileId === pid) { delete db[col][id]; db.deleted[col + '/' + id] = now; }
         for (const p of Object.values(db.profiles)) if (p && Array.isArray(p.share)) p.share = p.share.filter(x => x !== pid);
         db.serverAt = now;
         return { value: db, out: { ok: true } };
@@ -178,6 +178,38 @@ export default async (req) => {
         days.push({ day: key.slice(7), profiles });
       }
       return reply({ ok: true, days });
+    }
+
+    /* ---------- Standbilder der Schwung-Videos: pro Video ein Blob «swimg/<id>» {owner, f:{phase: JPEG}} ----------
+       Das Video selbst bleibt auf dem Handy. Schreiben darf der Besitzer (und der Admin), lesen wer die Runden sehen darf. */
+    if (body.action === 'swimg') {
+      const id = String(body.id || ''), op = body.op;
+      if (!ID.test(id)) return reply({ error: 'bad_id' }, 400);
+      const key = 'swimg/' + id;
+      if (op === 'get') {
+        const cur = await store.get(key, { type: 'json' }).catch(() => null);
+        if (!cur) return reply({ ok: true, f: {} });
+        if (cur.owner !== me.pid && !me.admin) {
+          const db = await readJSON(store, 'db', emptyDb), p = (db.profiles || {})[cur.owner];
+          if (!(p && Array.isArray(p.share) && p.share.includes(me.pid))) return reply({ error: 'forbidden' }, 403);
+        }
+        return reply({ ok: true, f: cur.f || {} });
+      }
+      if (op === 'put' || op === 'del') {
+        const k = String(body.k ?? ''), img = body.img;
+        if (op === 'put' && (!/^[0-7]$/.test(k) || typeof img !== 'string' || !img.startsWith('data:image/jpeg;base64,') || img.length > 400000)) return reply({ error: 'bad_img' }, 400);
+        const owner = String(body.owner || me.pid);
+        if (owner !== me.pid && !me.admin) return reply({ error: 'forbidden' }, 403);
+        const r = await update(store, key, () => ({ owner, f: {} }), (cur) => {
+          if (cur.owner !== me.pid && !me.admin) return { out: { error: 'forbidden' } };
+          if (op === 'del') { if (k) delete cur.f[k]; else cur.f = {}; } else cur.f[k] = img;
+          return { value: cur, out: { ok: true } };
+        });
+        if (r.out && r.out.error) return reply(r.out, 403);
+        if (op === 'del' && !k) { try { await store.delete(key); } catch {} }
+        return reply({ ok: true });
+      }
+      return reply({ error: 'bad_op' }, 400);
     }
 
     /* ---------- Abgleich ---------- */

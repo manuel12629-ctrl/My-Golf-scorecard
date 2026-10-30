@@ -477,6 +477,8 @@ table.cmp-t td:first-child{white-space:normal;min-width:120px}
 .sw-vid{background:#000;border-radius:12px;overflow:hidden;aspect-ratio:9/16;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:13px;text-align:center;padding:8px}
 .sw-vid video{width:100%;height:100%;object-fit:contain}
 #sw-range{width:100%}
+.sw-pn{display:flex;gap:4px;align-items:center}.sw-pn .chip{flex:1 1 0;min-width:0;padding:6px 0;justify-content:center;position:relative}.sw-pn .btn{flex:0 0 auto;padding:6px 10px}
+.sw-dot{position:absolute;top:3px;right:4px;width:6px;height:6px;border-radius:50%;background:var(--flag)}
 .par-edit{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:14px;font-weight:600}
 .par-edit span{flex:1}
 .par-edit .seg{width:180px}
@@ -584,7 +586,7 @@ const BUILTIN = [
 ];
 
 /* ---------- Version ---------- */
-const APP_VERSION = '3.32', APP_DATE = '30.10.2026';
+const APP_VERSION = '3.33', APP_DATE = '30.10.2026';
 
 /* ---------- Zustand ---------- */
 function ls(k,v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null; } }
@@ -634,9 +636,9 @@ function idbLegacy(){
     }catch(e){ fin(null); }
   });
 }
-const DATA0 = () => ({rounds:{},courses:{},profiles:{},training:{},holeimgs:{},profile:null,deleted:{},dirty:{},syncAt:null,savedAt:null,changedAt:null});
+const DATA0 = () => ({rounds:{},courses:{},profiles:{},training:{},swings:{},holeimgs:{},profile:null,deleted:{},dirty:{},syncAt:null,savedAt:null,changedAt:null});
 const tOf = o => (o && (o.updatedAt||o._t)) || 0;
-const SYNC_COLS = ['rounds','courses','profiles','training'];
+const SYNC_COLS = ['rounds','courses','profiles','training','swings'];
 const localOnly = (col,o) => col==='rounds' && o && (o.mem || o.guest);
 /* Bag sicher zusammenführen: jeder Schläger einzeln nach seinem Zeitstempel (_t), nichts geht verloren,
    was nicht ausdrücklich gelöscht wurde (del: Zeitpunkt des Löschens pro Schläger). Ein Profil ohne Bag löscht nie einen Bag. */
@@ -686,7 +688,7 @@ const store = {
     try{ const raw=localStorage.getItem(KEY); saved = raw ? JSON.parse(raw) : null; }catch(e){ canStore=false; }
     if(!saved){ const old = await idbLegacy(); if(old){ saved=old; this.data.changedAt=Date.now(); } }
     if(saved) this.data = {...this.data, ...saved};
-    ['rounds','courses','profiles','training','deleted','dirty','holeimgs'].forEach(k=>{ this.data[k] ||= {}; });
+    ['rounds','courses','profiles','training','swings','deleted','dirty','holeimgs'].forEach(k=>{ this.data[k] ||= {}; });
     const emb = readEmbedded(); if(emb) this.merge(emb);
     this.migrate();
     if(!canStore) this.err='blocked';
@@ -835,7 +837,7 @@ const sync = {
     if(this.busy){ this.again=true; return; }
     this.busy=true; const prev=this.state; this.state='busy'; paintSync();
     const d=store.data, keys=Object.keys(d.dirty||{}), sent={};
-    const changes={rounds:{},courses:{},profiles:{},training:{},deleted:d.deleted||{}};
+    const changes={rounds:{},courses:{},profiles:{},training:{},swings:{},deleted:d.deleted||{}};
     keys.forEach(k=>{ const [col,id]=k.split('/'); const o=(d[col]||{})[id]; if(o && !localOnly(col,o) && changes[col]) changes[col][id]=o; sent[k]=o?tOf(o):'gone'; });
     try{
       const ctl=new AbortController(); const to=setTimeout(()=>ctl.abort(), 20000);
@@ -852,7 +854,7 @@ const sync = {
         store.adopt(j.db||{}, j.rejected||[]);
         keys.forEach(k=>{ const [col,id]=k.split('/'); const o=(d[col]||{})[id]; if((o?tOf(o):'gone')===sent[k]) delete d.dirty[k]; });
         d.syncAt=Date.now(); this.state='ok'; this.msg='';
-        store.flush(); store.emit(); refreshGroup(); softRender();
+        store.flush(); store.emit(); refreshGroup(); softRender(); swUpload();
       }
     }catch(e){ this.state='offline'; }
     this.busy=false; paintSync();
@@ -2723,7 +2725,145 @@ const SW_PH=[
   dl:['Brust zeigt zum Ziel','{Rechte} Ferse oben, nur die Schuhspitze am Boden'],
   fx:['Gewicht fällt zurück auf den {rechten} Fuss','Wackeliges Finish: Schwung war zu schnell']}
 ];
-const SW={cur:0, view:'fo', help:true, video:null, url:null, marks:{}};
+/* Gespeicherte Schwung-Videos.
+   Datensatz data.swings[id] = {profileId, by, date, createdAt, _t, view, hand, name, dur, note, marks:{phase:sek}, frames:{phase:zeit}}
+   wird wie Runden online gesichert. Das Video selbst liegt nur auf diesem Gerät (IndexedDB «golfsc-media»),
+   pro gemerkter Phase gibt es ein kleines Standbild (JPEG), lokal und online (action 'swimg'). */
+const SW={cur:0, view:'fo', help:true, sid:null, video:null, url:null, vidFor:null, fc:{}, loading:{}, cf:null};
+const swMedia = {
+  db:null,
+  open(){ if(this.db) return Promise.resolve(this.db);
+    return new Promise((res,rej)=>{ let q; try{ q=indexedDB.open('golfsc-media',1); }catch(e){ return rej(e); }
+      q.onupgradeneeded=()=>{ const d=q.result; ['videos','frames','queue'].forEach(s=>{ if(!d.objectStoreNames.contains(s)) d.createObjectStore(s); }); };
+      q.onsuccess=()=>{ this.db=q.result; res(this.db); }; q.onerror=()=>rej(q.error); }); },
+  async tx(store, mode, fn){ const d=await this.open(); return new Promise((res,rej)=>{ const t=d.transaction(store,mode), s=t.objectStore(store); const r=fn(s); t.oncomplete=()=>res(r&&r.result); t.onerror=()=>rej(t.error); t.onabort=()=>rej(t.error); }); },
+  get(store,k){ return this.tx(store,'readonly',s=>s.get(k)); },
+  put(store,k,v){ return this.tx(store,'readwrite',s=>s.put(v,k)); },
+  del(store,k){ return this.tx(store,'readwrite',s=>s.delete(k)); },
+  keys(store){ return this.tx(store,'readonly',s=>s.getAllKeys()); }
+};
+const swList = () => Object.entries(store.data.swings||{}).filter(([id,w])=>w && w.profileId===S.me).map(([id,w])=>({...w, id})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+const swCur = () => SW.sid && (store.data.swings||{})[SW.sid] ? {...store.data.swings[SW.sid], id:SW.sid} : null;
+function swSave(id, patch){ const w=(store.data.swings||{})[id]; if(!w) return; const doc={...w, ...patch, _t:Date.now()}; store.write('swings/'+id, doc); }
+/* Standbilder eines Videos laden: zuerst vom Gerät, sonst von der Online-Sicherung */
+async function swFrames(id){
+  if(SW.fc[id] || SW.loading[id]) return SW.fc[id];
+  SW.loading[id]=true;
+  let f=null; try{ f=await swMedia.get('frames', id); }catch(e){}
+  const w=(store.data.swings||{})[id], want=Object.keys((w&&w.frames)||{});
+  if((!f || want.some(k=>!f[k])) && sync.on && sync.pw){
+    try{ const j=await sync.call('swimg',{op:'get', id}); if(j && j.ok){ f={...(f||{}), ...j.f}; try{ await swMedia.put('frames', id, f); }catch(e){} } }catch(e){}
+  }
+  SW.fc[id]=f||{}; SW.loading[id]=false; if(S.view && S.view.name==='swing') render();
+  return SW.fc[id];
+}
+/* Hochladen der Standbilder, sobald eine Verbindung besteht */
+let swUpBusy=false;
+async function swUpload(){
+  if(swUpBusy || !(sync.on && sync.pw)) return; swUpBusy=true;
+  try{ const keys=await swMedia.keys('queue');
+    for(const key of keys){ const [id,k]=String(key).split('/'); const w=(store.data.swings||{})[id];
+      if(!w){ await swMedia.del('queue', key); continue; }
+      if(k==='x'){ const j=await sync.call('swimg',{op:'del', id, owner:w.profileId}).catch(()=>null); if(j&&j.ok) await swMedia.del('queue', key); continue; }
+      const f=(await swMedia.get('frames', id))||{}; if(!f[k]){ await swMedia.del('queue', key); continue; }
+      const j=await sync.call('swimg',{op:'put', id, k, img:f[k], owner:w.profileId}).catch(()=>null);
+      if(j && j.ok) await swMedia.del('queue', key); else break;
+    }
+  }catch(e){}
+  swUpBusy=false;
+}
+async function swOpen(id){
+  SW.sid=id; SW.cf=null; const w=(store.data.swings||{})[id];
+  if(w && w.view) SW.view=w.view;
+  if(SW.vidFor!==id){ if(SW.video){ SW.video.pause(); } SW.video=null; if(SW.url){ try{ URL.revokeObjectURL(SW.url); }catch(e){} SW.url=null; } SW.vidFor=id;
+    try{ const v=await swMedia.get('videos', id); if(v && v.blob && SW.sid===id) swAttach(v.blob); }catch(e){} }
+  swFrames(id); swGoto(SW.cur);
+}
+function swAttach(blob){
+  const v=document.createElement('video'); SW.url=URL.createObjectURL(blob); v.src=SW.url; v.playsInline=true; v.muted=true; v.preload='auto'; v.setAttribute('playsinline','');
+  v.addEventListener('timeupdate',()=>{ const r=document.getElementById('sw-range'); if(r && v.duration) r.value=Math.round(v.currentTime/v.duration*1000); });
+  v.addEventListener('pause',()=>render()); v.addEventListener('play',()=>render());
+  v.addEventListener('loadedmetadata',()=>{ const w=swCur(); if(w && !w.dur && v.duration && isFinite(v.duration)) swSave(w.id,{dur:Math.round(v.duration*10)/10}); const t=w&&w.marks&&w.marks[SW.cur]; if(t!=null) v.currentTime=t; });
+  SW.video=v; render();
+}
+async function swLoad(file){
+  if(!file) return;
+  if(!meProf()){ toast('Bitte zuerst ein Profil wählen.'); return; }
+  const id='w'+uid(), now=Date.now();
+  const doc={profileId:S.me, by:ownPid()||S.me, date:today(), createdAt:now, _t:now, view:SW.view, hand:swLefty()?'l':'r', name:String(file.name||'Video').slice(0,80), note:'', marks:{}, frames:{}};
+  try{ await swMedia.put('videos', id, {blob:file, name:file.name, type:file.type, size:file.size}); }
+  catch(e){ toast('Das Video konnte auf diesem Gerät nicht gespeichert werden (Speicher voll?).'); }
+  try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+  store.write('swings/'+id, doc);
+  SW.vidFor=null; SW.cur=0; SW.fc[id]={}; await swOpen(id);
+  toast('Video gespeichert. Jetzt die Phasen merken.');
+}
+/* Standbild an der aktuellen Stelle aufnehmen (kleines JPEG) */
+function swGrab(v){
+  try{ const w=v.videoWidth, h=v.videoHeight; if(!w||!h) return null;
+    const k=Math.min(1, 360/Math.max(w,h)), c=document.createElement('canvas'); c.width=Math.round(w*k); c.height=Math.round(h*k);
+    c.getContext('2d').drawImage(v,0,0,c.width,c.height); return c.toDataURL('image/jpeg',0.72);
+  }catch(e){ return null; }
+}
+async function swMark(){
+  const w=swCur(), v=SW.video; if(!w || !v) return;
+  v.pause(); const k=SW.cur, t=Math.round(v.currentTime*1000)/1000, img=swGrab(v);
+  const marks={...(w.marks||{}), [k]:t}, frames={...(w.frames||{})};
+  if(img){ frames[k]=Date.now(); const f={...(SW.fc[w.id]||{}), [k]:img}; SW.fc[w.id]=f;
+    try{ await swMedia.put('frames', w.id, f); await swMedia.put('queue', w.id+'/'+k, 1); }catch(e){} }
+  swSave(w.id, {marks, frames});
+  toast('Phase '+(k+1)+' gemerkt');
+  if(SW.cur<7) SW.cur++;
+  if(marks[SW.cur]!=null) v.currentTime=marks[SW.cur];
+  render(); swUpload();
+}
+async function swDelete(id){
+  const w=(store.data.swings||{})[id]; if(!w) return;
+  try{ await swMedia.del('videos', id); await swMedia.del('frames', id); for(let k=0;k<8;k++) await swMedia.del('queue', id+'/'+k); }catch(e){}
+  if(sync.on && sync.pw){ const j=await sync.call('swimg',{op:'del', id, owner:w.profileId}).catch(()=>null); if(!(j&&j.ok)) try{ await swMedia.put('queue', id+'/x', 1); }catch(e){} }
+  store.save('swings/'+id, null, 0);
+  if(SW.sid===id){ if(SW.video) SW.video.pause(); SW.sid=null; SW.video=null; SW.vidFor=null; }
+  delete SW.fc[id]; SW.cf=null; toast('Video gelöscht'); render();
+}
+function swGoto(i){ SW.cur=Math.max(0,Math.min(7,i)); const w=swCur(); const t=w&&w.marks&&w.marks[SW.cur];
+  if(SW.video && t!=null){ SW.video.pause(); SW.video.currentTime=t; } render(); }
+/* Liste der gespeicherten Videos und das gewählte Video */
+function swLibrary(){
+  const list=swList(), w=swCur(), i=SW.cur, p=SW_PH[i];
+  list.forEach(x=>{ if(!SW.fc[x.id] && !SW.loading[x.id] && Object.keys(x.frames||{}).length) swFrames(x.id); });
+  const thumb=x=>{ const f=SW.fc[x.id]||{}; const k=[5,3,0,1,2,4,6,7].find(k=>f[k]); return k!=null?`<img class="sw-thumb" src="${f[k]}" alt="">`:`<span class="sw-thumb sw-thumb0">▶</span>`; };
+  const cnt=x=>Object.keys(x.marks||{}).length;
+  const listHtml = list.length ? `<div class="list">${list.map(x=>`<button class="li" data-a="swOpen" data-v="${x.id}" aria-pressed="${x.id===SW.sid}">${thumb(x)}
+      <div class="main"><div class="t">${fmtDate(x.date)} · ${x.view==='dl'?'von hinten':'von vorne'}</div><div class="s">${cnt(x)} von 8 Phasen gemerkt${x.note?' · '+esc(String(x.note).slice(0,40)):''}</div></div>
+      ${x.id===SW.sid?'<span class="badge live">Offen</span>':'<span class="chev">›</span>'}</button>`).join('')}</div>` : '<p class="small muted" style="margin:0">Noch keine Videos gespeichert.</p>';
+  let cur='';
+  if(w){
+    const f=SW.fc[w.id]||{}, still=f[i];
+    const media = SW.video ? '' : still ? `<img src="${still}" alt="Standbild Phase ${i+1}">` : SW.loading[w.id] ? 'Wird geladen …' : (Object.keys(w.marks||{}).length ? `Kein Standbild für Phase ${i+1}. Das Video selbst ist nur auf dem Gerät, auf dem du es gewählt hast.` : 'Das Video ist nur auf dem Gerät gespeichert, auf dem du es gewählt hast.');
+    cur = `<div class="sw-pn" role="group" aria-label="Phase wählen">
+        <button class="btn small" data-a="swPhase" data-v="${i-1}" ${i?'':'disabled'} aria-label="Vorherige Phase">‹</button>
+        ${SW_PH.map((x,k)=>`<button class="chip num" data-a="swPhase" data-v="${k}" aria-pressed="${k===i}" title="${esc(swSide(x.t))}">${k+1}${(w.marks||{})[k]!=null?'<span class="sw-dot" aria-label="gemerkt"></span>':''}</button>`).join('')}
+        <button class="btn small" data-a="swPhase" data-v="${i+1}" ${i<7?'':'disabled'} aria-label="Nächste Phase">›</button>
+      </div>
+      <div class="seg">${[['fo','Von vorne gefilmt'],['dl','Von hinten gefilmt']].map(([k,l])=>`<button data-a="swView" data-v="${k}" aria-pressed="${SW.view===k}">${l}</button>`).join('')}</div>
+      <div class="sw-cmp"><div class="sw-vid" id="sw-vid">${media}</div><div class="sw-box"><small>${i+1}. ${esc(swSide(p.t))}</small>${swFig(SW.view,i)}</div></div>
+      ${SW.video?`<input type="range" id="sw-range" min="0" max="1000" step="1" value="0" aria-label="Stelle im Video">
+      <div class="row" style="gap:6px;flex-wrap:wrap"><button class="btn small" data-a="swStep" data-v="-1">‹ Bild</button><button class="btn small" data-a="swPlay">${SW.video.paused?'Zeitlupe':'Pause'}</button><button class="btn small" data-a="swStep" data-v="1">Bild ›</button>
+        <button class="btn primary small" style="margin-left:auto" data-a="swMark">Phase ${i+1} merken</button></div>`:''}
+      <label class="f">Notizen zu diesem Schwung<textarea class="in" id="sw-note" data-f="swNote" placeholder="Schläger, was dir auffällt, Tipps vom Pro …">${esc(w.note||'')}</textarea></label>
+      ${SW.cf===w.id?`<div class="confirm"><span>Dieses Video mit allen gemerkten Phasen und Standbildern löschen?</span><button class="btn" data-a="cancelSwDel">Behalten</button><button class="btn danger solid" data-a="swDel" data-v="${w.id}">Löschen</button></div>`
+        :`<button class="btn danger" data-a="swAskDel" data-v="${w.id}">Video löschen</button>`}`;
+  }
+  return `<div class="card stack" style="gap:10px">
+      <h3 style="margin:0">Mit deinem Schwung vergleichen</h3>
+      <p class="small muted" style="margin:0">Wähle ein Video und tippe bei jeder Phase auf «Phase merken». Das Video wird auf diesem Gerät gespeichert, die gemerkten Phasen mit einem kleinen Standbild zusätzlich online. So kannst du sie später auch am PC ansehen. Am besten filmst du auf Hüfthöhe, von vorne oder von hinten auf der Ziellinie.</p>
+      <label class="btn primary block" style="margin:0">+ Neues Video wählen<input type="file" accept="video/*" data-sw-file hidden></label>
+      ${cur}
+      <h3 style="margin:6px 0 0">Meine Videos</h3>
+      ${listHtml}
+    </div>`;
+}
+
 const swLefty = () => ls('golfsc-hand')==='l';
 function swSide(t){ const L=swLefty(); return String(t).replace(/\{([^}]+)\}/g,(m,w)=>{ if(!L) return w;
   const sw={link:'recht', Link:'Recht', recht:'link', Recht:'Link'}; return w.replace(/^(link|Link|recht|Recht)/, x=>sw[x]); }); }
@@ -2744,19 +2884,7 @@ function viewSwing(){
       <div><h3 style="margin:0 0 4px">Typische Fehler</h3><ul class="sw-list muted">${li(p.fx)}</ul></div>
       <div class="grid2"><button class="btn" data-a="swPhase" data-v="${i-1}" ${i?'':'disabled'}>‹ Zurück</button><button class="btn" data-a="swPhase" data-v="${i+1}" ${i<7?'':'disabled'}>Weiter ›</button></div>
     </div>
-    <div class="card stack" style="gap:10px">
-      <h3 style="margin:0">Mit deinem Schwung vergleichen</h3>
-      <p class="small muted" style="margin:0">Wähle ein Video von deinem Handy. Es bleibt auf dem Gerät und wird weder gespeichert noch hochgeladen. Spule zur passenden Stelle und tippe auf «Phase merken». Danach springt das Video bei jeder Phase an deine Stelle. Am besten filmst du auf Hüfthöhe, einmal von vorne und einmal von hinten auf der Ziellinie.</p>
-      <div class="row" style="gap:8px;flex-wrap:wrap">
-        <label class="btn primary" style="margin:0">${SW.video?'Anderes Video':'Video wählen'}<input type="file" accept="video/*" data-sw-file hidden></label>
-        <div class="seg" style="flex:1;min-width:180px">${[['fo','Vorne'],['dl','Hinten']].map(([k,l])=>`<button data-a="swView" data-v="${k}" aria-pressed="${SW.view===k}">${l}</button>`).join('')}</div>
-      </div>
-      <div class="sw-cmp"><div class="sw-vid" id="sw-vid">${SW.video?'':'Noch kein Video gewählt'}</div><div class="sw-box"><small>${i+1}. ${esc(swSide(p.t))}</small>${swFig(SW.view,i)}</div></div>
-      ${SW.video?`<input type="range" id="sw-range" min="0" max="1000" step="1" value="0" aria-label="Stelle im Video">
-      <div class="row" style="gap:6px;flex-wrap:wrap"><button class="btn small" data-a="swStep" data-v="-1">‹ Bild</button><button class="btn small" data-a="swPlay">${SW.video.paused?'Zeitlupe':'Pause'}</button><button class="btn small" data-a="swStep" data-v="1">Bild ›</button>
-        <button class="btn primary small" style="margin-left:auto" data-a="swMark">Phase ${i+1} merken</button></div>
-      <p class="small muted" style="margin:0">${Object.keys(SW.marks).length?'Gemerkt: Phase '+Object.keys(SW.marks).map(k=>+k+1).sort((a,b)=>a-b).join(', '):'Noch keine Phase gemerkt.'}</p>`:''}
-    </div>
+    ${swLibrary()}
   </div>`;
 }
 /* nach jedem Zeichnen das (gleiche) Video-Element wieder einsetzen, damit Stelle und Wiedergabe erhalten bleiben */
@@ -2765,15 +2893,6 @@ function swAfterRender(){
   if(SW.video.parentNode!==box){ box.textContent=''; box.appendChild(SW.video); }
   const r=document.getElementById('sw-range'); if(r && SW.video.duration) r.value=Math.round(SW.video.currentTime/SW.video.duration*1000);
 }
-function swLoad(file){
-  if(!file) return;
-  if(SW.url){ try{ URL.revokeObjectURL(SW.url); }catch(e){} }
-  const v=document.createElement('video'); SW.url=URL.createObjectURL(file); v.src=SW.url; v.playsInline=true; v.muted=true; v.preload='auto'; v.setAttribute('playsinline','');
-  v.addEventListener('timeupdate',()=>{ const r=document.getElementById('sw-range'); if(r && v.duration) r.value=Math.round(v.currentTime/v.duration*1000); });
-  v.addEventListener('pause',()=>render()); v.addEventListener('play',()=>render());
-  SW.video=v; SW.marks={}; render();
-}
-function swGoto(i){ SW.cur=Math.max(0,Math.min(7,i)); if(SW.video && SW.marks[SW.cur]!=null){ SW.video.pause(); SW.video.currentTime=SW.marks[SW.cur]; } render(); }
 
 /* --- Spielen: neue Runde starten und alle bisherigen Runden --- */
 function viewPlayHub(){
@@ -3572,12 +3691,17 @@ document.addEventListener('click', e=>{
     /* Training */
     case 'swingOpen': S.view={name:'swing'}; S.confirm=null; render(); window.scrollTo(0,0); break;
     case 'swHand': ls('golfsc-hand', v); render(); break;
-    case 'swPhase': swGoto(+v); break;
-    case 'swView': SW.view=v; render(); break;
+    case 'swPhase': { const an=b.closest('.sw-pn'), top=an&&an.getBoundingClientRect().top; swGoto(+v);
+      if(an){ const n=document.querySelector('.sw-pn'); if(n) window.scrollBy(0, n.getBoundingClientRect().top-top); } break; }   // Leiste beim Video bleibt an ihrem Platz
+    case 'swView': SW.view=v; if(SW.sid) swSave(SW.sid,{view:v}); render(); break;
+    case 'swOpen': swOpen(v); break;
+    case 'swAskDel': SW.cf=v; render(); break;
+    case 'cancelSwDel': SW.cf=null; render(); break;
+    case 'swDel': swDelete(v); break;
     case 'swHelp': SW.help=b.checked; render(); break;
     case 'swStep': if(SW.video){ SW.video.pause(); SW.video.currentTime=Math.max(0,Math.min(SW.video.duration||0, SW.video.currentTime+(+v)/30)); swAfterRender(); } break;
     case 'swPlay': if(SW.video){ if(SW.video.paused){ if(SW.video.ended) SW.video.currentTime=0; SW.video.playbackRate=0.25; SW.video.play().catch(()=>{}); } else SW.video.pause(); } break;
-    case 'swMark': if(SW.video){ SW.video.pause(); SW.marks[SW.cur]=SW.video.currentTime; toast('Phase '+(SW.cur+1)+' gemerkt'); if(SW.cur<7) SW.cur++; if(SW.marks[SW.cur]!=null) SW.video.currentTime=SW.marks[SW.cur]; render(); } break;
+    case 'swMark': swMark(); break;
     case 'trainHub': S.view={name:'train'}; S.confirm=null; render(); window.scrollTo(0,0); break;
     case 'trainOpen': S.view={name:'trainGame', id:v, from:{name:'train'}}; S.confirm=null; render(); window.scrollTo(0,0); break;
     case 'trainStart': { const g=trainGame(v); if(!g) break; const act=trainActive(); if(act){ S.view={name:'trainPlay', id:act.id, from:{name:'train'}}; render(); break; }
@@ -3631,6 +3755,7 @@ function onField(e){
   if(f==='askName'){ S.askName=val; const t=$('#ask-text'); if(t) t.textContent=askText(); return; }
   if(f==='statCourse'){ S.statCourse=val; render(); return; }
   if(f.startsWith('trainSet.')){ const id=S.view&&S.view.id, set=((S.trainSet ||= {})[id] ||= {club:'', d:['40','60','80']}); const parts=f.split('.'); if(parts[1]==='club') set.club=val; else set.d[+parts[2]]=val; return; }
+  if(f==='swNote'){ const id=SW.sid; clearTimeout(SW.nt); SW.nt=setTimeout(()=>{ if(id) swSave(id,{note:val}); }, 700); return; }
   if(f==='bestCourse'){ S.bestCourse=val; render(); return; }
   if(f==='statRange'){ S.statRange=val; render(); return; }
   if(f.startsWith('helpPv.')){ const k=f.split('.')[1]; S.helpPv ||= {}; if(k==='course'){ S.helpPv={course:val}; } else { S.helpPv.course=S.helpPv.course||document.getElementById('hp-course')?.value; S.helpPv[k]=val; } render(); return; }

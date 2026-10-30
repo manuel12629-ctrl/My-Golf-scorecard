@@ -55,11 +55,13 @@ export function viewer(db, me) {
 }
 export const canSeeRound = (v, r) => !!r && (v.shared.has(r.profileId) || r.by === v.me.pid || v.myGroups.has(r.groupId));
 export const canSeeTraining = (v, t) => !!t && v.shared.has(t.profileId);
+export const canSeeSwing = (v, w) => !!w && v.shared.has(w.profileId);
 export function viewDb(db, me) {
-  const v = viewer(db, me), out = { rounds: {}, courses: {}, profiles: {}, training: {}, deleted: db.deleted || {}, serverAt: db.serverAt };
+  const v = viewer(db, me), out = { rounds: {}, courses: {}, profiles: {}, training: {}, swings: {}, deleted: db.deleted || {}, serverAt: db.serverAt };
   out.courses = db.courses || {};
   for (const [id, r] of Object.entries(db.rounds || {})) if (canSeeRound(v, r)) out.rounds[id] = r;
   for (const [id, t] of Object.entries(db.training || {})) if (canSeeTraining(v, t)) out.training[id] = t;
+  for (const [id, w] of Object.entries(db.swings || {})) if (canSeeSwing(v, w)) out.swings[id] = w;
   for (const [id, p] of Object.entries(db.profiles || {})) {
     if (!p) continue;
     if (v.shared.has(id)) { const q = { ...p }; if (id !== me.pid && !me.admin) delete q.bag; out.profiles[id] = q; }
@@ -70,7 +72,7 @@ export function viewDb(db, me) {
 
 /* --- Schreibrechte: nur erlaubte Änderungen kommen in die Datenbank --- */
 export function filterChanges(db, inc, me) {
-  const ok = { rounds: {}, courses: {}, profiles: {}, training: {}, deleted: {} }, rejected = [];
+  const ok = { rounds: {}, courses: {}, profiles: {}, training: {}, swings: {}, deleted: {} }, rejected = [];
   const may = {
     rounds: (id, o) => { const cur = (db.rounds || {})[id];
       if (me.admin) return true;
@@ -83,10 +85,12 @@ export function filterChanges(db, inc, me) {
         || Object.values((inc && inc.rounds) || {}).some(r => r && r.groupId === g && r.profileId === me.pid)); },
     training: (id, o) => { const cur = (db.training || {})[id]; if (me.admin) return true;
       return cur ? cur.profileId === me.pid && (!o || o.profileId === me.pid) : !!o && o.profileId === me.pid; },
+    swings: (id, o) => { const cur = (db.swings || {})[id]; if (me.admin) return true;
+      return cur ? cur.profileId === me.pid && (!o || o.profileId === me.pid) : !!o && o.profileId === me.pid; },
     profiles: (id, o) => !!(db.profiles || {})[id] && (id === me.pid || me.admin) && !!o,
     courses: () => true
   };
-  for (const col of ['rounds', 'courses', 'profiles', 'training']) {
+  for (const col of ['rounds', 'courses', 'profiles', 'training', 'swings']) {
     for (const [id, o] of Object.entries((inc && inc[col]) || {})) {
       if (!ID.test(id) || !o || typeof o !== 'object') continue;
       if (may[col](id, o)) ok[col][id] = o; else rejected.push(col + '/' + id);
